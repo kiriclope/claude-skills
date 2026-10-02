@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: cbstyle
+Version: 0.1.0
+Summary: Colorblind-safe palette and fixed-point markers shared across projects (Okabe-Ito, shape-coded fixed points, CVD simulation).
+Requires-Python: >=3.9
+Requires-Dist: numpy
+Requires-Dist: matplotlib

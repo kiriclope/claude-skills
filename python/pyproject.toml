@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cbstyle"
+version = "0.1.0"
+description = "Colorblind-safe palette and fixed-point markers shared across projects (Okabe-Ito, shape-coded fixed points, CVD simulation)."
+requires-python = ">=3.9"
+dependencies = ["numpy", "matplotlib"]
+
+[tool.setuptools]
+packages = ["cbstyle"]

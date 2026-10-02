@@ -61,8 +61,9 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
     diverging: PuOr / RdBu centered on the true zero; never jet/rainbow, never red vs green;
   - fixed points by SHAPE (white face, black edge; `plot_fixed_points`): ● attractor, ✖ saddle,
     ▲ repeller, ◆ marginal/slow, ◎ ghost; continuous attractor = dashed white line (`plot_manifold`).
-  - A project's condition → color map is defined once (project docs or `project.yaml`) and must
-    pass `check_figure`'s colorblind check.
+  - A project's condition → color map is defined once in `project.yaml` → `colors:` and must
+    pass `check_figure`'s colorblind check. Import colors from `cbstyle` (`pip install -e
+    ~/claude-skills/python`) — never re-type hex codes in figure scripts.
 - Axis limits must contain every feature the claim is about (attractors, wells, the full
   distribution) — check them, don't inherit them.
 
