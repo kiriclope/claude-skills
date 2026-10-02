@@ -1,0 +1,35 @@
+# Default house style for print figures (journal: 5–7 pt at final size, 183 mm double column).
+# Use:  plt.style.use("<skill_dir>/references/paper.mplstyle")  AFTER all project imports
+# (a project module that calls sns.set_context at import time will otherwise override it).
+# Projects override this with `figure_style:` in .claude/project.yaml.
+
+figure.dpi        : 150
+savefig.dpi       : 400
+savefig.bbox      : tight
+savefig.transparent : False
+
+font.family       : sans-serif
+font.sans-serif   : Arial, Helvetica, DejaVu Sans
+axes.labelsize    : 8
+axes.titlesize    : 8
+axes.titleweight  : normal
+axes.titlelocation: left
+xtick.labelsize   : 7
+ytick.labelsize   : 7
+legend.fontsize   : 6.5
+legend.frameon    : False
+
+axes.spines.top   : False
+axes.spines.right : False
+axes.linewidth    : 0.7
+lines.linewidth   : 1.3
+lines.markersize  : 3.5
+xtick.major.size  : 2.5
+ytick.major.size  : 2.5
+xtick.major.width : 0.7
+ytick.major.width : 0.7
+
+svg.fonttype      : none     # text stays editable in SVG
+pdf.fonttype      : 42       # TrueType in PDF (journals reject Type 3)
+ps.fonttype       : 42
+image.cmap        : magma

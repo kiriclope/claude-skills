@@ -1,0 +1,8 @@
+# Regexes that must not appear in shareable plugins (research-core, domain plugins).
+# Each contributor adds their own name, home path and machine-specific tools.
+\bLeon\b
+/home/leon
+~/dual\b
+mambaforge
+ask-kimi
+\bA30\b
