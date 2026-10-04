@@ -44,13 +44,17 @@ Leon (live edits, via symlinks):
 ln -s ~/claude-skills/plugins/research-core/skills/* ~/.claude/skills/
 ln -s ~/claude-skills/plugins/lowrank-rnn/skills/<skill> <project>/.claude/skills/<skill>
 ```
-Colleagues (versioned plugin install):
+Colleagues (versioned plugin install from GitHub):
 ```bash
-claude plugin marketplace add <git url or path of this repo>
-claude plugin install research-core@leon-skills
-cp templates/project.yaml <project>/.claude/project.yaml    # fill in
-cp profiles/leon.md profiles/<you>.md                       # edit, link as ~/.claude/CLAUDE.md
+claude plugin marketplace add kiriclope/claude-skills
+claude plugin install research-core@leon-skills       # + lowrank-rnn@leon-skills for low-rank RNN projects
+pip install "git+https://github.com/kiriclope/claude-skills#subdirectory=python"   # cbstyle, used by making-figures
+git clone https://github.com/kiriclope/claude-skills ~/claude-skills               # templates, profiles, hooks
+cp ~/claude-skills/templates/project.yaml <project>/.claude/project.yaml          # fill in
+cp ~/claude-skills/profiles/leon.md ~/claude-skills/profiles/<you>.md             # edit, link as ~/.claude/CLAUDE.md
 ```
+The plugin install copies only the plugin folders, so `cbstyle` needs the `pip` line; the hooks are
+installed by hand (`hooks/README.md`).
 
 ## Health check
 

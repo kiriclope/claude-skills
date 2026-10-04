@@ -81,4 +81,6 @@ cp ~/claude-skills/templates/project.yaml .claude/project.yaml                 #
 ```
 `research-core` skills are linked once in `~/.claude/skills/` and apply everywhere. Never copy a
 skill into a project: copies drift. Colleagues install with
-`claude plugin marketplace add <repo>` + `claude plugin install research-core@leon-skills`.
+`claude plugin marketplace add kiriclope/claude-skills` + `claude plugin install research-core@leon-skills`
+(and `pip install "git+https://github.com/kiriclope/claude-skills#subdirectory=python"` for `cbstyle`).
+After changing a skill, bump the plugin `version` so their `claude plugin marketplace update` picks it up.
