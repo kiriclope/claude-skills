@@ -16,6 +16,7 @@ plugins/
     checking-derivations     sympy + numeric check against the model (check_jacobian.py)
     making-figures           colorblind-safe style (cb_style.py, paper.mplstyle), check_figure.py, captions
     writing-research-code    naming, docstrings, single source of truth, verify by running
+    reviewing-code-readability  colleague test + readability_check.py against the house conventions
     writing-paper            claim-first prose, every panel cited, one vocabulary
     auditing-paper-numbers   every number in the draft traced to the numbers log (audit_numbers.py)
     verifying-citations      Crossref/OpenAlex check of every reference (verify_refs.py)

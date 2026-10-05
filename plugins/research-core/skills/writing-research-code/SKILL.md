@@ -15,7 +15,8 @@ choice was made — and so that the numbers it prints cannot silently drift from
    helper first — grep for the function you are about to write. Reuse beats re-implement:
    duplicated logic is where projects drift (a constant copied into a probe script stays
    wrong after the model changes).
-2. Check `.claude/project.yaml` → `python`, `env_prefix` for how scripts must be run.
+2. Check `.claude/project.yaml` → `python`, `env_prefix` for how scripts must be run, and
+   `code_rules` for the project's own rules (canonical helpers, constants that must be derived).
 
 ## Single source of truth (the most important rule)
 
@@ -44,6 +45,8 @@ choice was made — and so that the numbers it prints cannot silently drift from
   Unicode math (κ₀, σ, λ) is welcome in comments and printed output.
 - Section rules for long files: `# ── trials ─────────────`.
 - Match the surrounding code's density and idiom; do not reformat code you did not change.
+- Comments and docstrings in American English; existing identifiers keep their spelling
+  (renaming `behaviour` → `behavior` in a name breaks every caller).
 
 ## Structure
 
@@ -71,7 +74,8 @@ choice was made — and so that the numbers it prints cannot silently drift from
 
 Run the code on a small real case and read the output before saying it works. For a fix,
 reproduce the bug first, then show it gone. For a refactor, show identical output before and
-after. Say plainly what was not run.
+after. Say plainly what was not run. Then review it with the `reviewing-code-readability` skill
+(its checker on the changed lines + the colleague test) before calling it done.
 
 ## Never
 

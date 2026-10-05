@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-06 — 0.3.0
+- New `reviewing-code-readability`: a colleague-test rubric plus `readability_check.py`, which flags
+  hard-coded derived constants (caught the historical `alpha=0.075` bug), comments that swallowed code,
+  silent excepts, opaque names, missing docstring/Usage, hex colors, deep nesting and long lines — by
+  default only on lines changed since HEAD. `references/examples.md`: before/after pairs from real fixes.
+- `writing-research-code` hands off to it and reads project `code_rules`; American English in comments only.
+- templates/project.yaml: `code_rules` and `code_check` (max_line, derived_names, derived_callees,
+  config_files, style_modules).
+
 ## 2026-10-02 — 0.2.0
 - New research-core skills: auditing-results, auditing-paper-numbers, verifying-citations, reviewing-literature,
   writing-paper, responding-to-reviewers, checking-derivations, launching-experiments, debugging-training —

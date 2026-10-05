@@ -49,3 +49,14 @@ plot_entrypoint: null
 
 # making-figures: condition → color map (colorblind-safe; values from cbstyle)
 colors: {}
+
+# reviewing-code-readability
+code_rules: []                        # project-specific coding rules, one sentence each
+code_check:                           # readability_check.py settings
+  max_line: 120
+  max_depth: 4
+  max_function_lines: 80
+  derived_names: []                   # names the config derives (alpha, dt, …): flagged if typed in
+  derived_callees: []                 # calls to watch for them (e.g. the model class); [] = any non-plotting call
+  config_files: []                    # where those names are legitimately defined
+  style_modules: []                   # the only files allowed to hold hex colors
