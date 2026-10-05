@@ -13,7 +13,7 @@ docs_map:
     doc: docs/running.md
 
 # log-and-ship: paths never staged unless Leon names them
-never_stage: [results/, CLAUDE.md, .claude/settings.local.json]
+never_stage: [results/, .claude/settings.local.json]   # CLAUDE.md is committed like any doc
 
 # figure-gallery: top-level folder under ~/dual/ and where figures are produced
 gallery_project: myproject

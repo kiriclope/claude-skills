@@ -8,6 +8,8 @@
 - `writing-research-code` hands off to it and reads project `code_rules`; American English in comments only.
 - templates/project.yaml: `code_rules` and `code_check` (max_line, derived_names, derived_callees,
   config_files, style_modules).
+- templates/project.yaml: `CLAUDE.md` is no longer in `never_stage` — it is committed like any doc
+  (log-and-ship still shows edits it did not make before staging them).
 
 ## 2026-10-02 — 0.2.0
 - New research-core skills: auditing-results, auditing-paper-numbers, verifying-citations, reviewing-literature,
