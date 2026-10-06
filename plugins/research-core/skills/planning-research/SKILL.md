@@ -54,8 +54,11 @@ Rules:
    Separate data finding, imposed assumption, and model limitation.
 3. If refuted, say so plainly and update the docs where the hypothesis was stated — do not
    reinterpret the success criterion.
-4. Next step = the single most informative experiment given what changed; write a new plan.
-5. Log it (log-and-ship): plan, result, verdict, next step, with dates.
+4. **Before the verdict is logged or acted on**, run the fresh review of **thinking-critically**
+   (steps 3–4): the reviewer gets the plan with its SUCCESS line, the per-unit scores and the
+   verdict — not your reasoning — and you triage its objections.
+5. Next step = the single most informative experiment given what changed; write a new plan.
+6. Log it (log-and-ship): plan, result, verdict, next step, with dates.
 
 ## Planning a paper or figure set
 

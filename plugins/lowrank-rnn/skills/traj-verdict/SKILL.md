@@ -80,6 +80,11 @@ adaptation exists to prevent.
 - `cue`: nogo must be driven strictly up; go only has to not be pushed DOWN (it's usually already
   at its hinge ceiling before the cue, where Δ≈0 is correct behaviour).
 
+**Interpretation goes through a fresh review.** The per-stage verdicts are the score; anything
+said beyond them — why a memory is lost, what a loss term does, how arms compare — is a claim.
+When it will be reported or written up, run the fresh review of **thinking-critically** (steps
+3–4) on those claims, with the traps below as the reviewer's checklist.
+
 ## Traps
 
 1. **Behaviour ≠ geometry** (and vice versa). This tool cannot tell you where the wells are;

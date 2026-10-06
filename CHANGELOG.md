@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-06 — research-core 0.5.0, lowrank-rnn 0.2.0
+- The fresh independent review of `thinking-critically` (steps 3–4) is wired into every skill that
+  draws a conclusion: auditing-results (§7, before a verdict is reported), planning-research
+  (before a verdict is logged or acted on), writing-paper (Step 3b, claims before a draft is
+  shared), reviewing-literature (novelty and "they show" claims), responding-to-reviewers (each
+  response against its comment and the revised manuscript), flow-verdict and traj-verdict
+  (interpretation beyond the tool's score). Only for conclusions that are reported or acted on.
+
 ## 2026-10-06 — 0.4.0
 - New `thinking-critically`: plan with a pre-stated criterion → act with a claims ledger
   (observed / derived / recalled / assumed) → review by a FRESH general-purpose agent (never a fork;

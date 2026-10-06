@@ -51,6 +51,13 @@ most a few per paper; never "Critically", "Surprisingly", "clearly show", "prove
   the manuscript.
 - **Citations:** only verified references (**verifying-citations**).
 
+## Step 3b — independent claim review (before the draft is shared)
+
+Invoke **thinking-critically** and run its steps 3–4 on the section's claims. The fresh reviewer
+gets, per claim, the sentence, the panel it cites (the rendered PNG), the numbers-log entry and
+the references — not your reasoning — and checks that each claim is what the panel and numbers
+show and what the cited papers say. Triage its objections before editing.
+
 ## Step 4 — style pass (reads as written by a scientist, not generated)
 
 Remove: aphoristic colon openers, epigram closers, em-dash asides (use parentheses or commas),
@@ -75,4 +82,5 @@ progress; judge a revision by whether the argument moves in one line.
 - [ ] every panel inventoried from the rendered figure and cited correctly
 - [ ] every number traced to the numbers log (auditing-paper-numbers run)
 - [ ] every reference verified
+- [ ] claims reviewed by a fresh agent (thinking-critically), objections triaged
 - [ ] style pass done and measured

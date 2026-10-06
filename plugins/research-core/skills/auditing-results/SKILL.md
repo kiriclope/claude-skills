@@ -77,6 +77,14 @@ For each claim, label it:
 Say plainly when something did not work and why. If the result contradicts an earlier
 conclusion in the docs, mark the old one superseded there.
 
+## 7. Independent review before the verdict is reported
+
+When the verdict will be reported, written into a doc or the paper, or acted on (a new sweep, a
+decision), invoke the **thinking-critically** skill and run its steps 3–4: a fresh agent — not a
+fork — gets the question, the criterion fixed in advance, the per-unit table and the numbered
+claims with their labels, never your reasoning; check each of its objections before accepting
+it. Skip it for exploratory looks (a review costs ~5–10 min).
+
 ## Checklist (copy into the reply and tick)
 
 - [ ] per-unit table + `SUMMARY: k/N`, criterion fixed in advance
@@ -87,3 +95,4 @@ conclusion in the docs, mark the old one superseded there.
 - [ ] unit of replication = unit of the claim; estimator matches between/within claim
 - [ ] arm confounds listed and matched
 - [ ] each claim labeled finding / assumption / limitation
+- [ ] a verdict that will be reported was reviewed by a fresh agent (thinking-critically), objections triaged

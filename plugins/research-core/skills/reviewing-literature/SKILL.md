@@ -66,6 +66,10 @@ Run the **verifying-citations** skill on every paper in the file (script for met
 quoted passage for every "they show"). Mark each entry `✓ verified YYYY-MM-DD`. Unverified
 entries stay out of drafts.
 
+Then run the fresh review of **thinking-critically** (steps 3–4) on the position — the comparison
+matrix, the foils and the lead / novelty claims. The reviewer searches for work that already
+shows our "we add", and for papers that contradict a "they show".
+
 ## Rules
 
 - Say "we did not find prior work on X (searched: …)" rather than "this is the first" —
@@ -79,3 +83,4 @@ entries stay out of drafts.
 - [ ] searches logged (source, query, screened, kept); backward + forward done for anchors
 - [ ] comparison matrix, foils, reviewer gaps, lead claims written
 - [ ] every entry verified (metadata + passage)
+- [ ] position reviewed by a fresh agent (thinking-critically): novelty and "they show" claims

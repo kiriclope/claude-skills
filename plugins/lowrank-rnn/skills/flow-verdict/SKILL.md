@@ -29,6 +29,11 @@ Per run it prints: `ALL-DOWN ✓ / not down / NO PAIR ✗`, the memory wells (κ
 fixed boundary 0. The last line (`SUMMARY: k/N seeds all-down`) is the arm's score. Lead
 every report with it. Figures come AFTER the table, as illustration — the table is the claim.
 
+**Interpretation goes through a fresh review.** The SUMMARY line is the score; anything said
+beyond it — why an arm works, what the mechanism is, how arms compare — is a claim. When it will
+be reported or written up, run the fresh review of **thinking-critically** (steps 3–4) on those
+claims, with the traps below as the reviewer's checklist.
+
 ## The traps this skill exists to prevent (each one was committed in Aug 2026)
 
 1. **A deep attractor at κ₀ ≈ 0 is NOT pushdown.** It carries no sample bit — it's a

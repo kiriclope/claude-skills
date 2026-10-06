@@ -59,6 +59,9 @@ Rules:
   and captioned (**making-figures**).
 - New references verified (**verifying-citations**).
 - A short summary of major changes heads the letter.
+- A fresh agent (**thinking-critically**, steps 3–4) reads each comment next to its response and
+  the location it cites, without your notes: does the response answer the comment, and is every
+  factual statement in it true of the revised manuscript?
 
 ## Checklist (copy and tick)
 
@@ -66,3 +69,4 @@ Rules:
 - [ ] triage table complete; analyses planned before run
 - [ ] each response: action + result + location; no "we will"; nothing unrun claimed
 - [ ] coverage count matches; numbers, locations, references cross-checked
+- [ ] responses reviewed by a fresh agent against the comments and the revised manuscript
