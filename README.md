@@ -10,6 +10,7 @@ every project, so a fix lands everywhere and nothing drifts.
 plugins/
   research-core/   shareable, any project — no personal facts allowed
     clarifying-requests      vague request → look first, mirror, ≤4 sharp questions with options → task spec
+    running-review-checkpoints  regular human review: digest + decisions to approve; Stop hook + commit gate enforce it
     thinking-critically      plan → act → FRESH independent review of every claim → revise (anti-hallucination loop)
     planning-research        hypothesis → predictions → controls → success criteria → staged runs
     launching-experiments    confirm params, pilot, one screen + log per seed, provenance (record_provenance.py)

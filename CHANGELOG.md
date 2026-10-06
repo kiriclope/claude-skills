@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-06 — research-core 0.7.0
+- New `running-review-checkpoints`: human review checkpoints against unreviewed AI code, unreadable
+  human code and drift. `review_status.py` measures changed lines and commits since the user's last
+  review, from a snapshot of the working tree kept in the per-worktree ref refs/worktree/review/last
+  (uncommitted and new files count; index and files untouched); first run sets a baseline;
+  `--mark` records an approved review in .claude/review_log.md; `--defer` postpones one step.
+  Enforced by a Stop hook (`--hook stop`) and a commit gate in hooks/guard_bash.py. Digest: intent,
+  changes with their why, decisions to approve, drift, the hunks to read, readability.
+- readability_check.py: `--since REV` compares against any commit (used by the checkpoint).
+- Opted in: rnn, rnn_symmetry, dual, neuron_symmetry (300 lines / 3 commits).
+- On/off: `--off` / `--on` per project (local state in the git dir, not committed) or `--global`
+  (~/.claude/review_checkpoints.json); hooks and commit gate are silent while off; `--reset` starts a
+  fresh baseline and logs the skipped changes as NOT reviewed.
+
 ## 2026-10-06 — research-core 0.6.0
 - New `clarifying-requests`: the reflection partner for vague requests — look in the context first,
   mirror the request (and the deeper question behind it), ask at most four concrete questions with

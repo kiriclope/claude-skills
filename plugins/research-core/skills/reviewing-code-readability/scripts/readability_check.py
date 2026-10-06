@@ -80,13 +80,19 @@ def load_settings(yaml_path):
     return cfg, os.path.dirname(os.path.dirname(os.path.abspath(yaml_path)))   # project root
 
 
-def changed_lines(path):
-    """Set of changed line numbers vs HEAD; None = check every line (untracked, new, or not in git)."""
+def changed_lines(path, since="HEAD"):
+    """Set of changed line numbers vs `since` (a commit; default HEAD); None = check every line
+    (file not in `since`, untracked, or not in git)."""
     d, f = os.path.dirname(os.path.abspath(path)), os.path.basename(path)
-    tracked = subprocess.run(["git", "-C", d, "ls-files", "--error-unmatch", f], capture_output=True)
-    if tracked.returncode != 0:
+    if since == "HEAD":
+        known = subprocess.run(["git", "-C", d, "ls-files", "--error-unmatch", f], capture_output=True)
+    else:
+        rel = subprocess.run(["git", "-C", d, "ls-files", "--full-name", "--others", "--cached", f],
+                             capture_output=True, text=True).stdout.strip() or f
+        known = subprocess.run(["git", "-C", d, "cat-file", "-e", f"{since}:{rel}"], capture_output=True)
+    if known.returncode != 0:
         return None
-    diff = subprocess.run(["git", "-C", d, "diff", "-U0", "HEAD", "--", f], capture_output=True, text=True).stdout
+    diff = subprocess.run(["git", "-C", d, "diff", "-U0", since, "--", f], capture_output=True, text=True).stdout
     lines = set()
     for m in re.finditer(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", diff, re.M):
         start, n = int(m.group(1)), int(m.group(2) or 1)
@@ -299,7 +305,7 @@ def check_tokens(src, cfg, tree):
 
 # ── driver ──────────────────────────────────────────────────────────────────────────────────────
 
-def check_file(path, all_lines=False, yaml_path=None):
+def check_file(path, all_lines=False, yaml_path=None, since="HEAD"):
     cfg, root = load_settings(yaml_path or find_project_yaml(path))
     rel = os.path.relpath(os.path.abspath(path), root) if root else os.path.basename(path)
     src = open(path, encoding="utf-8").read()
@@ -308,7 +314,7 @@ def check_file(path, all_lines=False, yaml_path=None):
     except SyntaxError as e:
         return [(e.lineno or 1, "error", "syntax", str(e.msg))], "all lines"
     findings = check_ast(tree, cfg, rel, rel in cfg["config_files"]) + check_tokens(src, cfg, tree)
-    scope = None if all_lines else changed_lines(path)
+    scope = None if all_lines else changed_lines(path, since)
     if scope is not None:
         findings = [f for f in findings if any(l in scope for l in range(f[0], f[4] + 1))]
     # collapse long-line findings to one row per file
@@ -319,7 +325,7 @@ def check_file(path, all_lines=False, yaml_path=None):
                          f"(first at L{ll[0][0]})", ll[0][0]))
     order = {"error": 0, "warn": 1, "info": 2}
     findings = sorted({(f[0], f[1], f[2], f[3]) for f in findings}, key=lambda f: (order[f[1]], f[0]))
-    label = "all lines" if scope is None else f"{len(scope)} changed line(s) vs HEAD"
+    label = "all lines" if scope is None else f"{len(scope)} changed line(s) vs {since if since == 'HEAD' else since[:8]}"
     return findings, label
 
 
@@ -328,6 +334,8 @@ def main(argv=None):
     ap.add_argument("files", nargs="*", help="Python files to check")
     ap.add_argument("--all", action="store_true", help="check every line, not only lines changed since HEAD")
     ap.add_argument("--project_yaml", default=None, help="settings file (default: nearest .claude/project.yaml)")
+    ap.add_argument("--since", default="HEAD", help="compare against this commit instead of HEAD "
+                    "(review checkpoints pass the last reviewed snapshot)")
     ap.add_argument("--demo", action="store_true", help="run the built-in self-test")
     args = ap.parse_args(argv)
     if args.demo:
@@ -337,7 +345,7 @@ def main(argv=None):
         return 0
     totals = {"error": 0, "warn": 0, "info": 0}
     for path in args.files:
-        findings, label = check_file(path, args.all, args.project_yaml)
+        findings, label = check_file(path, args.all, args.project_yaml, args.since)
         print(f"{path}  ({label})" + ("  ✓" if not findings else ""))
         for line, sev, rule, msg in findings:
             print(f"  L{line:<5d} {sev:5s}  {rule:18s} {msg}")

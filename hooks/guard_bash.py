@@ -6,6 +6,8 @@
                                   → deny: one detached screen per seed, tee'd log
   * `git commit` whose message lacks a `Co-Authored-By:` trailer
                                   → deny: add the trailer from the session's attribution reminder
+  * `git commit` while a human review checkpoint is due in that repository (projects that opted in
+    with `review_checkpoint:` in .claude/project.yaml) → deny: run the running-review-checkpoints skill
 
 Launcher names come from GUARD_LAUNCHERS (comma-separated regexes), default "sweep.py,rerun_dual.py".
 Install: see hooks/README.md. Test: python guard_bash.py --demo
@@ -16,9 +18,36 @@ import re
 import sys
 
 LAUNCHERS = [s.strip() for s in os.environ.get("GUARD_LAUNCHERS", r"sweep\.py,rerun_dual\.py").split(",") if s.strip()]
+REVIEW_STATUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "plugins", "research-core", "skills",
+                             "running-review-checkpoints", "scripts")
 
 
-def decide(cmd):
+def _commit_dir(c, cwd):
+    """Directory the commit runs in: `git -C <dir> commit`, `cd <dir> && … git commit`, else the session cwd."""
+    m = re.search(r"git\s+-C\s+(\S+)\s+commit\b", c) or re.search(r"\bcd\s+(\S+)\s*(&&|;)[^;&]*git\s+commit\b", c)
+    d = os.path.expanduser(m.group(1).strip("'\"")) if m else cwd
+    return d if d and os.path.isabs(d) else (os.path.join(cwd, d) if cwd and d else cwd)
+
+
+def review_due(c, cwd):
+    """(due, message) for the repository of a `git commit`, or (False, "") when checkpoints are off there."""
+    if not cwd or not os.path.isdir(REVIEW_STATUS):
+        return False, ""
+    sys.path.insert(0, REVIEW_STATUS)
+    try:
+        import review_status as rs
+        root = rs.repo_root(_commit_dir(c, cwd) or cwd)
+        s = rs.checkpoint_due(root) if root else None      # None when off (local or global) or not opted in
+    except Exception:                                   # never let the gate crash the hook
+        return False, ""
+    if not s or not s["due"]:
+        return False, ""
+    return True, (f"Review checkpoint due in {os.path.basename(root)} ({s['lines']} changed lines, "
+                  f"{len(s['commits'])} commits since the user's last review): run the running-review-checkpoints "
+                  "skill before committing — or review_status.py --defer if the user says not now.")
+
+
+def decide(cmd, cwd=None):
     """Return (decision, reason) or None. decision ∈ {"ask", "deny"}."""
     c = " ".join(cmd.split())
     if re.search(r"(^|[;&|(]\s*|\s)git\s+push\b", c):
@@ -26,6 +55,10 @@ def decide(cmd):
     if re.search(r"(^|[;&|(]\s*|\s)git\s+commit\b", c) and re.search(r"\s(-m|--message|-F|--file)\b|<<", c) \
             and "--amend --no-edit" not in c and "Co-Authored-By:" not in c:
         return "deny", "git commit: the message must end with the Co-Authored-By trailer from the attribution reminder."
+    if re.search(r"(^|[;&|(]\s*|\s)git\s+(-C\s+\S+\s+)?commit\b", c):
+        due, why = review_due(c, cwd)
+        if due:
+            return "deny", why
     for pat in LAUNCHERS:
         if re.search(rf"\bpython3?\s+(\S*/)?{pat}", c) and not re.search(r"\s(-h|--help)\b", c):
             if "screen -dmS" not in c:
@@ -42,7 +75,7 @@ def main():
         return 0
     if payload.get("tool_name") != "Bash":
         return 0
-    verdict = decide(payload.get("tool_input", {}).get("command", ""))
+    verdict = decide(payload.get("tool_input", {}).get("command", ""), payload.get("cwd"))
     if verdict:
         decision, reason = verdict
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",

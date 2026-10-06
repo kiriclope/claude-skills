@@ -60,3 +60,10 @@ code_check:                           # readability_check.py settings
   derived_callees: []                 # calls to watch for them (e.g. the model class); [] = any non-plotting call
   config_files: []                    # where those names are legitimately defined
   style_modules: []                   # the only files allowed to hold hex colors
+
+# running-review-checkpoints (opt-in): a human review is due after this much change since the last one
+# review_checkpoint:
+#   max_lines: 300
+#   max_commits: 3
+#   include: [py, md, yaml, yml, toml, sh, tex, html]
+#   exclude: [results/, scratchpad/]
