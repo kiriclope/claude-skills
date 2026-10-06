@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-06 — 0.4.0
+- New `thinking-critically`: plan with a pre-stated criterion → act with a claims ledger
+  (observed / derived / recalled / assumed) → review by a FRESH general-purpose agent (never a fork;
+  never shown the author's reasoning; optional second model via codex) that re-checks each claim
+  against primary evidence and the literature → triage and revise with a calibrated confidence.
+  references/reviewer_brief.md (the reviewer's prompt), references/failure_modes.md (17 failure modes
+  from real projects + 5 test cases). Tested on a planted case: the fresh reviewer caught both planted
+  errors and one imprecise claim the tester had believed true; its citations checked out.
+
 ## 2026-10-06 — 0.3.0
 - New `reviewing-code-readability`: a colleague-test rubric plus `readability_check.py`, which flags
   hard-coded derived constants (caught the historical `alpha=0.075` bug), comments that swallowed code,

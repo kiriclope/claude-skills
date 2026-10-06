@@ -9,6 +9,7 @@ every project, so a fix lands everywhere and nothing drifts.
 .claude-plugin/marketplace.json     marketplace "leon-skills"
 plugins/
   research-core/   shareable, any project — no personal facts allowed
+    thinking-critically      plan → act → FRESH independent review of every claim → revise (anti-hallucination loop)
     planning-research        hypothesis → predictions → controls → success criteria → staged runs
     launching-experiments    confirm params, pilot, one screen + log per seed, provenance (record_provenance.py)
     debugging-training       systematic diagnosis; freeze_check.py (frozen params, grad norms)
