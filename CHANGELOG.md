@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-06 — research-core 0.6.0
+- New `clarifying-requests`: the reflection partner for vague requests — look in the context first,
+  mirror the request (and the deeper question behind it), ask at most four concrete questions with
+  options (AskUserQuestion), problem-level before detail-level, then a five-line task spec (GOAL,
+  DELIVERABLE, SCOPE, DONE WHEN, DEFAULTS) that feeds thinking-critically. references/question_bank.md:
+  nine dimensions and worked examples. profiles/leon.md: use it whenever a request is vague.
+
 ## 2026-10-06 — research-core 0.5.0, lowrank-rnn 0.2.0
 - The fresh independent review of `thinking-critically` (steps 3–4) is wired into every skill that
   draws a conclusion: auditing-results (§7, before a verdict is reported), planning-research

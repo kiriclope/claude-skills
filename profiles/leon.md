@@ -11,6 +11,9 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
 
 ## How to work with me
 - Concise answers, no padding. Explain the math/science, not just the commands.
+- **When my request is vague** (no clear goal, deliverable, scope or success criterion, or several
+  readings), use the `clarifying-requests` skill before acting: look in the context first, then ask
+  me a few sharp questions with concrete options — be my reflection, not an interrogation.
 - Honest assessment over a pleasing story: say "this did not work, here is why"; separate
   data finding / imposed assumption / model limitation.
 - **American English** everywhere (docs, figures, comments, commits).
