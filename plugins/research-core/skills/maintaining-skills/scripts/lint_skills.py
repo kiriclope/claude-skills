@@ -15,6 +15,7 @@ Checks per project (--projects): skills that are real copies instead of symlinks
 Usage:
     python lint_skills.py                                  # repo only
     python lint_skills.py --projects ~/project_a ~/project_b
+    python lint_skills.py --demo
 """
 import argparse
 import datetime as dt
@@ -133,12 +134,39 @@ def lint_projects(projects, repo_skills):
     return issues
 
 
+def _demo():
+    """Lint a throwaway repo: a good skill passes, a broken one errors, a leaky one warns."""
+    import tempfile
+    good = "---\nname: good-skill\ndescription: Does X. Use when the user asks for X.\n---\n# Good\n"
+    bad = "---\nname: wrong-name\n---\n# Bad\n"
+    leaky = "---\nname: leaky\ndescription: Does Y. Use when Y.\n---\nAsk Alice, see /home/alice.\n"
+    with tempfile.TemporaryDirectory() as d:
+        for name, text in (("good-skill", good), ("bad", bad), ("leaky", leaky)):
+            os.makedirs(os.path.join(d, "plugins", "research-core", "skills", name))
+            open(os.path.join(d, "plugins", "research-core", "skills", name, "SKILL.md"), "w").write(text)
+        open(os.path.join(d, PATTERNS_FILE), "w").write("\\bAlice\\b\n/home/alice\n")
+        personal = load_personal(d)
+        sk = os.path.join(d, "plugins", "research-core", "skills")
+        res = {n: lint_skill("research-core", os.path.join(sk, n), 90, personal) for n in ("good-skill", "bad", "leaky")}
+    checks = [("a valid skill passes", not [k for k, _ in res["good-skill"] if k in ("error", "warn")]),
+              ("a name mismatch and missing description are errors", sum(k == "error" for k, _ in res["bad"]) >= 2),
+              ("personal facts in a shared plugin are flagged", any("personal" in m for _, m in res["leaky"]))]
+    for name, ok in checks:
+        print(f"  {'✓' if ok else '✗'} {name}")
+    ok = all(c for _, c in checks)
+    print(f"SUMMARY: demo {'OK' if ok else 'FAILED'}")
+    return 0 if ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--repo", default=REPO)
     ap.add_argument("--projects", nargs="*", default=[], help="project roots to check for copied/drifted skills")
     ap.add_argument("--stale_days", type=int, default=90)
+    ap.add_argument("--demo", action="store_true", help="run the built-in self-test")
     args = ap.parse_args()
+    if args.demo:
+        sys.exit(_demo())
 
     repo_skills, n_err, n_warn = {}, 0, 0
     personal = load_personal(args.repo)

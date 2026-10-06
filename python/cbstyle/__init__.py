@@ -116,7 +116,10 @@ def confusable_pairs(colors, min_de=12.0):
     return out
 
 
-def _demo(path):
+def _demo(path=None):
+    if path is None:
+        import os, tempfile
+        path = os.path.join(tempfile.gettempdir(), "cbstyle_demo.png")
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

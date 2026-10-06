@@ -17,6 +17,6 @@ except ImportError:                  # not installed: use the copy in the repo
 
 if __name__ == "__main__":
     if "--demo" in sys.argv:
-        _demo(sys.argv[sys.argv.index("--demo") + 1])
+        _demo(sys.argv[sys.argv.index("--demo") + 1] if len(sys.argv) > sys.argv.index("--demo") + 1 else None)
     else:
         print(_pkg_doc)

@@ -2,7 +2,7 @@
 # Skills stay generic; everything project-specific lives here. Keep it short and current.
 
 name: myproject
-memory_dir: ~/.claude/projects/-home-leon-myproject/memory   # auto-memory folder of this project
+memory_dir: ~/.claude/projects/-home-you-myproject/memory   # this project's memory: its path with / → -
 memory_state_file: project_state.md                          # live-status memory (log-and-ship step 2)
 
 # log-and-ship: which doc to update for which kind of work (first match wins)
@@ -12,15 +12,15 @@ docs_map:
   - work: "new procedure for running things"
     doc: docs/running.md
 
-# log-and-ship: paths never staged unless Leon names them
+# log-and-ship: paths never staged unless the user names them
 never_stage: [results/, .claude/settings.local.json]   # CLAUDE.md is committed like any doc
 
-# figure-gallery: top-level folder under ~/dual/ and where figures are produced
+# figure-gallery (maintainer-only skill; others can delete these two keys)
 gallery_project: myproject
 figures_root: results/figures
 
 python: python                        # interpreter / env for this project's scripts
-env_prefix: ""                        # e.g. LD_PRELOAD=/home/leon/mambaforge/lib/libstdc++.so.6
+env_prefix: ""                        # e.g. LD_PRELOAD=<conda>/lib/libstdc++.so.6
 vocabulary: {}                        # paper terms, e.g. {memory axis: SAMPLE axis}
 
 # making-figures

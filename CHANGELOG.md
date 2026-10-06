@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-06 — research-core 0.7.1
+- README rewritten for newcomers: what it is, five-minute start, how skills work, all 22 skills by
+  research stage, how they chain (diagram), installation, configuration and hook reference, scripts,
+  maintaining, troubleshooting. All links checked.
+- Every script now runs a plain `--demo`: lint_skills.py gains a self-test; cbstyle's demo path is optional.
+- templates/project.yaml: no personal names or paths left.
+
 ## 2026-10-06 — research-core 0.7.0
 - New `running-review-checkpoints`: human review checkpoints against unreviewed AI code, unreadable
   human code and drift. `review_status.py` measures changed lines and commits since the user's last
