@@ -6,6 +6,9 @@
   options (AskUserQuestion), problem-level before detail-level, then a five-line task spec (GOAL,
   DELIVERABLE, SCOPE, DONE WHEN, DEFAULTS) that feeds thinking-critically. references/question_bank.md:
   nine dimensions and worked examples. profiles/leon.md: use it whenever a request is vague.
+  Tested with a fresh agent: "plot the nocue sweep" → resolved from memory and docs, no questions;
+  "the figures need to be better" → mirror plus three concrete questions with options. Its feedback
+  added the rule that defaults never stretch approval to costly extras.
 
 ## 2026-10-06 — research-core 0.5.0, lowrank-rnn 0.2.0
 - The fresh independent review of `thinking-critically` (steps 3–4) is wired into every skill that

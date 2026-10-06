@@ -16,7 +16,9 @@ something about their problem they had not considered.
 Search the conversation, the project docs, `CLAUDE.md`, the memory and the code first. Never
 ask what they answer (which sweep is "the baseline", where figures go, which script plots
 flows). If what remains has a sensible default and a wrong guess is cheap to undo, state the
-default and proceed — no questions.
+default and proceed — no questions. The action the user asked for is approved by the asking;
+extras you add on top (re-runs, renames, publishing, anything long, costly or outward-facing)
+still follow the project's approval rules — end with one yes/no question for those.
 
 ## Step 1 — mirror
 
