@@ -1,6 +1,6 @@
 ---
 name: verifying-citations
-description: Verify every reference before it is cited — existence, title, first author, year, venue and DOI checked against Crossref and OpenAlex with verify_refs.py — and pin each cited claim to the passage that supports it. Use whenever adding, drafting or reviewing references, a bibliography, a related-work paragraph, a literature summary, or any sentence of the form "X et al. showed …"; when the user asks "is this reference right", "check the citations", "audit the bib"; and before any manuscript, grant or report goes out.
+description: Verify every reference before it is cited — existence, title, first author, year, venue and DOI checked against Crossref and OpenAlex with verify_refs.py — and pin each cited claim to the passage that supports it. Use whenever adding, drafting or reviewing references, a bibliography, a related-work paragraph, a literature summary, or any sentence of the form "X et al. showed …"; when the user asks "is this reference right", "check the citations", "audit the bib"; and before any manuscript, grant or report goes out. Not for finding or positioning literature → reviewing-literature.
 ---
 
 # Verifying citations
@@ -55,8 +55,7 @@ A table: reference · verdict · DOI · claim it supports · supporting passage 
 - Keep the checked list in the project's notes (e.g. `docs/lit/references_checked.md`) with the
   date it was verified, so the next session does not re-check or re-guess.
 
-## Checklist (copy and tick)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] `verify_refs.py` run on every reference; zero `NOT FOUND` / `MISMATCH` left
 - [ ] every `VERIFIED (no title)` title read and confirmed
 - [ ] each specific claim pinned to a quoted passage (or marked abstract-only)

@@ -13,7 +13,8 @@ fresh agent that never sees the author's justification, only the evidence and th
 
 ## 1 — Plan (before acting)
 
-Write it in 5–8 lines (research tasks: use the full template of `planning-research`):
+Write it in 5–8 lines — the short form of planning-research's plan block, same field names (research
+tasks: use the full block):
 
 ```
 QUESTION     one sentence

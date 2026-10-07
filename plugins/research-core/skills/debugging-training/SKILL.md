@@ -1,6 +1,6 @@
 ---
 name: debugging-training
-description: Systematic diagnosis of neural-network training problems — loss not decreasing, NaN/inf, plateaus, sudden divergence, a stage that "forgets", frozen parameters that drift, results that changed after a code edit, or a model that trains but behaves wrong. Use when training misbehaves or results look implausible, before changing hyperparameters by guesswork, and after any change to the training loop, freezing logic, optimizer or loss. Includes scripts/freeze_check.py for frozen-parameter and gradient checks.
+description: Systematic diagnosis of neural-network training problems — loss not decreasing, NaN/inf, plateaus, sudden divergence, a stage that "forgets", frozen parameters that drift, results that changed after a code edit, or a model that trains but behaves wrong. Use when training misbehaves or results look implausible, before changing hyperparameters by guesswork, and after any change to the training loop, freezing logic, optimizer or loss. Includes scripts/freeze_check.py for frozen-parameter and gradient checks. Not for launching or monitoring runs → launching-experiments.
 ---
 
 # Debugging training
@@ -68,8 +68,7 @@ back. State what was verified and what was not; report per seed.
   hides the bug and invalidates the result.
 - Declare it fixed from one lucky seed.
 
-## Checklist (copy into the reply)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] reproduced on one seed with an exact command
 - [ ] loss-curve shape classified
 - [ ] one batch of inputs/targets/mask plotted and checked

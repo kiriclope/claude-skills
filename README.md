@@ -59,7 +59,13 @@ your request matches. You can use a skill in three ways:
 |---|---|---|
 | Type its name as a command | `/thinking-critically why do the wells sit above the line?` | always runs it |
 | Use one of its trigger phrases | *"think critically"*, *"double-check"*, *"log and commit"* | very reliable |
-| Just ask | *"interpret this figure"*, *"plot the sweep"* | usually picks the right skill |
+| Just ask | *"log and commit"*, *"upload the figures"* | works for skills with clear trigger words |
+
+Skills that hold **conventions** — how to write code, paper text, report a result — rarely load on
+their own: Claude does not see "edit this script" as a moment to load a skill. Measured over 22
+sessions, only 7 of 22 skills ever loaded unprompted, and the convention skills never did. The fix
+is a short **"which skill when" table in your profile**, which is loaded in every session
+([example](profiles/leon.md), and see [Write your profile](#write-your-profile)).
 
 Installed as a plugin, skills appear with their plugin's prefix (for example `research-core:making-figures`).
 
@@ -77,7 +83,7 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Twenty-two skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+Twenty-eight skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds one maintainer-only skill.
 
 ### Think and plan
@@ -93,6 +99,7 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | Skill | What it does | Use it when |
 |---|---|---|
 | [launching-experiments](plugins/research-core/skills/launching-experiments/SKILL.md) | Parameters confirmed before launch, a pilot run, one detached screen and one log per seed, concurrency caps, provenance (git hash, config, seed) in every run folder, verdicts and figures before reporting. | Launching, monitoring or resuming sweeps and long jobs. |
+| [run-card](plugins/lowrank-rnn/skills/run-card/SKILL.md) | *(lowrank-rnn)* Answers "what exactly did we train?": per stage the loss terms, weights, targets and windows, optimizer, freezing — read from the training code itself, with other runs shown as differences grouped into arms. | *"What loss are we using?"*, before interpreting a sweep or writing Methods. |
 | [debugging-training](plugins/research-core/skills/debugging-training/SKILL.md) | Systematic diagnosis: reproduce on one seed, read the loss curve's shape, NaN hooks, gradient norms, frozen parameters that actually move (weight decay does that), overfit one batch, bisect. | Training misbehaves or results changed after an edit. |
 
 ### Analyze
@@ -100,6 +107,7 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | Skill | What it does | Use it when |
 |---|---|---|
 | [auditing-results](plugins/research-core/skills/auditing-results/SKILL.md) | Unit by unit (seed, subject, session) instead of means; all outcomes, not only the visited one; effects in noise units; nulls; matched trial counts and normalizations; pseudoreplication; an honest finding / assumption / limitation split. | Numbers just came out, before any conclusion. |
+| [choosing-statistics](plugins/research-core/skills/choosing-statistics/SKILL.md) | Chooses the test from the design before any result is seen — unit of replication, pairing, nesting (mixed model or GEE), exact small-n tests and the smallest p they can reach — then reports that test whatever it gives; no test shopping. | A comparison, p-value or star is about to be computed. |
 | [checking-derivations](plugins/research-core/skills/checking-derivations/SKILL.md) | Derive with sympy, state assumptions, then check numerically against the real model (Jacobian vs autograd vs finite differences). | Deriving or editing an equation; a formula and a simulation disagree. |
 | [flow-verdict](plugins/lowrank-rnn/skills/flow-verdict/SKILL.md) · [traj-verdict](plugins/lowrank-rnn/skills/traj-verdict/SKILL.md) · [bifurcation-probe](plugins/lowrank-rnn/skills/bifurcation-probe/SKILL.md) | *(lowrank-rnn)* Score flow fields, trajectories and fixed points of low-rank RNNs with the project's scripts instead of eyeballing figures, with the known misinterpretation traps listed. | Interpreting κ-plane flows, trajectories or bifurcations. |
 
@@ -119,12 +127,16 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | [auditing-paper-numbers](plugins/research-core/skills/auditing-paper-numbers/SKILL.md) | Every number in the draft matched to the current output of the numbers script: matched, mismatched, or unsourced. | Before sharing or submitting a draft. |
 | [verifying-citations](plugins/research-core/skills/verifying-citations/SKILL.md) | Every reference checked against Crossref and OpenAlex (exists, title, first author, year, venue, DOI); each cited claim pinned to a quoted passage. | Adding or reviewing references. |
 | [reviewing-literature](plugins/research-core/skills/reviewing-literature/SKILL.md) | A search protocol across Semantic Scholar, OpenAlex, PubMed, arXiv and bioRxiv; a "they show X, we add Y" comparison matrix; notes checkpointed to `docs/lit/`. | Related work, positioning, novelty. |
+| [reviewing-manuscript](plugins/research-core/skills/reviewing-manuscript/SKILL.md) | A mock referee review: one fresh agent per lens (claims vs evidence, statistics and methods, novelty, clarity, reproducibility), each seeing only the text, the figures and the numbers; findings as must-fix / should-fix / judgment call, each checked before it is applied. | *"Act as a reviewer"*, before sharing or submitting. |
+| [publishing-drafts](plugins/research-core/skills/publishing-drafts/SKILL.md) | Publishes drafts, figure pages and notes as claude.ai pages with their source and builder in the repo; reads the live page before republishing, keeps the same URL, and answers every reader comment. | Publishing or updating a page; at session start on a project with pages. |
 | [responding-to-reviewers](plugins/research-core/skills/responding-to-reviewers/SKILL.md) | Point-by-point responses with full coverage, no fabricated results, no promises the revision does not keep. | Reviews or a decision letter arrive. |
 
 ### Keep the project in hand
 
 | Skill | What it does | Use it when |
 |---|---|---|
+| [resuming-work](plugins/research-core/skills/resuming-work/SKILL.md) | Picks a project back up: what changed since a date, what is running, whether a review is due, the newest state in memory, open items; finds the past session that worked on something; flags bloated or duplicated memory. | Session start, *"where were we?"*, *"which session had X?"*. |
+| [organizing-projects](plugins/research-core/skills/organizing-projects/SKILL.md) | Keeps the repository organized: every source in git (including hand-made vector art and builders), outputs out of it, no `_v2` / `_old` copies, scratch promoted or deleted, docs indexed, a lean CLAUDE.md. Proposes a tidy plan; nothing moves until you approve. | *"Organize"*, *"tidy up"*, lost or duplicated files. |
 | [running-review-checkpoints](plugins/research-core/skills/running-review-checkpoints/SKILL.md) | Regular **human review**: after ~300 changed lines or 3 commits since your last review, a one-screen digest — intent, what changed and why, the decisions taken for you (approve or change each), drift, the hunks most worth reading. Enforced by hooks in projects that opt in; recorded only after you approve. | Automatic when due; also *"where are we?"*, *"catch me up"*. |
 | [log-and-ship](plugins/research-core/skills/log-and-ship/SKILL.md) | Updates the right docs and the cross-session memory, then commits (and pushes only when asked). | *"Log and commit."* |
 | [maintaining-skills](plugins/research-core/skills/maintaining-skills/SKILL.md) | Creates, updates, reviews and lints the skills themselves. | Adding or fixing a skill; a correction that should become a rule. |
@@ -140,15 +152,19 @@ The skills hand work to each other, so a typical piece of research runs through 
 
 ```mermaid
 flowchart LR
+    S[session start] --> Z[resuming-work]
+    Z --> B
     A[vague request] --> B[clarifying-requests]
     B --> C[planning-research]
     C --> D[launching-experiments]
     D --> E[auditing-results]
-    E --> F[thinking-critically<br/>fresh review]
+    E --> T[choosing-statistics]
+    T --> F[thinking-critically<br/>fresh review]
     F --> G[making-figures]
     G --> H[writing-paper]
     H --> I[auditing-paper-numbers<br/>verifying-citations]
-    I --> J[log-and-ship]
+    I --> M[reviewing-manuscript]
+    M --> J[log-and-ship]
     R[running-review-checkpoints] -. every ~300 lines or 3 commits .-> J
 ```
 
@@ -196,6 +212,9 @@ Your profile tells Claude who you are and how you like to work, in every project
 cp ~/claude-skills/profiles/leon.md ~/claude-skills/profiles/<you>.md     # then edit it
 ln -s ~/claude-skills/profiles/<you>.md ~/.claude/CLAUDE.md
 ```
+
+Keep its **"Which skill when"** table: one row per kind of task and the skill to load before
+starting it. Without it, the convention skills (code, paper, results, figures) are mostly skipped.
 
 ### Install the hooks (recommended)
 
@@ -246,8 +265,14 @@ Every key is optional. Read by the skill(s) in the second column.
 | `vocabulary` | writing-paper, making-figures | the paper's terms, e.g. `{memory axis: SAMPLE axis}` |
 | `figure_style`, `figure_docs`, `figure_code` | making-figures | the style file, the docs to read first, the plotting helpers to reuse |
 | `colors` | making-figures | the condition → color map (colorblind-safe, from `cbstyle`) |
-| `paper_dir`, `numbers_log`, `style_guide` | writing-paper, auditing-paper-numbers | where the manuscript is, the script that prints every number in it, the journal style guide |
-| `launch`, `running_doc`, `verdict_scripts`, `plot_entrypoint` | launching-experiments | the sweep entry point, concurrency limits, seeds, scoring and plotting commands |
+| `paper_dir`, `style_guide` | writing-paper | where the manuscript is, the journal style guide |
+| `numbers_script`, `numbers_log` | auditing-paper-numbers | the script that prints every number in the paper, and the file it writes (what the audit reads) |
+| `review_figures`, `journal`, `field` | reviewing-manuscript | the canonical figure renders the reviewers get, and the venue and field for their brief |
+| `stats` | choosing-statistics | sidedness, correction, alpha and permutation draws, declared before any result |
+| `resume` | resuming-work | how far back the brief looks; the size above which a memory file is flagged |
+| `organize` | organizing-projects | output and scratch folders, large-file and scratch-age limits, CLAUDE.md length |
+| `pages` | publishing-drafts | every published page with its URL, source, builder and inputs |
+| `launch`, `running_doc`, `verdict_scripts`, `plot_entrypoint` | launching-experiments, the guard hook | the sweep entry points (`launch.entrypoints`, which the guard refuses to run in the foreground), concurrency limits, seeds, scoring and plotting commands |
 | `code_rules` | reviewing-code-readability | the project's own coding rules, one sentence each |
 | `code_check` | reviewing-code-readability | settings of `readability_check.py`: line length, constants that must be derived and where, files allowed to hold colors |
 | `review_checkpoint` | running-review-checkpoints | opt-in: `max_lines`, `max_commits`, which file types count, which paths do not |
@@ -274,13 +299,14 @@ Skills are advice; these rules are enforced by Claude Code whatever the session 
 
 | Hook | Situation | Decision |
 |---|---|---|
-| `guard_bash.py` (before every shell command) | `git push` | asks you every time |
-| | a commit message without the `Co-Authored-By:` trailer | refused |
-| | `sweep.py` / `rerun_dual.py` run outside `screen -dmS` | refused (set others with `GUARD_LAUNCHERS`) |
-| | a commit while a review checkpoint is due | refused until the checkpoint is done |
-| `review_status.py --hook stop` (end of every turn) | a review checkpoint is due | Claude runs the checkpoint before ending the turn (never twice in a row) |
+| `guard_bash.py` (before every shell command) | `git push` | asks you every time — **every project** |
+| | a commit message without the `Co-Authored-By:` trailer | refused — **every project** |
+| | the project's training launcher run in the foreground | refused — run it in `screen -dmS`, `tmux -d`, a scheduler (`sbatch`, `qsub`), `nohup … &` or the launcher's `--per_run_screen` mode. Launchers come from `launch.entrypoints` in `project.yaml` (default `sweep.py`, `rerun_dual.py`) |
+| | a commit while a review checkpoint is due | refused until the checkpoint is done — **opted-in projects only** |
+| `review_status.py --hook stop` (end of every turn) | a review checkpoint is due | Claude runs the checkpoint before ending the turn (never twice in a row) — **opted-in projects only** |
 
-Both hooks stay silent in projects that have not opted in. Details: [hooks/README.md](hooks/README.md).
+The guard matches commands, never text: a commit message or a heredoc that mentions `git push` or a
+launcher does not trigger it. Details: [hooks/README.md](hooks/README.md).
 
 ## Scripts
 
@@ -299,6 +325,12 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `freeze_check.py` | debugging-training | parameter checksums before and after a step, gradient-norm tables |
 | `audit_numbers.py` | auditing-paper-numbers | numbers in a manuscript against the numbers log |
 | `verify_refs.py` | verifying-citations | references against Crossref and OpenAlex |
+| `stats_floor.py` | choosing-statistics | the smallest p a sign test, Wilcoxon, Mann-Whitney or permutation test can reach at a given n |
+| `materials.py` | reviewing-manuscript | gathers the text, canonical figures and numbers log the reviewer agents receive |
+| `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, newest memory state, open items |
+| `project_audit.py` | organizing-projects | untracked or ignored sources, version-suffixed copies, large files, stale scratch, unindexed docs |
+| `pages_check.py` | publishing-drafts | every page in `pages:` has its source and builder in the repo and is up to date |
+| `run_card.py` | run-card | per-stage training settings of a sweep, read from the training code |
 | `lint_skills.py` | maintaining-skills | the skills themselves: format, length, personal facts in shared skills, drifted copies |
 | `guard_bash.py` | (hook) | the enforced rules above |
 
@@ -330,6 +362,9 @@ or *"update the making-figures skill"*. The rules:
   with detail in `references/`; anything mechanical becomes a script with a `--demo` self-test.
 - Before writing a skill, collect a few real failures it should prevent, and test it on them with
   a fresh agent.
+- Behavior is tested with evals: `plugins/research-core/evals/<case>/` holds a prompt and graders,
+  some checking that the right skill fired. Run them with
+  `claude plugin eval plugins/research-core --no-publish` (each run costs a few cents; `--case` picks one).
 - After a change: lint, validate, bump the plugin's `version` in `.claude-plugin/plugin.json` (that
   is what makes `claude plugin marketplace update` pick it up), and add a line to the CHANGELOG.
 
@@ -342,7 +377,13 @@ for s in $(find plugins -path "*/scripts/*.py"); do python "$s" --demo >/dev/nul
 ## Troubleshooting
 
 **A skill does not trigger.** Call it by name (`/thinking-critically …`) or use its trigger phrase;
-type `/` to see the installed skills.
+type `/` to see the installed skills. For skills that should load on their own, add a row to the
+"which skill when" table in your profile.
+
+**The guard refuses a command.** It refuses your project's training launcher run in the foreground:
+run it in `screen -dmS`, `tmux -d`, a scheduler (`sbatch`, `qsub`), `nohup … &`, or with
+`--per_run_screen`. Launcher names come from `launch.entrypoints` in `project.yaml`. Text that only
+mentions a launcher or `git push` — a commit message, a heredoc, a `grep` pattern — is ignored.
 
 **"Review checkpoint due" refuses a commit.** That is the commit gate: run the checkpoint (say
 *"review checkpoint"*), or postpone it with `review_status.py --defer`, or switch it off with `--off`.

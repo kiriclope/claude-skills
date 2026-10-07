@@ -6,8 +6,14 @@ Skills are advice; hooks are enforced by the harness. `guard_bash.py` (PreToolUs
 |---|---|
 | `git push` | **ask** the user every time |
 | `git commit -m …` without a `Co-Authored-By:` trailer | **deny** |
-| `python sweep.py` / `rerun_dual.py` not inside `screen -dmS` | **deny** |
+| the project's training launcher in the foreground (not in `screen -dmS`, `tmux -d`, `sbatch`/`qsub`, `nohup … &`, or `--per_run_screen`) | **deny** |
 | `git commit` while a review checkpoint is due (projects with `review_checkpoint:`) | **deny** until the checkpoint |
+
+The push and trailer rules apply in every session. Launchers are read from the project's
+`.claude/project.yaml` (`launch.entrypoints`, or `launch.entrypoint`), else the `GUARD_LAUNCHERS`
+env var (comma-separated names), else `sweep.py` and `rerun_dual.py`. Only commands are matched:
+commit messages and heredoc bodies are removed first, and a launcher counts only where a command
+starts.
 
 ## Review checkpoints (Stop hook)
 
@@ -26,7 +32,7 @@ project (`review_status.py --off`, local) or everywhere (`--off --global`); `--o
 ]
 ```
 
-Launcher names: env `GUARD_LAUNCHERS` (comma-separated regexes). Self-test: `python guard_bash.py --demo`.
+Self-test: `python guard_bash.py --demo` (21 cases, including the false positives fixed in 0.8).
 
 ## Install (user-level, all projects) — add to `~/.claude/settings.json`
 

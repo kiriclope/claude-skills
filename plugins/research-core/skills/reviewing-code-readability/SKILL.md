@@ -1,6 +1,6 @@
 ---
 name: reviewing-code-readability
-description: Review research code for readability and the house coding conventions — can a colleague tell what it decides, run it from its docstring, and trust its numbers — then fix what fails without changing behavior. Runs readability_check.py (opaque names, hard-coded derived constants, comments that swallowed code, silent excepts, missing docstring/Usage, hex colors, deep nesting) and a colleague-test rubric. Use when code was just written or edited and before committing it, when asked to review / clean up / tidy / make readable a script, "is this readable", "does this follow my conventions", or before sharing code with colleagues. For correctness bugs use /code-review; for reuse and simplification use /simplify.
+description: Review research code for readability and the house conventions — can a colleague tell what it decides, run it from its docstring and trust its numbers — then fix what fails without changing behavior. Runs readability_check.py (hard-coded derived constants, swallowed code, silent excepts, opaque names, missing docstring/Usage, hex colors) and a colleague test. Use when code was just written or edited and before committing it, or when asked to review, clean up or make a script readable. Not for correctness bugs → /code-review; for reuse and simplification → /simplify.
 ---
 
 # Reviewing code readability
@@ -86,8 +86,7 @@ End with the checker's SUMMARY line and what you did not check (e.g. "did not ru
   identifiers to American English.
 - Re-run the checker until it reports no `error`; `warn` items are fixed or justified in one line.
 
-## Checklist (copy into your reply)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] rules loaded (writing-research-code, project `code_rules`)
 - [ ] `readability_check.py` run on the changed files — SUMMARY: … 
 - [ ] colleague test done (10 items)

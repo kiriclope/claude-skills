@@ -1,6 +1,6 @@
 ---
 name: auditing-results
-description: Audit an analysis result BEFORE reporting or interpreting it — unit-by-unit (seed / subject / session) instead of means, all outcomes enumerated not only the occupied one, effect sizes in noise units, nulls and shuffles, matched trial counts and normalizations, pseudoreplication, the right between- vs within-subject estimator, decoder leakage, solver residuals, and an honest finding / assumption / limitation split. Use whenever a sweep, analysis or statistic has just produced numbers, before writing a conclusion ("it works", "it fails", "X increases"), before comparing arms, stages or conditions, or when a result looks too clean or exactly as hypothesized.
+description: Audit an analysis result BEFORE reporting or interpreting it — unit-by-unit (seed / subject / session) instead of means, all outcomes enumerated not only the occupied one, effect sizes in noise units, nulls and shuffles, matched trial counts and normalizations, pseudoreplication, the right between- vs within-subject estimator, decoder leakage, solver residuals, and an honest finding / assumption / limitation split. Use whenever a sweep, analysis or statistic has just produced numbers, before writing a conclusion ("it works", "it fails", "X increases"), before comparing arms, stages or conditions, or when a result looks too clean or exactly as hypothesized. Not for choosing the test → choosing-statistics; for an independent check of a conclusion → thinking-critically.
 ---
 
 # Auditing results
@@ -85,8 +85,7 @@ fork — gets the question, the criterion fixed in advance, the per-unit table a
 claims with their labels, never your reasoning; check each of its objections before accepting
 it. Skip it for exploratory looks (a review costs ~5–10 min).
 
-## Checklist (copy into the reply and tick)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] per-unit table + `SUMMARY: k/N`, criterion fixed in advance
 - [ ] all outcomes enumerated (not only the occupied one); continuous sets checked; residuals verified
 - [ ] effects in noise units

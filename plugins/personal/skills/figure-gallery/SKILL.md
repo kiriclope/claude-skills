@@ -1,6 +1,6 @@
 ---
 name: figure-gallery
-description: Publish figures to Leon's local dual figure-gallery so they show up at http://localhost:8000 (viewed over an SSH tunnel). Use when he says "upload/publish/push the figures to the gallery / to localhost / to the server", or wants to view figures from any project (rnn, dual, …) in the browser gallery. Converts PDFs→PNG (the gallery is PNG-only), stages them into a gitignored folder under ~/dual/, and makes sure the server is running. Shared skill — works from every project.
+description: Publish figures to Leon's local dual figure-gallery so they show up at http://localhost:8000 (viewed over an SSH tunnel). Use when he says "upload/publish/push the figures to the gallery / to localhost / to the server", or wants to view figures from any project (rnn, dual, …) in the browser gallery. Converts PDFs→PNG (the gallery is PNG-only), stages them into a gitignored folder under ~/dual/, and makes sure the server is running. Shared skill — works from every project. Not for publishing to claude.ai pages → publishing-drafts.
 ---
 
 # Figure gallery — publish to localhost

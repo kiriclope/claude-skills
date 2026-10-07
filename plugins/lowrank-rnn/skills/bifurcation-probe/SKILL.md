@@ -1,6 +1,6 @@
 ---
 name: bifurcation-probe
-description: Probe a low-rank RNN sweep for the decision-mode bifurcation — compute the mode self-gains g·λ₀/g·λ₁, find and classify the autonomous fixed points (wells), tabulate against accuracy, and render real reduced-field κ-plane flow figures (attractors/saddles/repeller + F₁=0 nullcline). Use when asked to check g·λ / self-gain / the pitchfork, find the wells / isolated low wells / ring / U, ask "did it find the sweet spot", plot bifurcation/flow fields for specific runs, or make the generic Gaussian bifurcation illustration.
+description: Place each run of a low-rank RNN sweep on the decision-mode pitchfork — mode self-gains g·λ₀ / g·λ₁, mode coupling, tabulated against accuracy — and render reduced-field κ-plane flow figures with the F₁=0 nullcline, or the generic Gaussian bifurcation illustration. Use when asked about g·λ, self-gain, the pitchfork, ring vs isolated wells as a function of gain, or for bifurcation figures. Not for deciding where the memory wells are or whether they are below the line → use flow-verdict (noise-averaged field, verified fixed points).
 ---
 
 # Bifurcation probe
@@ -23,20 +23,24 @@ Reduced field `F_r(κ) = (1/N) Σ_i n_{ir} φ(g(m_i·κ + I_i)) − κ_r`. Origi
 | ≈1 | critical (soft) | **two isolated wells** — the sweet spot |
 | <1 | monostable | wells collapse toward one |
 
-Sweet spot = **exactly 2 attractors, both at κ₁<0, g·λ₁≈1**, with DPA/go/match-nonmatch intact
-(nogo is the fragile one). The `kappa1_reg_weight` penalty is what drives g·λ₁→1; gain scaling
+Sweet spot = **g·λ₁≈1 and exactly 2 memory wells, both at κ₁<0** — the wells as scored by
+**flow-verdict**, never by this probe — with DPA/go/match-nonmatch intact (nogo is the fragile one). The `kappa1_reg_weight` penalty is what drives g·λ₁→1; gain scaling
 only partially lowers it (see `docs/ring_lowerplane_log.md` §13, `docs/theory_landscape.md`).
 
 ## 1. Probe table — `bifurcation_probe.py`
 
-Per run: `gain`, `g·λ₀`, `g·λ₁`, the off-diagonal overlaps (mode coupling), attractor/saddle
-counts, the attractor ("well") positions, and after-Dual dpa/go/nogo from `results.jsonl`.
+Per run: `gain`, `g·λ₀`, `g·λ₁`, the off-diagonal overlaps (mode coupling) and after-Dual
+dpa/go/nogo from `results.jsonl` — **these columns are the probe's answer.** It also prints
+attractor counts and positions, but from the deterministic field with the brainpy finder, which
+has returned spurious fixed points (flow-verdict, trap 4): never report them as wells.
 
 ```bash
 $ENV_PREFIX python bifurcation_probe.py \
     --sweep_dir results/dual/sweep_gainscan [--run_ids s0_g05 s1_g05] [--xlim 2.5] [--csv t.csv]
 ```
-Start here — it answers "did it find the sweet spot" in one table.
+For "did it find the sweet spot": the g·λ columns here, the wells from **flow-verdict**
+(`flow_verdict.py`, noise-averaged field, every root verified). If you need this probe's fixed
+points, rerun with `--finder scipy` and check |F(κ*)| before using them.
 
 ## 2. Flow figures — `bifurcation_flows.py`
 
@@ -48,8 +52,8 @@ $ENV_PREFIX python bifurcation_flows.py \
     --sweep_dir results/dual/sweep_gainscan --out_root results/figures \
     [--run_ids s0_g05 s0_g10] [--xlim 2.0] [--field_noise]
 ```
-`--field_noise` renders the noise-averaged field `E_x[Ψ]` (K=16) to check a result isn't a
-clean-input artifact. This complements `plot_sweep.py` (same field) but labels g·λ₁ + draws the
+`--field_noise` renders the noise-averaged field `E_x[Ψ]` (K=16) — the field the trials follow
+and the one flow-verdict scores; use it for any figure that illustrates a well verdict. This complements `plot_sweep.py` (same field) but labels g·λ₁ + draws the
 nullcline; for full standard figure sets still use `plot_sweep.py`.
 
 ## 3. Generic Gaussian illustration — `bifurcation_gaussian.py`

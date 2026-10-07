@@ -1,6 +1,6 @@
 ---
 name: responding-to-reviewers
-description: Draft a point-by-point response to peer reviewers (or editor, or internal pre-submission review) and plan the revision — full coverage of every comment, no fabricated results, no promises the revision does not keep, each answer tied to a concrete change and its location in the manuscript. Use when the user shares reviews or decision letters, asks to draft a rebuttal or response letter, to triage reviewer comments, or to plan revision analyses.
+description: Draft a point-by-point response to peer reviewers (or editor, or internal pre-submission review) and plan the revision — full coverage of every comment, no fabricated results, no promises the revision does not keep, each answer tied to a concrete change and its location in the manuscript. Use when the user shares reviews or decision letters, asks to draft a rebuttal or response letter, to triage reviewer comments, or to plan revision analyses. Not for a mock review before submission → reviewing-manuscript.
 ---
 
 # Responding to reviewers
@@ -63,8 +63,7 @@ Rules:
   the location it cites, without your notes: does the response answer the comment, and is every
   factual statement in it true of the revised manuscript?
 
-## Checklist (copy and tick)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] all comments split, numbered, none paraphrased away
 - [ ] triage table complete; analyses planned before run
 - [ ] each response: action + result + location; no "we will"; nothing unrun claimed

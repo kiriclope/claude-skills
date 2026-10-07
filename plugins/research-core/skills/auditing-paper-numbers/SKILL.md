@@ -1,6 +1,6 @@
 ---
 name: auditing-paper-numbers
-description: Check that every number and claim in a manuscript (results text, captions, abstract, reviewer response; .md/.tex/.html) is traceable to the current output of a numbers script, and that each claim sentence points to the panel and statistic that support it. Use before sharing or submitting a draft, after re-running analyses or sweeps that feed the paper, when editing results paragraphs or captions, or when asked "are the numbers right / up to date", "check the draft", "audit the paper".
+description: Check that every number and claim in a manuscript (results text, captions, abstract, reviewer response; .md/.tex/.html) is traceable to the current output of a numbers script, and that each claim sentence points to the panel and statistic that support it. Use before sharing or submitting a draft, after re-running analyses or sweeps that feed the paper, when editing results paragraphs or captions, or when asked "are the numbers right / up to date", "check the draft", "audit the paper". Not for the wording of the text → writing-paper.
 ---
 
 # Auditing paper numbers
@@ -20,7 +20,8 @@ number in the text and classifies it against the numbers log.
 ## Workflow
 
 1. **Regenerate the numbers log** with the project's numbers script (path in
-   `.claude/project.yaml` → `numbers_script` / `numbers_log`, or ask). The log is JSON (any
+   `.claude/project.yaml` → `numbers_script` = the script, `numbers_log` = the file it writes, or
+   ask; the audit refuses a `.py` passed as the log). The log is JSON (any
    nesting; key paths become sources) and/or the script's printed report saved as text.
    Check that it ran on the intended data (sweep, seed set, sessions) — print its header.
 2. **Run the audit:**
@@ -44,8 +45,7 @@ number in the text and classifies it against the numbers log.
 5. Report: counts per class before → after, the list of changed sentences, and any number
    that remains a deliberate exception.
 
-## Checklist
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] numbers log regenerated from the current data (header checked)
 - [ ] `audit_numbers.py` clean: 0 MISMATCH, 0 UNSOURCED (or each exception justified)
 - [ ] key MATCHes point to the right source quantity

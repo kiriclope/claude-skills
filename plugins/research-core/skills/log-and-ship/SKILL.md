@@ -1,6 +1,6 @@
 ---
 name: log-and-ship
-description: Persist a chunk of work into the project's second brain and version control — update the right docs/*.md and the cross-session memory, then commit (and push only if asked). Use when the user says "log", "log and commit", "log doc commit", "update the docs", "commit this", "push it", or otherwise wants the just-finished experiment/code change recorded and shipped. Works in every project; the per-project doc map, memory folder and never-stage list come from `.claude/project.yaml`.
+description: Persist a chunk of work into the project's second brain and version control — update the right docs/*.md and the cross-session memory, then commit (and push only if asked). Use when the user says "log", "log and commit", "log doc commit", "update the docs", "commit this", "push it", or otherwise wants the just-finished experiment/code change recorded and shipped. Works in every project; the per-project doc map, memory folder and never-stage list come from `.claude/project.yaml`. Not for catching up at session start → resuming-work.
 ---
 
 # Log and ship
@@ -56,6 +56,9 @@ Skip this step only for a trivial mechanical commit (typo, comment) that changes
 
 Stage **named paths only** — source + the docs you edited. Never `git add -A` / `git add .`.
 Never stage anything under `never_stage` unless the user names it. Memory files live outside the repo.
+If the commit is refused because a **review checkpoint is due**, run the running-review-checkpoints
+skill first (or `review_status.py --defer` if the user says not now); after a checkpoint, stage
+`.claude/review_log.md` with the work.
 
 ```bash
 git add <source files> <docs you edited>
@@ -71,7 +74,7 @@ EOF
 git log --oneline -1
 ```
 
-Push (`git push`) only after an explicit "push it".
+Push (`git push`) only after an explicit "push it" — and run a review checkpoint first if one is due.
 
 ## Step 4 — report
 

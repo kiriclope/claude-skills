@@ -1,6 +1,6 @@
 ---
 name: launching-experiments
-description: Launch, monitor and finish training sweeps and long-running experiments safely — parameter confirmation, pilot run, one detached screen and one log per seed, concurrency caps, readable run names, provenance (git hash, config, seed) in every run directory, resume-safe relaunch, and the post-run verdicts and figures. Use when asked to launch/run/start/resume a sweep, a grid, seeds, or any multi-hour job; when editing a sweep config before launch; when checking on running jobs; or when runs finish and results need reporting.
+description: Launch, monitor and finish training sweeps and long-running experiments safely — parameter confirmation, pilot run, one detached screen and one log per seed, concurrency caps, readable run names, provenance (git hash, config, seed) in every run directory, resume-safe relaunch, and the post-run verdicts and figures. Use when asked to launch/run/start/resume a sweep, a grid, seeds, or any multi-hour job; when editing a sweep config before launch; when checking on running jobs; or when runs finish and results need reporting. Not for what a run actually trained → run-card; for a misbehaving run → debugging-training.
 ---
 
 # Launching experiments
@@ -53,11 +53,11 @@ Check: loss decreases, checkpoint written, provenance written, analysis script r
   ```
 - **Cap concurrency** (`launch.max_concurrent`; small models are often launch-bound and gain
   nothing past ~8 processes). Bigger grids go in batches: launch, wait, launch the next.
-- Every run directory gets the full config, the seed and **provenance** at start:
-  ```python
-  sys.path.insert(0, "<this skill dir>/scripts")
-  from record_provenance import record_provenance
-  record_provenance(run_dir, repo=".", config=asdict(cfg), seed=cfg.seed)   # git hash, dirty diff, env
+- Every run directory gets the full config, the seed and **provenance** at start — call the script
+  as a command from the launch script, once per run (never import it from the skill folder: plugin
+  paths change with every version):
+  ```bash
+  python <this skill>/scripts/record_provenance.py --run_dir <run_dir> --repo . --seed <s> --config <run_dir>/config.json
   ```
   (`python scripts/record_provenance.py --demo` to see it.) If the tree is dirty, the diff is
   saved next to it — say so to the user, or commit first.
@@ -79,8 +79,7 @@ success. Report failures immediately with the log tail.
    Never report numbers without the figures.
 4. Log it (log-and-ship): config, result per seed, verdict, next step.
 
-## Checklist (copy into the reply)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] plan table shown; user said go
 - [ ] pilot passed end to end
 - [ ] one screen + one absolute-path log per seed; ≤ max concurrent

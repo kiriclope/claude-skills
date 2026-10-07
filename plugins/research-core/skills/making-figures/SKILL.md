@@ -1,6 +1,6 @@
 ---
 name: making-figures
-description: Colorblind-safe house conventions and a render-check-look loop for scientific figures (matplotlib) — paper panels, supplements, analysis plots, flow fields, sweep summaries. Use BEFORE writing or editing any plotting code, when asked to make/fix/restyle a figure or panel, to prepare figures for submission, or when a figure "looks off". Covers style, content rules (real data, one representative example), file formats, and an automatic checker for small fonts, stray bold, overlapping/clipped text and colors a colorblind reader cannot separate.
+description: Colorblind-safe house conventions and a render-check-look loop for scientific figures (matplotlib) — paper panels, supplements, analysis plots, flow fields, sweep summaries. Use BEFORE writing or editing any plotting code, when asked to make/fix/restyle a figure or panel, to prepare figures for submission, or when a figure "looks off". Covers style, content rules (real data, one representative example), file formats, and an automatic checker for small fonts, stray bold, overlapping/clipped text and colors a colorblind reader cannot separate. Takes precedence over generic charting skills (e.g. dataviz) for any scientific or matplotlib figure. Not for publishing pages → publishing-drafts.
 ---
 
 # Making figures
@@ -55,8 +55,10 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
   the points.
 - **Colorblind-safe, always** (readers and authors may be colorblind). Use `scripts/cb_style.py`:
   hue never carries a distinction alone — pair it with shape, fill or line style.
-  - two-class contrast (A/B, Go/NoGo, left/right): `PAIR` = blue `#0072B2` vs vermillion `#D55E00`;
-    a second contrast in the same panel → solid/dashed or filled/open, not a second hue pair;
+  - the project's map (`project.yaml` → `colors:`) wins over these defaults;
+  - default two-class contrast (A/B, left/right): `PAIR` = blue `#0072B2` vs vermillion `#D55E00`;
+    a second contrast in the same panel takes the project's second pair (e.g. Go/NoGo sky / orange)
+    AND a second cue (solid/dashed or filled/open) — never hue alone;
   - up to 8 categories: `OKABE_ITO` / `CYCLE`; sequential: magma / cividis / viridis;
     diverging: PuOr / RdBu centered on the true zero; never jet/rainbow, never red vs green;
   - fixed points by SHAPE (white face, black edge; `plot_fixed_points`): ● attractor, ✖ saddle,
@@ -86,8 +88,7 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
 
 See `references/captions.md` (caption skeleton, panel inventory, shared vocabulary).
 
-## Done checklist (copy into your reply and tick)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] project conventions/helpers loaded and reused
 - [ ] content: real data, one named representative example, claim per panel
 - [ ] style file applied; same style as the main figures

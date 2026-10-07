@@ -1,6 +1,6 @@
 ---
 name: flow-verdict
-description: Score a rank-2 sweep's flow geometry against the project goal (sample-memory wells below the lick line) with flow_verdict.py, and read flow figures without the known misinterpretation traps. Use whenever asked to analyse/interpret flows or portraits, judge whether wells were pushed down, score an arm's geometry, or compare arms — BEFORE writing any interpretation of a flow figure.
+description: Score a rank-2 sweep's flow geometry against the project goal (sample-memory wells below the lick line) with flow_verdict.py, and read flow figures without the known misinterpretation traps. Use whenever asked to analyse/interpret flows or portraits, judge whether wells were pushed down, score an arm's geometry, or compare arms — BEFORE writing any interpretation of a flow figure. Not for g·λ or the pitchfork → bifurcation-probe.
 ---
 
 # Flow verdict — how to score flows without fooling yourself
@@ -65,14 +65,11 @@ claims, with the traps below as the reviewer's checklist.
    check `dual_loss_components` in results.jsonl — the term you're dosing must be > 0.
 8. Report per-seed (never average well positions across seeds), count attractors exactly,
    and name spiral wells (`S`) — complex Jacobian eigenvalues at a well matter.
-9. **Score the INPUT-NOISE-AVERAGED field, not the deterministic one** (2026-09-25). The nets are trained with
-   input noise, which lowers each unit's effective gain by 1/sqrt(1 + g²σ²‖w_i‖²) — median 0.55–0.72 in trained
-   nets, 10 % of units ≤ 0.4. The trials follow the averaged field: s1_log's end-of-delay state (+0.94, −0.56)
-   sits on its averaged well (+0.93, −0.58), not the deterministic one (+1.23, −0.34); noise-free, several nets
-   even lose the sample (A and B land in one well). The two fields share their topology at λ = 7 but the
-   deterministic wells sit further out and higher, and "all down" flips: recipe7_bfix 5/8 deterministic vs 8/8
-   averaged (the published 8/8 is the averaged count); logsub (λ = 2) has a different topology. Before this date
-   the tool scored the deterministic field — rescore old sweeps before comparing (`verdict_noiseavg.log`).
+9. **Score the INPUT-NOISE-AVERAGED field, not the deterministic one.** The nets are trained with
+   input noise, which lowers each unit's effective gain by 1/sqrt(1 + g²σ²‖w_i‖²); the trials follow
+   the averaged field, and "all down" can differ between the two fields. Scores made before the tool
+   switched to the averaged field (2026-09-25) must be redone before comparing. The evidence (per-sweep
+   counts, trial endpoints vs wells) is in `flow_verdict.py`'s docstring and the project's analysis log.
 
 ## Reading `mem_k0` edge cases
 

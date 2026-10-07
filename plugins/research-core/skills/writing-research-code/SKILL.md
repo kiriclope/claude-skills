@@ -1,6 +1,6 @@
 ---
 name: writing-research-code
-description: Conventions for writing and editing research code (Python, NumPy, PyTorch) — analysis scripts, models, training, probes, figure scripts — so it stays human-readable, consistent with the project, and numerically trustworthy. Use whenever writing a new script or function, editing model/training/analysis code, adding a config option or CLI flag, or refactoring. Covers naming, docstrings, CLI and config structure, single sources of truth, printed results, reproducibility, and the verify-by-running rule.
+description: Conventions for writing and editing research code (Python, NumPy, PyTorch) — analysis scripts, models, training, probes, figure scripts — so it stays human-readable, consistent with the project, and numerically trustworthy. Use whenever writing a new script or function, editing model/training/analysis code, adding a config option or CLI flag, or refactoring. Covers naming, docstrings, CLI and config structure, single sources of truth, printed results, reproducibility, and the verify-by-running rule. Not for reviewing finished code → reviewing-code-readability; for correctness bugs → /code-review.
 ---
 
 # Writing research code

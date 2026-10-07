@@ -1,20 +1,14 @@
 ---
 name: traj-verdict
-description: Score a run's TRAJECTORIES (κ(t) on the task, per stage) against the expected behaviour with traj_verdict.py, instead of eyeballing traj figures. Use whenever asked whether a network "behaves right", why a trajectory looks weird, what GNG did to the DPA memory, whether the nolick/decay/response terms actually took, or before interpreting any trajectory figure or per-stage accuracy.
+description: Score a run's TRAJECTORIES (κ(t) on the task, per stage) against the expected behaviour with traj_verdict.py, instead of eyeballing traj figures. Use whenever asked whether a network "behaves right", why a trajectory looks weird, what GNG did to the DPA memory, whether the nolick/decay/response terms actually took, or before interpreting any trajectory figure or per-stage accuracy. Not for where the wells are → flow-verdict.
 ---
 
 # Trajectory verdict — score the behaviour, don't eyeball the traces
 
 `flow_verdict.py` scores the autonomous LANDSCAPE (where the wells sit). This scores what the
-network actually DOES on the task. The expected κ(t) (set 2026-09-02) lives in one place —
-`EXPECT` at the top of `traj_verdict.py`:
-
-| stage (ckpt) | probe | expected |
-|---|---|---|
-| DPA (`dpa_`) | DPA | A/B memory on κ₀ maintained or decaying, sample-off → test; choice on κ₁ at test offset |
-| GNG (`naive_`) | GNG | go/nogo held on κ₁ at ±θ, maintained or transient; the cue pushes BOTH classes toward +κ₁; a response is expressed (sometimes wrong) |
-| GNG (`naive_`) | DPA | A/B memory maintained or slightly disrupted; choice still on κ₁, sometimes wrong |
-| Dual (`expert_`) | Dual | A/B memory maintained or decaying; go/nogo as in GNG; choice on κ₁, mostly right |
+network actually DOES on the task, stage by stage (DPA, GNG, Dual), against the expected κ(t).
+The expectations live in ONE place — `EXPECT` at the top of `traj_verdict.py`. Read them there;
+do not restate them from memory or from an old report.
 
 ## Step 1 — run the tool, never eyeball first
 `$ENV_PREFIX` = `env_prefix` from `.claude/project.yaml` (an `LD_PRELOAD` libstdc++ shim on some machines; empty otherwise).
@@ -41,17 +35,17 @@ side is FREE → reported, not scored), `gng_response=False` (no response window
 (adds the late-delay κ₁≤0 check), `dpa_prelick_free`, `decay_to_zero` / `gng_decay_to_zero` /
 `kappa1_reg_weight` (demand a transient → `relax` becomes scored), `dual_gng_memory=False` (the Dual
 rule level is unsupervised → sign scored, level reported), `hinge_shape="softplus"` (raised ceiling).
-2026-09-02 flags: `nolick_full_delay` (the κ₁≤0 check covers the WHOLE delay on the DPA trials —
+More flags: `nolick_full_delay` (the κ₁≤0 check covers the WHOLE delay on the DPA trials —
 the rows with no go/nogo stimulus and no cue), `nolick_thresh` (ε echoed in the txt; scoring stays
 at boundary 0 — depth is flow_verdict's job), `dpa_nolick_weight` (`prelick` becomes a ONE-SIDED
 scored check at the DPA stage — κ₁<0 is free by design), `gng_decouple_decision` (tagged; expect
 `leak` ≈ 0).
 
-2026-09-07 flags: `nolick_nogo_in_cue` (tag `nolick-nogo-from-CUE-ON`; the `nolick` check then
+And: `nolick_nogo_in_cue` (tag `nolick-nogo-from-CUE-ON`; the `nolick` check then
 covers the nogo rows from cue ONSET, and `nogo-resp-free` replaces the `★nogo-UNCONSTRAINED` tag),
 `gng_hold_ceiling` (tag `go-hold-CEILING≤c`; the go level check also requires go ≤ c + ½σ).
-The `nolick` check POOLS DPA rows and nogo rows — for the per-class / per-sample split use
-`$CLAUDE_JOB_DIR/tmp/nolick_split.py` (mirrors `probe()`).
+The `nolick` check POOLS DPA rows and nogo rows; the tool has no per-class / per-sample split yet.
+If you need one, add it next to `traj_verdict.py` (mirroring `probe()`), never in a temp folder.
 
 **Never quote a level/threshold verdict without reading that line.** A ±1 band copied from a th=1
 arm fails every sign-based arm for behaving exactly as designed — that is the mistake this

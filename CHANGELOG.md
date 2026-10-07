@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-07 — research-core 0.8.0, lowrank-rnn 0.3.0 (skills review)
+Review: usage across 22 sessions (only 7 of 22 skills had ever loaded), two independent reviewers
+(quality; gaps from ~1,080 user prompts), claims spot-checked before acting.
+- **Loading**: every description says what the skill is not for (→ which one instead);
+  making-figures takes precedence over generic charting skills; the profile maps tasks to skills.
+- **Fixes**: bifurcation-probe no longer reports wells (flow-verdict owns them: noise-averaged field,
+  verified fixed points); guard_bash matches commands not text (commit messages, heredocs), accepts
+  tmux/sbatch/qsub/nohup &/--per_run_screen, reads launchers from `launch.entrypoints`; check_figure
+  says when the colorblind check cannot run; cb_style resolves symlinks; record_provenance runs as a
+  command with `--config` (no versioned import path) and has no silent excepts; audit_numbers refuses
+  a script as its log (`numbers_script` vs `numbers_log`); log-and-ship handles the commit gate.
+- **Structure**: one canonical plan block (planning-research; CRITERION, FALSIFIER everywhere);
+  `evals/` with 11 cases (behavior + skill-fired graders), test cases removed from the reviewer's
+  reference; dated project history and a dead path out of the lowrank-rnn skills; checklists are
+  reported as one line.
+- **New skills**: reviewing-manuscript, choosing-statistics, resuming-work, organizing-projects,
+  publishing-drafts (research-core); run-card (lowrank-rnn). Template keys: review_figures, journal,
+  field, stats, resume, organize, pages, numbers_script.
+
 ## 2026-10-06 — research-core 0.7.1
 - README rewritten for newcomers: what it is, five-minute start, how skills work, all 22 skills by
   research stage, how they chain (diagram), installation, configuration and hook reference, scripts,

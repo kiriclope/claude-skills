@@ -84,8 +84,9 @@ def _data_colors(ax):
 def _cvd_issues(fig):
     try:
         from cb_style import confusable_pairs
-    except ImportError:
-        return []
+    except ImportError:                       # say so: a silently skipped check reads as a pass
+        return [("colorblind-unavailable", "colorblind check NOT run: cbstyle is not importable — "
+                 "pip install \"git+https://github.com/kiriclope/claude-skills#subdirectory=python\"")]
     issues = []
     for ax in fig.axes:
         for a, b, kind, d in confusable_pairs(_data_colors(ax)):

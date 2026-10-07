@@ -77,6 +77,8 @@ def flatten_json(obj, path=""):
 
 
 def load_log(path):
+    if path.endswith((".py", ".ipynb")):    # the script, not its output: every literal in code would "match"
+        sys.exit(f"{path} is the numbers SCRIPT; run it and pass its output (JSON or the saved report) as --log")
     vals = []
     raw = open(path).read()
     try:

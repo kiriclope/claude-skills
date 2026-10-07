@@ -1,6 +1,6 @@
 ---
 name: checking-derivations
-description: Derive and verify math for models and theory — Jacobians, fixed-point conditions, stability/bifurcation criteria, mean-field reductions, closed-form predictions, proofs in a theory note. Use when deriving or editing an equation, writing a derivation into docs or a paper, claiming "analytically, X = …", when a formula and a simulation disagree, or BEFORE building figures or arguments on a formula. Derive symbolically (sympy), state assumptions, then check numerically against the real model code with scripts/check_jacobian.py.
+description: Derive and verify math for models and theory — Jacobians, fixed-point conditions, stability/bifurcation criteria, mean-field reductions, closed-form predictions, proofs in a theory note. Use when deriving or editing an equation, writing a derivation into docs or a paper, claiming "analytically, X = …", when a formula and a simulation disagree, or BEFORE building figures or arguments on a formula. Derive symbolically (sympy), state assumptions, then check numerically against the real model code with scripts/check_jacobian.py. Not for statistics → choosing-statistics.
 ---
 
 # Checking derivations
@@ -53,8 +53,7 @@ Hand algebra fails quietly: a lost chain-rule factor (a gain, a time step), a tr
 - **Disagreement between formula and simulation is a finding**: locate it (which term, which
   regime) instead of tuning the comparison until it matches.
 
-## Checklist (copy into the reply)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] assumptions and shapes written down
 - [ ] derived from the model code's actual update rule
 - [ ] sympy derivation saved as a script

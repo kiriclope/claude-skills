@@ -1,6 +1,6 @@
 ---
 name: reviewing-literature
-description: Search, read and position a project against the literature — a search protocol across Semantic Scholar, OpenAlex, PubMed, arXiv and bioRxiv, source tiers, a "they show X, we add Y" comparison matrix with named foils, the method gaps a reviewer will press, and notes checkpointed to docs/lit/ so they survive long sessions. Use when the user asks for a literature review, related work, "what is known about X", "has anyone done Y", positioning or novelty, a Discussion skeleton, or which papers a reviewer will cite against us.
+description: Search, read and position a project against the literature — a search protocol across Semantic Scholar, OpenAlex, PubMed, arXiv and bioRxiv, source tiers, a "they show X, we add Y" comparison matrix with named foils, the method gaps a reviewer will press, and notes checkpointed to docs/lit/ so they survive long sessions. Use when the user asks for a literature review, related work, "what is known about X", "has anyone done Y", positioning or novelty, a Discussion skeleton, or which papers a reviewer will cite against us. Not for checking one reference → verifying-citations; for a mock review → reviewing-manuscript.
 ---
 
 # Reviewing literature
@@ -77,8 +77,7 @@ shows our "we add", and for papers that contradict a "they show".
 - Report contradicting evidence as prominently as supporting evidence.
 - Do not summarize a paper you did not open; label abstract-only reads.
 
-## Checklist (copy and tick)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] question + candidate claims written; checkpoint file opened and read
 - [ ] searches logged (source, query, screened, kept); backward + forward done for anchors
 - [ ] comparison matrix, foils, reviewer gaps, lead claims written

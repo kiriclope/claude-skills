@@ -1,6 +1,6 @@
 ---
 name: writing-paper
-description: Draft and revise manuscript prose for a research paper — abstract, introduction, results, discussion, methods — in journal house style, claim-first, with every figure panel cited, one vocabulary, and every number traced to the numbers log. Use when the user asks to write, rewrite, polish, humanize or restructure paper text, a results paragraph, an abstract, a discussion, or to "make it read like a real paper"; also when turning results or notes into manuscript text. Captions are covered by making-figures (references/captions.md).
+description: Draft and revise manuscript prose for a research paper — abstract, introduction, results, discussion, methods — in journal house style, claim-first, with every figure panel cited, one vocabulary, and every number traced to the numbers log. Use when the user asks to write, rewrite, polish, humanize or restructure paper text, a results paragraph, an abstract, a discussion, or to "make it read like a real paper"; also when turning results or notes into manuscript text. Captions are covered by making-figures (references/captions.md). Not for a referee-style review → reviewing-manuscript; for the numbers → auditing-paper-numbers.
 ---
 
 # Writing the paper
@@ -75,8 +75,7 @@ through Results. Be direct about absence when the test had power ("we did not ob
 Word limits are a final trimming pass once the argument is settled. Do not report length as
 progress; judge a revision by whether the argument moves in one line.
 
-## Checklist (copy and tick)
-
+## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
 - [ ] style guide, vocabulary, numbers log loaded
 - [ ] claims listed; section order follows them
 - [ ] every panel inventoried from the rendered figure and cited correctly

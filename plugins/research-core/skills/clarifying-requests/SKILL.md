@@ -51,12 +51,12 @@ is long, costly or irreversible):
 GOAL         what the user wants to know or have, and why
 DELIVERABLE  what comes back (figure, table, number, code, text) and where it goes
 SCOPE        which data / runs / files / panels — and what is out of scope
-DONE WHEN    the success criterion
+CRITERION    done when … (the success criterion)
 DEFAULTS     what was not asked, and the default taken for it
 ```
 
 For a scientific question, the spec feeds the plan of the **thinking-critically** skill
-(GOAL → QUESTION, DONE WHEN → CRITERION).
+(GOAL → QUESTION; CRITERION carries over).
 
 ## Step 4 — another round, or stop
 

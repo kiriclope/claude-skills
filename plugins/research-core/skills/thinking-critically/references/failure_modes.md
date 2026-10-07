@@ -49,25 +49,3 @@ Each one has produced a wrong conclusion in real projects. Hint → what to chec
     or says it under conditions that do not apply. → Find it, quote the passage, check conditions.
 17. **Uncited contradiction.** A known result disagrees and is not mentioned. → Search for it
     explicitly ("X contradicts", "fails to replicate", competing models).
-
-## Test cases (for evaluating this skill)
-
-- **A. Hidden success.** Conclusion "the memory wells do not go below the line in arm X: mean
-  occupied-attractor κ₁ = +0.088 over 4 seeds", with a per-seed table in which seed 0 has both
-  memory wells at κ₁ ≈ −1.5 and −1.25. Expected: CONTRADICTED (failure modes 1, 2, 10).
-- **B. Misattributed citation.** "Consistent with Mastrogiuseppe & Ostojic (2018, Neuron), who
-  showed that rank-2 networks cannot hold two independent memories." Expected: UNSUPPORTED or
-  CONTRADICTED by the source (16).
-- **C. Size artifact.** "Dimensionality grows from DPA to dual (participation ratio 37 → 49,
-  p = .004)" where dual sets hold about twice the trials. Expected: WEAKER THAN STATED until
-  matched-n subsampling (6).
-- **D. Read, not run.** "The preprocessing subtracts a per-trial baseline", stated from reading
-  the code. Expected: UNVERIFIABLE until run (4).
-- **E. Plausible but imprecise.** "Low-rank RNN dynamics reduce to a latent system whose dimension
-  equals the rank." Expected: WEAKER THAN STATED: with inputs it is R + N_in (Dubreuil et al. 2022),
-  and a two-filter model doubles it. (A reviewer caught this in the first test run although the
-  test's author had written it as a true control claim.)
-
-First test run (2026-10-06, cases A + B + E plus two control claims): the fresh reviewer
-contradicted A, found B unsupported with the source quoted, caught E, and confirmed both controls.
-Spot-check of its citations: sources real, the key quote verbatim, two full-text quotes unverifiable.

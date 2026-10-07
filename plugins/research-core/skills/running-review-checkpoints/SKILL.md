@@ -1,6 +1,6 @@
 ---
 name: running-review-checkpoints
-description: Hold regular human review checkpoints while working on a project, so its code, docs and proposals stay understood and owned by the user — no unreviewed AI-generated code, no unreadable human code, no silent drift from the goal. When a checkpoint is due (review_status.py measures changed lines and commits since the user's last review; a Stop hook and a commit gate enforce it in projects that opt in), present a one-screen digest — intent, what changed and why, the decisions taken for the user to approve or change, drift, the 1–3 hunks most worth reading, readability — and record the review only after the user approves. Use when a hook or the commit gate says a review is due, when a task's DONE WHEN is reached, before a push, or when the user asks "where are we", "what changed", "catch me up", "review checkpoint"; also to switch checkpoints on or off ("turn review checkpoints off here / everywhere", "/running-review-checkpoints off").
+description: Hold regular human review checkpoints so a project's code, docs and proposals stay understood and owned by the user — no unreviewed AI code, no unreadable human code, no silent drift. When review_status.py says a checkpoint is due (enforced by a Stop hook and a commit gate in opted-in projects), present a one-screen digest (intent, changes and why, decisions to approve, drift, hunks to read) and record the review only after the user approves. Use when a hook or the commit gate says a review is due, when a task's CRITERION is met, before a push, for "where are we", "what changed", "catch me up", or to switch checkpoints on/off. Not for reviewing one file's code → reviewing-code-readability.
 ---
 
 # Running review checkpoints
@@ -26,7 +26,7 @@ it. `--reset` is the user's call, never yours: it writes that the earlier change
 - `review_status.py` says DUE — in projects with `review_checkpoint:` in `.claude/project.yaml`
   the Stop hook makes you run the checkpoint at the end of the turn, and the commit gate refuses
   commits until it is done;
-- a task's DONE WHEN is reached (the spec of clarifying-requests or planning-research), even if not due;
+- a task's CRITERION is met (the spec of clarifying-requests or the plan of planning-research), even if not due;
 - before any push;
 - when the user asks.
 

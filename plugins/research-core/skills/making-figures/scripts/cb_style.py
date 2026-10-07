@@ -11,7 +11,7 @@ try:
     from cbstyle import *            # noqa: F401,F403
     from cbstyle import _demo, __doc__ as _pkg_doc
 except ImportError:                  # not installed: use the copy in the repo
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "..", "python"))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "python"))
     from cbstyle import *            # noqa: F401,F403
     from cbstyle import _demo, __doc__ as _pkg_doc
 

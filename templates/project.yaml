@@ -30,7 +30,8 @@ figure_code: []                       # existing plotting helpers to reuse
 
 # writing-paper / auditing-paper-numbers / verifying-citations
 paper_dir: null
-numbers_log: null                     # script or file that prints every number quoted in the paper
+numbers_script: null                  # the script that prints every number quoted in the paper
+numbers_log: null                     # the file it writes (JSON or saved report) — what the audit reads
 style_guide: null                     # journal/house style guide
 
 # launching-experiments / debugging-training
@@ -67,3 +68,31 @@ code_check:                           # readability_check.py settings
 #   max_commits: 3
 #   include: [py, md, yaml, yml, toml, sh, tex, html]
 #   exclude: [results/, scratchpad/]
+
+# reviewing-manuscript
+review_figures: []                    # patterns of the canonical rendered figures given to the reviewers
+journal: null                         # e.g. Nature Neuroscience — fills the reviewers' brief
+field: null                           # e.g. systems neuroscience
+
+# choosing-statistics: declared before looking at any result
+stats:
+  sidedness: two-sided
+  correction: holm
+  alpha: 0.05
+  min_perm_draws: 1000
+
+# resuming-work
+resume:
+  since_days: 3                       # how far back the brief looks
+  memory_cap_kb: 40                   # memory files above this get flagged
+
+# organizing-projects
+organize:
+  output_dirs: [results/, figures/]   # outputs: ignored by git, never hand-edited
+  scratch_dirs: [scratchpad/]         # promote or delete; nothing lives here for good
+  large_file_mb: 20
+  scratch_max_age_days: 30
+  claude_md_max_lines: 200
+
+# publishing-drafts: every published page, with the files that rebuild it
+pages: []                             # - {name, url, source, builder, inputs, shared: private | link}

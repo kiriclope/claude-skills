@@ -1,6 +1,6 @@
 ---
 name: maintaining-skills
-description: Create, update, review and lint the shared skills repo (~/claude-skills) and the projects that use it. Use when the user asks to add/write/update/fix/review a skill, when a correction from the user ("don't do X again", "log the way we do Y") should become a durable rule, when a skill gave wrong or stale instructions, when setting up skills in a new project, or for a periodic skills health check.
+description: Create, update, review and lint the shared skills repo (~/claude-skills) and the projects that use it. Use when the user asks to add/write/update/fix/review a skill, when a correction from the user ("don't do X again", "log the way we do Y") should become a durable rule, when a skill gave wrong or stale instructions, when setting up skills in a new project, or for a periodic skills health check. Not for project code → writing-research-code.
 ---
 
 # Maintaining skills

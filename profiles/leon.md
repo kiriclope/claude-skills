@@ -23,6 +23,32 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
   never red vs green, never hue alone; describe colors by name + shape when discussing a figure.
 - Ask before launching anything long-running or outward-facing; commit only when asked, push only on "push it".
 
+## Which skill when (load it before starting — these never trigger on their own often enough)
+
+| When | Skill |
+|---|---|
+| my request is vague | `clarifying-requests` |
+| starting a session, "where were we" | `resuming-work` |
+| planning an experiment, "what next" | `planning-research` |
+| launching or monitoring a sweep / long job; "what did we train" | `launching-experiments`; `run-card` |
+| training misbehaves | `debugging-training` |
+| numbers just came out, before any conclusion | `auditing-results` |
+| choosing a test, a p-value, a star | `choosing-statistics` |
+| a conclusion that matters, "think critically" | `thinking-critically` |
+| deriving or checking math | `checking-derivations` |
+| low-rank RNN flows, trajectories, g·λ | `flow-verdict`, `traj-verdict`, `bifurcation-probe` |
+| **any** figure or plotting code (never `dataviz`) | `making-figures` |
+| writing code; before committing it | `writing-research-code`; `reviewing-code-readability` |
+| paper text; its numbers; its references | `writing-paper`; `auditing-paper-numbers`; `verifying-citations` |
+| related work, novelty | `reviewing-literature` |
+| "act as a reviewer", before submitting | `reviewing-manuscript` |
+| referee reports arrived | `responding-to-reviewers` |
+| publishing a page, artifact comments | `publishing-drafts` |
+| tidying the repo, lost or duplicated files | `organizing-projects` |
+| a review checkpoint is due, "catch me up" | `running-review-checkpoints` |
+| "log", "commit" | `log-and-ship` |
+| changing the skills themselves | `maintaining-skills` |
+
 ## Machine facts
 - `ask-kimi` / `extract-chat` / `kimi-write` were removed (2026-10-02; they never worked):
   do not delegate doc writing or reading to a cheap-worker CLI.

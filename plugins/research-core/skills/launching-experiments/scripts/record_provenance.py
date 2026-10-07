@@ -4,13 +4,9 @@ Records: git commit, branch, dirty flag + `git diff --stat` (and the full diff t
 provenance.diff when dirty), argv, timestamp, host, user-visible GPU(s), Python / torch / numpy
 versions, optional config dict and seed.
 
-Importable (call at the start of each run, before training):
-    sys.path.insert(0, "<skill_dir>/scripts")
-    from record_provenance import record_provenance
-    record_provenance(run_dir, config=asdict(cfg), seed=cfg.seed)
-
-CLI:
-    python record_provenance.py --run_dir results/my_sweep/s0_arm --repo .
+Run it as a command from the launch script, once per run, before training starts (do not import it
+from the skill folder: plugin install paths change with every version):
+    python record_provenance.py --run_dir results/my_sweep/s0_arm --repo . --seed 0 --config results/my_sweep/s0_arm/config.json
     python record_provenance.py --demo
 """
 import argparse
@@ -28,7 +24,7 @@ import tempfile
 def _git(repo, *args):
     try:
         return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True, timeout=30).stdout.strip()
-    except Exception:
+    except (OSError, subprocess.TimeoutExpired):        # no git, or a hung repo: record it as unknown
         return ""
 
 
@@ -42,8 +38,8 @@ def _versions():
     for mod in ("torch", "numpy", "scipy", "jax"):
         try:
             out[mod] = __import__(mod).__version__
-        except Exception:
-            pass
+        except (ImportError, AttributeError):
+            out[mod] = None                             # not installed in this environment
     return out
 
 
@@ -52,7 +48,7 @@ def _gpus():
         import torch
         if torch.cuda.is_available():
             return [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
-    except Exception:
+    except (ImportError, RuntimeError):                 # no torch, or CUDA not usable here
         pass
     return []
 
@@ -106,12 +102,14 @@ if __name__ == "__main__":
     ap.add_argument("--run_dir", help="run directory to write provenance.json into")
     ap.add_argument("--repo", default=".", help="git repository of the code that runs")
     ap.add_argument("--seed", type=int, default=None)
+    ap.add_argument("--config", default=None, help="JSON file with the run's config (e.g. <run_dir>/config.json)")
     ap.add_argument("--demo", action="store_true", help="write and read back a provenance file in a temp dir")
     args = ap.parse_args()
     if args.demo:
         _demo()
     elif args.run_dir:
-        p = record_provenance(args.run_dir, repo=args.repo, seed=args.seed)
+        cfg = json.load(open(args.config)) if args.config else None
+        p = record_provenance(args.run_dir, repo=args.repo, config=cfg, seed=args.seed)
         print(f"wrote {os.path.join(args.run_dir, 'provenance.json')}  commit {p['git']['commit']}  dirty={p['git']['dirty']}")
     else:
         ap.print_help()
