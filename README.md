@@ -249,6 +249,31 @@ ln -s ~/claude-skills/plugins/lowrank-rnn/skills/<skill> <project>/.claude/skill
 pip install -e ~/claude-skills/python
 ```
 
+### Optional: keep the memory in a private git vault (Obsidian)
+
+Claude Code's memory (`~/.claude/projects/<project>/memory/*.md`) is plain Markdown with `[[name]]`
+links. Versioned in git, it gets a history and can be read and edited in Obsidian on another machine:
+
+```bash
+cd ~/.claude/projects && git init -b main
+printf '*\n!*/\n!*/memory/\n!*/memory/*.md\n!.gitignore\n!README.md\n' > .gitignore   # memory notes only, never transcripts
+cat > .git/hooks/pre-commit <<'HOOK'
+#!/bin/sh
+python3 ~/claude-skills/plugins/research-core/skills/resuming-work/scripts/memory_links.py --root "$(git rev-parse --show-toplevel)" --add-aliases --quiet >/dev/null || exit 0
+git add -- '*/memory/*.md'
+HOOK
+chmod +x .git/hooks/pre-commit
+git add .gitignore '*/memory/*.md' && git commit -m "memory: baseline"
+git remote add origin <a PRIVATE repository> && git push -u origin main
+```
+- **Private remote only**: memory holds unpublished results, even when the projects are public.
+- The hook adds an `aliases:` line to each note so Obsidian resolves `[[name]]` links (Claude Code
+  links by the `name:` slug, Obsidian by file name), and stages every changed note.
+- On the other machine: clone it and *Open folder as vault*. Hooks are not cloned, so a note made
+  there gets its aliases at the next commit on the server.
+- log-and-ship commits memory changes to the vault when it exists; pushing waits for your request,
+  as in any repository. Pull before a session if you edited notes elsewhere.
+
 ## Configuration reference
 
 ### `.claude/project.yaml`
@@ -328,6 +353,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `stats_floor.py` | choosing-statistics | the smallest p a sign test, Wilcoxon, Mann-Whitney or permutation test can reach at a given n |
 | `materials.py` | reviewing-manuscript | gathers the text, canonical figures and numbers log the reviewer agents receive |
 | `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, newest memory state, open items |
+| `memory_links.py` | resuming-work | Obsidian `aliases:` for memory notes, and the `[[links]]` that resolve nowhere |
 | `project_audit.py` | organizing-projects | untracked or ignored sources, version-suffixed copies, large files, stale scratch, unindexed docs |
 | `pages_check.py` | publishing-drafts | every page in `pages:` has its source and builder in the repo and is up to date |
 | `run_card.py` | run-card | per-stage training settings of a sweep, read from the training code |

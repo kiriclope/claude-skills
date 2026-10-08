@@ -18,7 +18,9 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
   before ending the turn; never record a review I did not approve.
 - Honest assessment over a pleasing story: say "this did not work, here is why"; separate
   data finding / imposed assumption / model limitation.
-- **American English** everywhere (docs, figures, comments, commits).
+- **American English** everywhere (docs, figures, comments, commits, chat): realize, initialization, behavior,
+  labeled, modeling, canceled, center, analyze, gray — not -ise / -our / -lled / -tre.
+- When I start fixing the code myself, stop and let me — don't wait for me to explain.
 - **I am colorblind.** Every figure must be colorblind-safe (`making-figures` → `cb_style.py`):
   never red vs green, never hue alone; describe colors by name + shape when discussing a figure.
 - Ask before launching anything long-running or outward-facing; commit only when asked, push only on "push it".

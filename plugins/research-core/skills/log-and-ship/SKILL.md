@@ -47,6 +47,9 @@ In `memory_dir`:
 - **`memory_state_file`** (live status: current runs, what's built, open issues, latest result) —
   refresh the relevant section, keep it compact, point to the long-form doc, mark superseded claims.
 - **`MEMORY.md`** — add a one-line pointer ONLY for a *new* memory file; never content.
+- If the memory root (`~/.claude/projects`) is a git repo — a memory vault — commit the memory
+  changes there too: `git -C ~/.claude/projects add -- '*/memory/*.md'` then commit `memory: <what>`
+  (its pre-commit hook refreshes the Obsidian aliases). Push only when asked, like any repo.
 - If you notice a memory that contradicts a doc, `CLAUDE.md` or a skill, fix the wrong one or
   flag it — do not leave both.
 

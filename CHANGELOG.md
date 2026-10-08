@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-09 — research-core 0.8.1 (memory vault)
+- **resuming-work**: new `memory_links.py` — writes the Obsidian `aliases:` line into memory notes
+  and reports dangling `[[links]]`; `resume_brief.py` no longer reports a symlinked memory folder as
+  a duplicate, and lists each real folder once in the cross-project scan.
+- **log-and-ship**: commits memory changes to the memory vault when `~/.claude/projects` is a git
+  repository (push only on request).
+- README: how to set up the private memory vault; profile: American English word list, "stop when I
+  start fixing the code myself".
+
 ## 2026-10-07 — research-core 0.8.0, lowrank-rnn 0.3.0 (skills review)
 Review: usage across 22 sessions (only 7 of 22 skills had ever loaded), two independent reviewers
 (quality; gaps from ~1,080 user prompts), claims spot-checked before acting.

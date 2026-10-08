@@ -48,7 +48,11 @@ python <this skill>/scripts/resume_brief.py --repo <project> --memory
 - **A rule copied into several projects**: one canonical copy belongs in the user's profile;
   copies that **differ** mean one is stale — show both and ask which holds.
 - **Duplicate memory folders** for one project (a path spelled with `_` and with `-`): propose
-  merging into the one Claude Code currently writes to.
+  merging into the one Claude Code currently writes to. A folder that is a symlink to another is
+  the same folder, not a duplicate.
+- **Dangling `[[links]]`** and notes Obsidian cannot resolve: `scripts/memory_links.py` reports
+  them; `--add-aliases` writes the `aliases:` line Obsidian needs (the memory vault's pre-commit
+  hook runs it).
 
 Apply nothing without the user's approval; then edit, and log it (log-and-ship).
 

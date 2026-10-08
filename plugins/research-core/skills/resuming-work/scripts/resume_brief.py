@@ -284,6 +284,10 @@ def hygiene_section(root, cfg, claude_root, detail=False):
     dirs = project_dirs(root, claude_root)
     mem = memory_dir(cfg, dirs)
     out, found = [], {"oversized": [], "duplicate_dirs": [], "shared_same": [], "shared_diff": []}
+    distinct = {}
+    for d in dirs:                                   # a symlinked folder is the same folder, not a duplicate
+        distinct.setdefault(os.path.realpath(d), d)
+    dirs = list(distinct.values())
     if len(dirs) > 1:
         newest = max(dirs, key=lambda d: max([os.path.getmtime(p) for p in glob.glob(os.path.join(d, "**"), recursive=True)] or [0]))
         found["duplicate_dirs"] = [os.path.basename(d) for d in dirs]
@@ -300,8 +304,10 @@ def hygiene_section(root, cfg, claude_root, detail=False):
                            + (f" — {len(old)} dated entries older than 30 days could move to docs" if old else "")
                            + " (proposal; never applied)")
         own = {os.path.realpath(d) for d in dirs} | {os.path.realpath(os.path.dirname(mem))}
-        others = [os.path.join(d, "memory") for d in glob.glob(os.path.join(claude_root, "*"))
-                  if os.path.realpath(d) not in own and os.path.isdir(os.path.join(d, "memory"))]
+        seen, others = set(own), []
+        for d in sorted(glob.glob(os.path.join(claude_root, "*"))):   # one entry per real folder (symlinks are aliases)
+            if os.path.realpath(d) not in seen and os.path.isdir(os.path.join(d, "memory")):
+                seen.add(os.path.realpath(d)); others.append(os.path.join(d, "memory"))
         for p in sorted(glob.glob(os.path.join(mem, "*.md"))):
             name = os.path.basename(p)
             if name == "MEMORY.md" or name.startswith("project_"):
