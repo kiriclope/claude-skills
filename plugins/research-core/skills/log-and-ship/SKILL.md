@@ -45,7 +45,9 @@ Pick the doc from `docs_map` (first match). Rules for the entry:
 
 In `memory_dir`:
 - **`memory_state_file`** (live status: current runs, what's built, open issues, latest result) —
-  refresh the relevant section, keep it compact, point to the long-form doc, mark superseded claims.
+  refresh the relevant section, keep it compact, point to the long-form doc, and rewrite or delete
+  the entries your update supersedes (it is a state, not a diary). A note over the cap → propose
+  maintaining-memory.
 - **`MEMORY.md`** — add a one-line pointer ONLY for a *new* memory file; never content.
 - If the memory root (`~/.claude/projects`) is a git repo — a memory vault — commit the memory
   changes there too: `git -C ~/.claude/projects add -- '*/memory/*.md'` then commit `memory: <what>`

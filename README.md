@@ -139,6 +139,7 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | [organizing-projects](plugins/research-core/skills/organizing-projects/SKILL.md) | Keeps the repository organized: every source in git (including hand-made vector art and builders), outputs out of it, no `_v2` / `_old` copies, scratch promoted or deleted, docs indexed, a lean CLAUDE.md. Proposes a tidy plan; nothing moves until you approve. | *"Organize"*, *"tidy up"*, lost or duplicated files. |
 | [running-review-checkpoints](plugins/research-core/skills/running-review-checkpoints/SKILL.md) | Regular **human review**: after ~300 changed lines or 3 commits since your last review, a one-screen digest — intent, what changed and why, the decisions taken for you (approve or change each), drift, the hunks most worth reading. Enforced by hooks in projects that opt in; recorded only after you approve. | Automatic when due; also *"where are we?"*, *"catch me up"*. |
 | [log-and-ship](plugins/research-core/skills/log-and-ship/SKILL.md) | Updates the right docs and the cross-session memory, then commits (and pushes only when asked). | *"Log and commit."* |
+| [maintaining-memory](plugins/research-core/skills/maintaining-memory/SKILL.md) | Keeps the cross-session memory short and current: trims oversized notes to their current state and lasting rules, archives the full original (never deletes), and keeps notes from growing back into logs. | *"Trim the memory"*, a note flagged as oversized. |
 | [maintaining-skills](plugins/research-core/skills/maintaining-skills/SKILL.md) | Creates, updates, reviews and lints the skills themselves. | Adding or fixing a skill; a correction that should become a rule. |
 
 ### Personal
@@ -256,7 +257,7 @@ links. Versioned in git, it gets a history and can be read and edited in Obsidia
 
 ```bash
 cd ~/.claude/projects && git init -b main
-printf '*\n!*/\n!*/memory/\n!*/memory/*.md\n!.gitignore\n!README.md\n' > .gitignore   # memory notes only, never transcripts
+printf '*\n!*/\n!*/memory/\n!*/memory/*.md\n!*/memory/archive/\n!*/memory/archive/*.md\n!.gitignore\n!README.md\n' > .gitignore   # memory notes only, never transcripts
 cat > .git/hooks/pre-commit <<'HOOK'
 #!/bin/sh
 python3 ~/claude-skills/plugins/research-core/skills/resuming-work/scripts/memory_links.py --root "$(git rev-parse --show-toplevel)" --add-aliases --quiet >/dev/null || exit 0
@@ -354,6 +355,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `materials.py` | reviewing-manuscript | gathers the text, canonical figures and numbers log the reviewer agents receive |
 | `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, newest memory state, open items |
 | `memory_links.py` | resuming-work | Obsidian `aliases:` for memory notes, and the `[[links]]` that resolve nowhere |
+| `memory_trim.py` | maintaining-memory | oversized notes; snapshot; checks a trimmed draft (front matter, numbers, scripts it no longer describes); archives and applies |
 | `project_audit.py` | organizing-projects | untracked or ignored sources, version-suffixed copies, large files, stale scratch, unindexed docs |
 | `pages_check.py` | publishing-drafts | every page in `pages:` has its source and builder in the repo and is up to date |
 | `run_card.py` | run-card | per-stage training settings of a sweep, read from the training code |

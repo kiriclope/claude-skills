@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-09 — research-core 0.9.0 (maintaining-memory)
+- **New skill maintaining-memory**: trims oversized memory notes to current state + rules that still hold
+  + pointers, archives the full original in `memory/archive/` (never deletes), one user approval per note.
+  `memory_trim.py` (scan · snapshot · check · apply, `--demo`) and a drafting brief for the fresh agents.
+  Built from the first real trim (five notes, 438 KB → 75 KB): a check found that deleting instead of
+  archiving would have lost the only description of 25 of the 253 scripts the notes named.
+- resuming-work and log-and-ship hand oversized notes to it; log-and-ship: a state note is a state,
+  not a diary (rewrite superseded entries when adding one). Profile: the skill in "Which skill when";
+  compact instructions.
+
 ## 2026-10-09 — research-core 0.8.1 (memory vault)
 - **resuming-work**: new `memory_links.py` — writes the Obsidian `aliases:` line into memory notes
   and reports dangling `[[links]]`; `resume_brief.py` no longer reports a symlinked memory folder as

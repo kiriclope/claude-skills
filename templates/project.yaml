@@ -84,7 +84,7 @@ stats:
 # resuming-work
 resume:
   since_days: 3                       # how far back the brief looks
-  memory_cap_kb: 40                   # memory files above this get flagged
+  memory_cap_kb: 40                   # memory files above this get flagged (resuming-work, maintaining-memory)
 
 # organizing-projects
 organize:

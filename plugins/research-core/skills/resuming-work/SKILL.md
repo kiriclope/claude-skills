@@ -43,8 +43,8 @@ command to reopen one from the project folder: `claude --resume <session id>`.
 ```bash
 python <this skill>/scripts/resume_brief.py --repo <project> --memory
 ```
-- **Oversized files** (over `resume.memory_cap_kb`): propose which dated sections move into the
-  project's docs (the history belongs there; memory keeps the current state and pointers).
+- **Oversized files** (over `resume.memory_cap_kb`): propose the maintaining-memory skill (trim to the
+  current state and the rules that still hold; the full original is archived, never deleted).
 - **A rule copied into several projects**: one canonical copy belongs in the user's profile;
   copies that **differ** mean one is stale — show both and ask which holds.
 - **Duplicate memory folders** for one project (a path spelled with `_` and with `-`): propose

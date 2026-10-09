@@ -49,7 +49,19 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
 | tidying the repo, lost or duplicated files | `organizing-projects` |
 | a review checkpoint is due, "catch me up" | `running-review-checkpoints` |
 | "log", "commit" | `log-and-ship` |
+| memory too long or contradicting the docs; "trim / archive the memory" | `maintaining-memory` |
 | changing the skills themselves | `maintaining-skills` |
+
+## Compact instructions
+Long sessions compact, often several times, so the summary must carry what a fresh reader needs.
+Keep, in this order:
+- the goal and the spec or plan in force (GOAL / CRITERION), in my words, and when I asked;
+- decisions I made, and questions still open — a pending question is never an approval;
+- my corrections ("don't do X") and the rules they set;
+- files created or changed (paths), commits (hashes), pushes, running jobs (screen names, run dirs);
+- key numbers with their source (file, run, script), each marked verified or assumed;
+- what failed and why, so it is not retried; the next step.
+Drop: tool outputs and file contents that can be re-read, images, superseded attempts.
 
 ## Machine facts
 - `ask-kimi` / `extract-chat` / `kimi-write` were removed (2026-10-02; they never worked):
