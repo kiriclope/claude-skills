@@ -53,3 +53,17 @@ exceptions for the sources.
 - Every doc is listed in one index (`docs/README.md` or the CLAUDE.md doc table), with one line.
 - CLAUDE.md: what the project is, the rules, the commands, the doc map. Dated history and
   results go to the docs; CLAUDE.md is read at every session start and should stay short.
+
+## README.md
+
+For a person (a colleague, a reviewer, you in a year); CLAUDE.md is for Claude. Short, in this order:
+1. What the project is, in two sentences, and the paper or question it serves.
+2. Setup: the environment (one command) and any data it needs, with where the data lives.
+3. How to run it: each entry point (one line each: what it does, the command).
+4. Layout: one line per top-level folder.
+5. Where results, figures and docs live; a link to the doc index.
+
+Links, not copies: point to the doc that holds the detail instead of repeating it. Every path in it
+exists and every command runs. Keep it current through the commit tidy check (`project_audit.py
+--staged` proposes the line a new top-level folder, script or removed file needs). A folder README that
+lists its files gets a line for each file added there.

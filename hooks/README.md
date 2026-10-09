@@ -8,12 +8,16 @@ Skills are advice; hooks are enforced by the harness. `guard_bash.py` (PreToolUs
 | `git commit -m …` without a `Co-Authored-By:` trailer | **deny** |
 | the project's training launcher in the foreground (not in `screen -dmS`, `tmux -d`, `sbatch`/`qsub`, `nohup … &`, or `--per_run_screen`) | **deny** |
 | `git commit` while a review checkpoint is due (projects with `review_checkpoint:`) | **deny** until the checkpoint |
+| `git commit` that would commit clear mess (projects with `.claude/project.yaml`): a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a `_v2` / `_old` copy of code | **deny**: unstage or fix; `TIDY_OK=1` prefix only for files the user named |
 
 The push and trailer rules apply in every session. Launchers are read from the project's
 `.claude/project.yaml` (`launch.entrypoints`, or `launch.entrypoint`), else the `GUARD_LAUNCHERS`
 env var (comma-separated names), else `sweep.py` and `rerun_dual.py`. Only commands are matched:
 commit messages and heredoc bodies are removed first, and a launcher counts only where a command
-starts.
+starts. The tidy check is `project_audit.py --staged` (organizing-projects): it sees `git add …`
+earlier in the same command and `git commit -a` by replaying them on a throwaway copy of the index,
+blocks only the clear-mess items, and leaves its proposals (README lines, unindexed docs, scratch
+files) to log-and-ship. Off per project with `organize: {commit_check: false}`.
 
 ## Review checkpoints (Stop hook)
 
@@ -32,7 +36,7 @@ project (`review_status.py --off`, local) or everywhere (`--off --global`); `--o
 ]
 ```
 
-Self-test: `python guard_bash.py --demo` (21 cases, including the false positives fixed in 0.8).
+Self-test: `python guard_bash.py --demo` (29 cases, including the false positives fixed in 0.8 and the tidy check).
 
 ## Install (user-level, all projects) — add to `~/.claude/settings.json`
 

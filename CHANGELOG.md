@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-09 — research-core 0.10.0 (tidy check at every commit)
+- **organizing-projects**: `project_audit.py --staged [--all]` checks one commit. It blocks only clear
+  mess (a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a
+  `_v2` / `_old` copy of code) and proposes the rest: README lines for a new top-level folder or
+  script, for a file in a folder whose README lists its files, and for a file the commit removes;
+  docs missing from the index; scratch files; untracked files that staged code imports; outputs;
+  dated doc names; a missing README. New README section in `references/layout.md`. The audit now
+  counts a README.md / index.md inside any docs/ subfolder as a doc index (dual's `docs/pca/README.md`).
+- **Bash guard**: refuses a `git commit` that would commit the blocking items, in projects with a
+  `project.yaml`. It replays `git add …` from the same command and `-a` on a throwaway copy of the
+  index. Override `TIDY_OK=1` (only for a file the user named); off with
+  `organize: {commit_check: false}`. Commit-directory detection now follows the last `cd` before the
+  commit (`cd x && git add … && git commit` used the session's folder). Demo 29 cases.
+- **log-and-ship**: runs the tidy check after staging; writes the README / index lines for this
+  commit's own files into the same commit; lists other proposals in the report for the user's yes.
+
 ## 2026-10-09 — research-core 0.9.0 (maintaining-memory)
 - **New skill maintaining-memory**: trims oversized memory notes to current state + rules that still hold
   + pointers, archives the full original in `memory/archive/` (never deletes), one user approval per note.

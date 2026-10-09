@@ -13,7 +13,7 @@ docs_map:
     doc: docs/running.md
 
 # log-and-ship: paths never staged unless the user names them
-never_stage: [results/, .claude/settings.local.json]   # CLAUDE.md is committed like any doc
+never_stage: [results/, .claude/settings.local.json]   # CLAUDE.md is committed like any doc; paths, folder/ or globs — the guard refuses commits that stage them
 
 # figure-gallery (maintainer-only skill; others can delete these two keys)
 gallery_project: myproject
@@ -93,6 +93,7 @@ organize:
   large_file_mb: 20
   scratch_max_age_days: 30
   claude_md_max_lines: 200
+  commit_check: true                  # tidy check of each commit (project_audit.py --staged, the Bash guard)
 
 # publishing-drafts: every published page, with the files that rebuild it
 pages: []                             # - {name, url, source, builder, inputs, shared: private | link}

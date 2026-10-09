@@ -68,6 +68,7 @@ skill first (or `review_status.py --defer` if the user says not now); after a ch
 ```bash
 git add <source files> <docs you edited>
 git status --short                     # confirm nothing unintended is staged
+python <organizing-projects skill>/scripts/project_audit.py --staged     # TIDY CHECK: this commit only
 git commit -m "$(cat <<'EOF'
 <subject: what changed, imperative, ~65 chars>
 
@@ -79,9 +80,20 @@ EOF
 git log --oneline -1
 ```
 
+**Tidy check** (keeps the repo clean one commit at a time; the Bash guard refuses the ✗ items anyway):
+- **✗ blocking** (never_stage path, force-added ignored file, editor junk, large file, `_v2` copy of
+  code): unstage or fix it before committing. Only if the user named that file for this commit, commit
+  with a `TIDY_OK=1` prefix and say so in the report.
+- **? README / doc-index lines** for files this commit adds, renames or removes: write them now and
+  stage them with the work. They document this commit, like Step 1.
+- **? everything else** (move a scratch file, stage an untracked file the code imports, an output file,
+  a dated name, a missing README): list it under "Tidy" in the report with its one-line fix; act only
+  on the user's yes.
+
 Push (`git push`) only after an explicit "push it" — and run a review checkpoint first if one is due.
 
 ## Step 4 — report
 
 Commit hash + subject, which docs/memory you updated, what is still dirty and why
-("results/ left unstaged as usual"), and whether it was pushed or is local-only.
+("results/ left unstaged as usual"), the tidy proposals left open, and whether it was pushed or is
+local-only.

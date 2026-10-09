@@ -137,9 +137,9 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | Skill | What it does | Use it when |
 |---|---|---|
 | [resuming-work](plugins/research-core/skills/resuming-work/SKILL.md) | Picks a project back up: what changed since a date, what is running, whether a review is due, the newest state in memory, open items; finds the past session that worked on something; flags bloated or duplicated memory. | Session start, *"where were we?"*, *"which session had X?"*. |
-| [organizing-projects](plugins/research-core/skills/organizing-projects/SKILL.md) | Keeps the repository organized: every source in git (including hand-made vector art and builders), outputs out of it, no `_v2` / `_old` copies, scratch promoted or deleted, docs indexed, a lean CLAUDE.md. Proposes a tidy plan; nothing moves until you approve. | *"Organize"*, *"tidy up"*, lost or duplicated files. |
+| [organizing-projects](plugins/research-core/skills/organizing-projects/SKILL.md) | Keeps the repository organized: every source in git (including hand-made vector art and builders), outputs out of it, no `_v2` / `_old` copies, scratch promoted or deleted, docs indexed, a lean CLAUDE.md, a README that is current. Proposes a tidy plan; nothing moves until you approve. Then checks every commit: clear mess is refused, README and index lines are proposed. | *"Organize"*, *"tidy up"*, lost or duplicated files, a stale README; every commit. |
 | [running-review-checkpoints](plugins/research-core/skills/running-review-checkpoints/SKILL.md) | Regular **human review**: after ~300 changed lines or 3 commits since your last review, a one-screen digest — intent, what changed and why, the decisions taken for you (approve or change each), drift, the hunks most worth reading. Enforced by hooks in projects that opt in; recorded only after you approve. | Automatic when due; also *"where are we?"*, *"catch me up"*. |
-| [log-and-ship](plugins/research-core/skills/log-and-ship/SKILL.md) | Updates the right docs and the cross-session memory, then commits (and pushes only when asked). | *"Log and commit."* |
+| [log-and-ship](plugins/research-core/skills/log-and-ship/SKILL.md) | Updates the right docs and the cross-session memory, runs the tidy check on what it staged (README and index lines go in with the work), then commits (and pushes only when asked). | *"Log and commit."* |
 | [maintaining-memory](plugins/research-core/skills/maintaining-memory/SKILL.md) | Keeps the cross-session memory short and current: trims oversized notes to their current state and lasting rules, archives the full original (never deletes), and keeps notes from growing back into logs. | *"Trim the memory"*, a note flagged as oversized. |
 | [maintaining-skills](plugins/research-core/skills/maintaining-skills/SKILL.md) | Creates, updates, reviews and lints the skills themselves. | Adding or fixing a skill; a correction that should become a rule. |
 
@@ -330,7 +330,7 @@ Every key is optional. Read by the skill(s) in the second column.
 | `review_figures`, `journal`, `field` | reviewing-manuscript | the canonical figure renders the reviewers get, and the venue and field for their brief |
 | `stats` | choosing-statistics | sidedness, correction, alpha and permutation draws, declared before any result |
 | `resume` | resuming-work, maintaining-memory | how far back the brief looks; the size above which a memory note is flagged (`memory_cap_kb`, 40) |
-| `organize` | organizing-projects | output and scratch folders, large-file and scratch-age limits, CLAUDE.md length |
+| `organize` | organizing-projects, the guard hook | output and scratch folders, large-file and scratch-age limits, CLAUDE.md length, the commit tidy check (`commit_check`) |
 | `pages` | publishing-drafts | every published page with its URL, source, builder and inputs |
 | `launch`, `running_doc`, `verdict_scripts`, `plot_entrypoint` | launching-experiments, the guard hook | the sweep entry points (`launch.entrypoints`, which the guard refuses to run in the foreground), concurrency limits, seeds, scoring and plotting commands |
 | `code_rules` | reviewing-code-readability | the project's own coding rules, one sentence each |
@@ -363,10 +363,14 @@ Skills are advice; these rules are enforced by Claude Code whatever the session 
 | | a commit message without the `Co-Authored-By:` trailer | refused — **every project** |
 | | the project's training launcher run in the foreground | refused — run it in `screen -dmS`, `tmux -d`, a scheduler (`sbatch`, `qsub`), `nohup … &` or the launcher's `--per_run_screen` mode. Launchers come from `launch.entrypoints` in `project.yaml` (default `sweep.py`, `rerun_dual.py`) |
 | | a commit while a review checkpoint is due | refused until the checkpoint is done — **opted-in projects only** |
+| | a commit that stages clear mess: a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a `_v2` / `_old` copy of code | refused — unstage or fix it; `TIDY_OK=1` only for a file you named — **projects with a `project.yaml`** (off: `organize: {commit_check: false}`) |
 | `review_status.py --hook stop` (end of every turn) | a review checkpoint is due | Claude runs the checkpoint before ending the turn (never twice in a row) — **opted-in projects only** |
 
 The guard matches commands, never text: a commit message or a heredoc that mentions `git push` or a
-launcher does not trigger it. Details: [hooks/README.md](hooks/README.md).
+launcher does not trigger it. The commit tidy check (`project_audit.py --staged`) looks at that commit
+only, including `git add …` earlier in the same command and `git commit -a`; what it merely proposes
+(README lines, unindexed docs, scratch files) goes through log-and-ship. Details:
+[hooks/README.md](hooks/README.md).
 
 ## Scripts
 
@@ -390,7 +394,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, newest memory state, open items |
 | `memory_links.py` | resuming-work | Obsidian `aliases:` for memory notes, and the `[[links]]` that resolve nowhere |
 | `memory_trim.py` | maintaining-memory | oversized notes; snapshot; checks a trimmed draft (front matter, numbers, scripts it no longer describes); archives and applies |
-| `project_audit.py` | organizing-projects | untracked or ignored sources, version-suffixed copies, large files, stale scratch, unindexed docs |
+| `project_audit.py` | organizing-projects | untracked or ignored sources, version-suffixed copies, large files, stale scratch, unindexed docs; `--staged`: the same for one commit, plus the README lines it needs |
 | `pages_check.py` | publishing-drafts | every page in `pages:` has its source and builder in the repo and is up to date |
 | `run_card.py` | run-card | per-stage training settings of a sweep, read from the training code |
 | `lint_skills.py` | maintaining-skills | the skills themselves: format, length, personal facts in shared skills, drifted copies |

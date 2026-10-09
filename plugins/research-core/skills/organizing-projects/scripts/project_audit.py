@@ -6,30 +6,43 @@ Reports, for the git project around --repo:
   * version-suffixed copies (_v2, _v1259, _old, _final, _copy, _bak, dated) and exploratory leftovers (preview)
   * large tracked files
   * scratch folders: size, file count, files older than the age limit (promote or delete)
-  * docs missing from the doc index (CLAUDE.md, README.md, docs/README.md or docs/index.md)
+  * docs missing from the doc index (CLAUDE.md, README.md, any README.md or index.md under docs/)
   * CLAUDE.md size and dated history lines; whether the project has a README
 then a numbered tidy plan. Changes happen only after the user approves them — `git add`, `git mv`,
 a .gitignore exception — each group committed on its own.
 
+--staged checks only the commit the index would make (before each commit; the Bash guard runs it on
+`git commit` in projects with .claude/project.yaml). Exit 1 when something blocks.
+  ✗ blocks (clear mess): a path under `never_stage`; a force-added ignored file; editor/OS junk
+    (`file~`, `.#file`, `.pyc`, `.DS_Store`); a file over large_file_mb (new, or grown past it);
+    a version-suffixed copy of code (`fig_v2.py`, `fig_old.py` next to `fig.py`).
+  ?  proposes: a new file under an output folder; a staged scratch file; a new doc missing from the
+    doc index; a README that misses a new top-level folder or script, or a file in a folder whose
+    README lists its files; an index or README that still names a file the commit removes; an
+    untracked file that staged code refers to; a dated or versioned doc name; no README at all.
+
 Settings (`organize:` in .claude/project.yaml, all optional):
   output_dirs [results/, figures/]   scratch_dirs [scratchpad/]   large_file_mb 5
-  scratch_max_age_days 30            claude_md_max_lines 250
+  scratch_max_age_days 30            claude_md_max_lines 250      commit_check true
+plus the top-level `never_stage:` list (path, folder/ or glob; entries with spaces are notes, skipped).
 
 Usage:
     python project_audit.py [--repo PATH] [--limit 12]
+    python project_audit.py --staged [--all] [--repo PATH]     # --all: as `git commit -a` would commit
     python project_audit.py --demo
 """
 import argparse
 import datetime as dt
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
 
 DEFAULTS = {"output_dirs": ["results/", "figures/"], "scratch_dirs": ["scratchpad/"], "large_file_mb": 5,
-            "scratch_max_age_days": 30, "claude_md_max_lines": 250}
+            "scratch_max_age_days": 30, "claude_md_max_lines": 250, "commit_check": True, "never_stage": []}
 SOURCE_EXT = {"py", "ipynb", "md", "tex", "bib", "yaml", "yml", "toml", "sh", "r", "jl", "m", "c", "cpp", "h",
               "org", "svg", "cfg", "ini"}
 JUNK = ("__pycache__/", ".ipynb_checkpoints/", ".egg-info/", "node_modules/", ".venv/", ".git/")
@@ -37,10 +50,16 @@ JUNK = ("__pycache__/", ".ipynb_checkpoints/", ".egg-info/", "node_modules/", ".
 STRONG = re.compile(r"(_v\d+[a-z]?|_\d{4}-\d{2}-\d{2}|_\d{8}| \(\d+\)| copy)$", re.I)
 WEAK = re.compile(r"(_old|_new|_final|_copy|_bak|_backup|_orig|_tmp)$", re.I)
 DATE = re.compile(r"\b20\d\d-\d\d-\d\d\b")
+DATED = re.compile(r"_(\d{4}-\d{2}-\d{2}|\d{8})$")
+DOC_EXT = {"md", "org", "tex", "bib"}           # a dated or _v2 doc is often a deliberate record: proposed, not blocked
+JUNK_NAME = re.compile(r"(^\.#|^#.*#$|~$|\.py[co]$|^\.DS_Store$|^Thumbs\.db$)")
+INDEX_FILES = ("CLAUDE.md", "README.md", "docs/README.md", "docs/index.md")
+SCRIPT_EXT = {"py", "sh", "r", "jl", "m"}
+NOT_ENTRY = {"__init__.py", "setup.py", "conftest.py"}
 
 
-def _git(root, *args):
-    r = subprocess.run(["git", "-C", root, *args], capture_output=True)
+def _git(root, *args, env=None, inp=None):
+    r = subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, input=inp)
     return r.stdout.decode(errors="ignore") if r.returncode == 0 else ""
 
 
@@ -58,7 +77,8 @@ def load_cfg(root):
         print("note: PyYAML not installed — using default settings", file=sys.stderr)
         return dict(DEFAULTS)
     try:
-        return {**DEFAULTS, **((yaml.safe_load(open(p)) or {}).get("organize") or {})}
+        y = yaml.safe_load(open(p)) or {}
+        return {**DEFAULTS, **(y.get("organize") or {}), "never_stage": y.get("never_stage") or []}
     except yaml.YAMLError as e:
         print(f"note: cannot parse {p}: {e} — using default settings", file=sys.stderr)
         return dict(DEFAULTS)
@@ -70,6 +90,12 @@ def _under(path, prefixes):
 
 def _is_source(path):
     return "." in os.path.basename(path) and path.rsplit(".", 1)[-1].lower() in SOURCE_EXT and not _under(path, JUNK)
+
+
+def _index_text(root, paths):
+    """Text of every doc index: CLAUDE.md, README.md, and each README.md / index.md under docs/."""
+    subs = [p for p in paths if p.startswith("docs/") and os.path.basename(p) in ("README.md", "index.md")]
+    return "".join(_read(root, f) for f in dict.fromkeys(list(INDEX_FILES) + subs))
 
 
 def audit(root, cfg):
@@ -111,10 +137,9 @@ def audit(root, cfg):
         r["scratch"].append({"dir": sdir, "files": len(files), "mb": sum(map(os.path.getsize, files)) / 2 ** 20,
                              "old": [os.path.relpath(f, root) for f in old],
                              "tracked": sum(1 for p in tracked if p.startswith(sdir))})
-    index_files = [os.path.join(root, f) for f in ("CLAUDE.md", "README.md", "docs/README.md", "docs/index.md")]
-    index = "".join(open(f, errors="ignore").read() for f in index_files if os.path.exists(f))
+    index = _index_text(root, tracked + untracked)
     docs = [p for p in tracked + untracked if p.startswith("docs/") and p.endswith(".md")
-            and p not in ("docs/README.md", "docs/index.md")]
+            and os.path.basename(p) not in ("README.md", "index.md")]
     r["unindexed_docs"] = sorted(p for p in docs if p not in index and os.path.basename(p) not in index)
     cm = os.path.join(root, "CLAUDE.md")
     if os.path.exists(cm):
@@ -150,7 +175,8 @@ def plan(r, cfg):
             steps.append(f"{s['dir']}: {len(s['old'])} of {s['files']} files older than {cfg['scratch_max_age_days']} days — "
                          "promote what is still used (`git mv` into scripts/ with a docstring), delete the rest")
     if r["unindexed_docs"]:
-        steps.append(f"Add {len(r['unindexed_docs'])} doc(s) to the doc index (CLAUDE.md table or docs/README.md)")
+        steps.append(f"Add {len(r['unindexed_docs'])} doc(s) to the doc index "
+                     "(CLAUDE.md table, docs/README.md or the folder's README.md)")
     cm = r["claude_md"]
     if cm and cm["lines"] > cfg["claude_md_max_lines"]:
         steps.append(f"Slim CLAUDE.md ({cm['lines']} lines, {cm['dated_lines']} dated): keep rules and the doc map, "
@@ -191,10 +217,237 @@ def report(root, r, cfg, limit):
     print(f"SUMMARY: {len(steps)} proposed step(s)")
 
 
+# ---- staged mode: this commit only --------------------------------------------------------------
+
+def _changes(root, env):
+    """(status, path, old_path) for each change in the index; old_path only for a rename or copy."""
+    toks, out, i = _z(_git(root, "diff", "--cached", "--name-status", "-z", "-M", env=env)), [], 0
+    while i < len(toks):
+        st = toks[i][0]
+        if st in "RC":
+            out.append((st, toks[i + 2], toks[i + 1])); i += 3
+        else:
+            out.append((st, toks[i + 1], None)); i += 2
+    return out
+
+
+def _blob_sizes(root, env, specs):
+    """{spec: bytes} for specs like ':path' (the index) and 'HEAD:path'; missing objects are left out."""
+    if not specs:
+        return {}
+    out = _git(root, "cat-file", "--batch-check=%(objectsize)", env=env, inp="\n".join(specs).encode() + b"\n")
+    return {sp: int(line) for sp, line in zip(specs, out.splitlines()) if line.isdigit()}
+
+
+def _never_stage_rule(path, rules):
+    for rule in rules:
+        rule = str(rule).strip()
+        if not rule or " " in rule:                       # a prose note, not a path
+            continue
+        if any(ch in rule for ch in "*?["):
+            import fnmatch
+            if fnmatch.fnmatch(path, rule) or fnmatch.fnmatch(os.path.basename(path), rule):
+                return rule
+        elif path == rule.rstrip("/") or path.startswith(rule.rstrip("/") + "/"):
+            return rule
+    return None
+
+
+def _read(root, rel):
+    p = os.path.join(root, rel)
+    try:
+        return open(p, errors="ignore").read() if os.path.isfile(p) and os.path.getsize(p) < 2 ** 21 else ""
+    except OSError:
+        return ""
+
+
+def _names(text, name):
+    """`name` appears in text as a whole name (not inside a longer file or folder name)."""
+    return re.search(rf"(?<![\w.-]){re.escape(name)}(?![\w-])", text) is not None
+
+
+def _blocking(root, cfg, env, kept, tracked):
+    """({path: why} for the clear-mess files, [(path, why)] for dated or versioned doc names)."""
+    new = [p for st, p in kept if st in "ACR"]
+    sizes = _blob_sizes(root, env, [f":{p}" for _, p in kept] + [f"HEAD:{p}" for st, p in kept if st == "M"])
+    ignored = set(_z(_git(root, "check-ignore", "--no-index", "-z", "--stdin", env=env,
+                          inp="\0".join(new).encode() + b"\0"))) if new else set()
+    stems = {os.path.splitext(p)[0]: p for p in tracked}
+    big = cfg["large_file_mb"] * 2 ** 20
+    block, prop = {}, []
+    for st, p in kept:
+        is_new, size = st in "ACR", sizes.get(f":{p}", 0)
+        why = []
+        rule = _never_stage_rule(p, cfg["never_stage"])
+        if rule:
+            why.append(f"matches never_stage `{rule}` (.claude/project.yaml)")
+        if is_new and p in ignored:
+            why.append("ignored by .gitignore, so it was force-added: "
+                       "add a `!path` exception if it is a source, else leave it out")
+        if is_new and (JUNK_NAME.search(os.path.basename(p)) or _under(p, JUNK)):
+            why.append("editor/OS/build junk")
+        if size > big and (is_new or sizes.get(f"HEAD:{p}", 0) <= big):
+            why.append(f"{size / 2 ** 20:.1f} MB (> {cfg['large_file_mb']} MB): data and outputs stay out of git")
+        stem = os.path.splitext(p)[0]
+        m = STRONG.search(stem) or WEAK.search(stem)
+        base = stems.get(stem[:m.start()]) if m else None
+        if is_new and m and _is_source(p) and not why and (base or STRONG.search(stem)):
+            if os.path.splitext(p)[1][1:].lower() in DOC_EXT or (DATED.search(stem) and not base):
+                prop.append((p, "dated or versioned name" + (f" next to {base}" if base else "")
+                             + ": keep one current file, unless this is a dated record"))
+            else:
+                why.append(f"version-suffixed copy{f' of {base}' if base else ''}: edit "
+                           f"{base or 'the original'} instead (git keeps the history)")
+        if why:
+            block[p] = "; ".join(why)
+    return block, prop
+
+
+def _doc_proposals(root, cfg, new, gone, tracked):
+    """README and doc-index lines the commit needs: new folders, scripts and docs; files it removes."""
+    outputs, scratch = cfg["output_dirs"], cfg["scratch_dirs"]
+    prop = []
+    index = _index_text(root, tracked)
+    for p in new:
+        if p.startswith("docs/") and p.endswith(".md") and os.path.basename(p) not in ("README.md", "index.md") \
+                and p not in index and os.path.basename(p) not in index:
+            prop.append((p, "new doc missing from the doc index: add a line to the CLAUDE.md doc table "
+                            "or the folder's README.md"))
+    readme = _read(root, "README.md")
+    if not os.path.isfile(os.path.join(root, "README.md")):
+        prop.append(("README.md", "missing: write one (what the project is, how to run it, "
+                                  "where results and docs live)"))
+    else:
+        top = set(_z(_git(root, "ls-tree", "-z", "--name-only", "HEAD")))
+        for d in sorted({p.split("/")[0] for p in new if "/" in p} - top):
+            if not d.startswith(".") and not _under(d + "/", outputs + scratch) and not _names(readme, d):
+                prop.append((d + "/", "new top-level folder not in README.md: add a line on what it holds"))
+        for p in new:
+            if "/" not in p and os.path.splitext(p)[1][1:].lower() in SCRIPT_EXT and p not in NOT_ENTRY \
+                    and not p.startswith("test_") and not _names(readme, p):
+                prop.append((p, "new top-level script not in README.md: add a line (what it does, how to run it)"))
+    for p in new:
+        d = os.path.dirname(p)
+        rd = f"{d}/README.md" if d else None
+        if not rd or p == rd or not os.path.isfile(os.path.join(root, rd)):
+            continue
+        text = _read(root, rd)
+        siblings = [os.path.basename(t) for t in tracked if os.path.dirname(t) == d and t not in (p, rd)]
+        if any(_names(text, x) for x in siblings) and not _names(text, os.path.basename(p)):
+            prop.append((p, f"{rd} lists the files of {d}/ but not this one: add a line"))
+    after = {os.path.basename(t) for t in tracked}
+    for old, now in gone:
+        b, d = os.path.basename(old), os.path.dirname(old)
+        if b in after or b in ("README.md", "__init__.py") or _under(old, outputs + scratch + list(JUNK)):
+            continue
+        for f in dict.fromkeys(list(INDEX_FILES) + ([f"{d}/README.md"] if d else [])):
+            text = _read(root, f)
+            if text and (old in text or _names(text, b)):
+                prop.append((f, f"still names {old}, which this commit "
+                                f"{'renames to ' + now if now else 'removes'}: update or drop the line"))
+    return prop
+
+
+def _untracked_refs(root, cfg, env, kept):
+    """Untracked source files that a staged file imports or names: the commit will not stand on its own."""
+    untracked = [u for u in _z(_git(root, "ls-files", "-z", "--others", "--exclude-standard", env=env))
+                 if _is_source(u) and not _under(u, cfg["output_dirs"] + cfg["scratch_dirs"])][:3000]
+    if not untracked:
+        return []
+    by_name, by_stem = {}, {}
+    for u in untracked:
+        by_name.setdefault(os.path.basename(u), []).append(u)
+        if u.endswith(".py"):
+            by_stem.setdefault(os.path.splitext(os.path.basename(u))[0], []).append(u)
+    alternatives = "|".join(map(re.escape, sorted(by_name, key=len, reverse=True)))
+    name_re = re.compile(rf"(?<![\w.-])({alternatives})(?![\w-])")
+    stem_re = re.compile(r"\b(?:from|import)\s+(?:[\w.]*\.)?(" + "|".join(map(re.escape, by_stem)) + r")\b") \
+        if by_stem else None
+    prop, seen = [], set()
+    for _, p in kept:
+        if os.path.splitext(p)[1][1:].lower() not in {"py", "sh", "md", "tex", "yaml", "yml", "ipynb"}:
+            continue
+        text = _read(root, p)
+        hits = [u for m in name_re.finditer(text) for u in by_name[m.group(1)]]
+        if stem_re and p.endswith(".py"):
+            hits += [u for m in stem_re.finditer(text) for u in by_stem[m.group(1)]]
+        for u in hits:
+            if u not in seen and (u.endswith(".py") or os.path.dirname(u) == os.path.dirname(p) or u in text):
+                seen.add(u)
+                consequence = "the doc points to a file git does not have" if p.endswith(".md") \
+                    else "a fresh clone will not run"
+                prop.append((u, f"untracked, but {p} (staged) refers to it: stage it too, or {consequence}"))
+    return prop
+
+
+def staged_check(root, cfg, env=None):
+    """Tidy check of the commit the index would make.
+    Returns {"block": [(path, why)], "propose": [(path, why)], "staged": number of staged changes}."""
+    changes = _changes(root, env)
+    tracked = _z(_git(root, "ls-files", "-z", env=env))
+    kept = [(st, p) for st, p, _ in changes if st != "D"]
+    gone = [(old or p, p if old else None) for st, p, old in changes if st in "DR"]
+    block, prop = _blocking(root, cfg, env, kept, tracked)
+    new = [p for st, p in kept if st in "ACR" and p not in block]
+    for p in new:
+        if any(p.startswith(o) for o in cfg["output_dirs"]):
+            prop.append((p, "new file under an output folder: commit it only if it is a deliverable "
+                            "(a paper figure), else leave it out or ignore the folder"))
+        elif _under(p, cfg["scratch_dirs"]):
+            prop.append((p, "scratch file: promote it (`git mv` into scripts/, add a docstring) or leave it out"))
+    prop += _doc_proposals(root, cfg, new, gone, tracked)
+    prop += _untracked_refs(root, cfg, env, [(st, p) for st, p in kept if p not in block])
+    return {"block": sorted(block.items()), "propose": prop, "staged": len(changes)}
+
+
+def check_commit(root, cfg, adds=(), commit_all=False):
+    """staged_check of the commit that follows `git add <args>` (each (cwd, args) in adds) and, with commit_all,
+    `git commit -a`. The adds run against a throwaway copy of the index; the real index is never touched."""
+    if not adds and not commit_all:
+        return {**staged_check(root, cfg), "notes": []}
+    idx = _git(root, "rev-parse", "--git-path", "index").strip()
+    idx = idx if os.path.isabs(idx) else os.path.join(root, idx)
+    notes = []
+    with tempfile.TemporaryDirectory() as d:
+        tmp = os.path.join(d, "index")
+        if os.path.exists(idx):
+            shutil.copy2(idx, tmp)
+        env = {**os.environ, "GIT_INDEX_FILE": tmp}
+        for cwd, args in list(adds) + ([(root, ["-u"])] if commit_all else []):
+            try:
+                r = subprocess.run(["git", "add", *args], cwd=cwd, env=env, capture_output=True,
+                                   stdin=subprocess.DEVNULL, timeout=5)
+            except subprocess.TimeoutExpired:
+                notes.append(f"`git add {' '.join(args)}` timed out in the simulation"); continue
+            if r.returncode:
+                notes.append(f"`git add {' '.join(args)}` would fail: {r.stderr.decode(errors='ignore').strip()[:200]}")
+        return {**staged_check(root, cfg, env), "notes": notes}
+
+
+def staged_report(root, res):
+    print(f"TIDY CHECK · {os.path.basename(root)} · this commit only ({res['staged']} staged change(s))")
+    for note in res.get("notes", []):
+        print(f"  note: {note}")
+    for p, why in res["block"]:
+        print(f"  ✗ {p} — {why}")
+    for p, why in res["propose"]:
+        print(f"  ? {p} — {why}")
+    if res["block"]:
+        print("✗ = clear mess, blocks the commit: unstage (`git restore --staged <path>`), move or delete it; "
+              "commit it anyway only if the user named that file.")
+    if res["propose"]:
+        print("? = proposals: README / index lines for this commit's own files go in with it; "
+              "moves need the user's yes.")
+    print(f"SUMMARY: {len(res['block'])} blocking, {len(res['propose'])} proposal(s)")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--repo", default=".", help="any path inside the project's repository")
     ap.add_argument("--limit", type=int, default=12, help="rows shown per finding")
+    ap.add_argument("--staged", action="store_true", help="check only what the next commit would contain")
+    ap.add_argument("--all", action="store_true",
+                    help="with --staged: as `git commit -a` would commit (adds modified tracked files)")
     ap.add_argument("--demo", action="store_true", help="self-test in a throwaway repository")
     a = ap.parse_args(argv)
     if a.demo:
@@ -203,6 +456,12 @@ def main(argv=None):
     if not root:
         print("not inside a git repository"); return 1
     cfg = load_cfg(root)
+    if a.staged:
+        if cfg.get("commit_check") is False:
+            print("TIDY CHECK off (organize.commit_check: false)"); return 0
+        res = check_commit(root, cfg, commit_all=a.all)
+        staged_report(root, res)
+        return 1 if res["block"] else 0
     report(root, audit(root, cfg), cfg, a.limit)
     return 0
 
@@ -216,7 +475,7 @@ def _demo():
         w(".claude/project.yaml", "organize:\n  large_file_mb: 0.001\n  claude_md_max_lines: 5\n")
         w(".gitignore", "*.svg\nresults/\n")
         w("src/model.py"); w("fig_main.py"); w("fig_main_v2.py"); w("make_comment_copy.py")
-        w("docs/a.md", "# A\n"); w("docs/b.md", "# B\n")
+        w("docs/a.md", "# A\n"); w("docs/b.md", "# B\n"); w("docs/sub/README.md", "- c.md\n"); w("docs/sub/c.md")
         w("CLAUDE.md", "# Project\nSee docs/a.md\n" + "".join(f"- 2026-09-{d:02d}: note\n" for d in range(1, 10)))
         w("data.bin", "0" * 5000)
         env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
@@ -238,11 +497,62 @@ def _demo():
               ("doc missing from the index found", r["unindexed_docs"] == ["docs/b.md"]),
               ("long CLAUDE.md and missing README flagged", any("CLAUDE.md" in s for s in steps) and not r["readme"]),
               ("the audit changed nothing", before == after)]
+    checks += _demo_staged()
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)
     print(f"SUMMARY: demo {'OK' if ok else 'FAILED'} ({sum(bool(c) for _, c in checks)}/{len(checks)})")
     return 0 if ok else 1
+
+
+
+def _demo_staged():
+    """One staged change per --staged rule, in a throwaway repository."""
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
+           "GIT_COMMITTER_EMAIL": "t@t"}
+    with tempfile.TemporaryDirectory() as root:
+        def w(path, text="x = 1\n"):
+            p = os.path.join(root, path); os.makedirs(os.path.dirname(p), exist_ok=True); open(p, "w").write(text)
+
+        def git(*args):
+            subprocess.run(["git", *args], cwd=root, env=env, check=True, capture_output=True)
+        w(".claude/project.yaml", "never_stage: [notes/private.md]\norganize:\n  large_file_mb: 0.001\n")
+        w(".gitignore", "*.log\n")
+        w("README.md", "# P\nsrc/ holds the model; run sweep.py. old.py is legacy.\n")
+        w("CLAUDE.md", "| [docs/a.md](docs/a.md) | A |\n")
+        w("scripts/README.md", "- a.py: does A\n")
+        for f in ("src/model.py", "sweep.py", "docs/a.md", "scripts/a.py", "fig.py"):
+            w(f)
+        w("old.py", "legacy = True\n")                   # unique content, so its removal is not seen as a rename
+        git("init", "-q"); git("add", "-A"); git("commit", "-qm", "init")
+        cfg = load_cfg(root)
+        w("run2.log")
+        sim = check_commit(root, cfg, adds=[(root, ["-f", "run2.log"])])
+        sim_ok = [p for p, _ in sim["block"]] == ["run2.log"] and _git(root, "diff", "--cached", "--name-only") == ""
+        for f in ("results/plot.png", "fig_v2.py", "fig.py~", "notes/private.md", "run.log", "scratchpad/try.py",
+                  "docs/b.md", "newtool.py", "analysis/x.py", "scripts/b.py", "docs/review_2026-10-09.md"):
+            w(f)
+        w("big.bin", "0" * 5000); w("src/model.py", "from src import helper\n"); w("src/helper.py")
+        git("add", "-f", "results/plot.png", "big.bin", "fig_v2.py", "fig.py~", "notes/private.md", "run.log",
+            "scratchpad/try.py", "docs/b.md", "newtool.py", "analysis/x.py", "scripts/b.py",
+            "docs/review_2026-10-09.md", "src/model.py")
+        git("rm", "-q", "old.py")
+        r = staged_check(root, cfg)
+    blocked = {p for p, _ in r["block"]}
+    proposed = {(p, why.split(":")[0]) for p, why in r["propose"]}
+    has = lambda p, words: any(q == p and words in why for q, why in proposed)
+    return [("staged: a simulated `git add -f` is checked; the real index is untouched", sim_ok),
+            ("staged blocks never_stage, force-added ignored, junk, large and _v2 copy (only those)",
+             blocked == {"notes/private.md", "run.log", "fig.py~", "big.bin", "fig_v2.py"}),
+            ("staged proposes output, scratch, unindexed doc and dated doc",
+             has("results/plot.png", "output folder") and has("scratchpad/try.py", "scratch")
+             and has("docs/b.md", "doc index") and has("docs/review_2026-10-09.md", "dated")),
+            ("staged proposes README lines: new script, new folder, folder listing, removed file",
+             has("newtool.py", "top-level script") and has("analysis/", "top-level folder")
+             and has("scripts/b.py", "scripts/README.md")
+             and has("README.md", "still names old.py, which this commit removes")),
+            ("staged finds the untracked module staged code imports; nothing else proposed",
+             has("src/helper.py", "untracked") and len(r["propose"]) == 10)]
 
 
 if __name__ == "__main__":
