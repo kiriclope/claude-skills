@@ -21,13 +21,14 @@ They exist to fix three recurring problems:
 2. [How skills work](#how-skills-work)
 3. [The skills](#the-skills)
 4. [How they work together](#how-they-work-together)
-5. [Installation](#installation)
-6. [Configuration reference](#configuration-reference)
-7. [Hooks: the rules that are enforced](#hooks-the-rules-that-are-enforced)
-8. [Scripts](#scripts)
-9. [Repository layout](#repository-layout)
-10. [Maintaining and contributing](#maintaining-and-contributing)
-11. [Troubleshooting](#troubleshooting)
+5. [Context, tokens and memory](#context-tokens-and-memory)
+6. [Installation](#installation)
+7. [Configuration reference](#configuration-reference)
+8. [Hooks: the rules that are enforced](#hooks-the-rules-that-are-enforced)
+9. [Scripts](#scripts)
+10. [Repository layout](#repository-layout)
+11. [Maintaining and contributing](#maintaining-and-contributing)
+12. [Troubleshooting](#troubleshooting)
 
 ## Five-minute start
 
@@ -83,7 +84,7 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Twenty-eight skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+Twenty-nine skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds one maintainer-only skill.
 
 ### Think and plan
@@ -167,12 +168,41 @@ flowchart LR
     I --> M[reviewing-manuscript]
     M --> J[log-and-ship]
     R[running-review-checkpoints] -. every ~300 lines or 3 commits .-> J
+    J -. a memory note grew too long .-> K[maintaining-memory]
+    Z -. flags oversized memory .-> K
 ```
 
 For example, *"look at the new sweep"* becomes a precise question (which arm, score or mechanism?),
 the result is scored seed by seed against a criterion written beforehand, an independent agent tries
 to break the conclusion, the figure is rendered in the house style and looked at, and the result is
 logged and committed — with a human checkpoint along the way if a lot of code changed.
+
+## Context, tokens and memory
+
+Every request sends the whole conversation again (served from the prompt cache at a reduced rate),
+so what uses tokens is **context size × number of calls**, not the length of your messages. Measured
+on the maintainer's sessions (14 days, about 8,500 calls, a 1M-token model): a session starts near
+40k tokens and grows to about 970k before Claude Code compacts it; the median call carried 457k
+tokens, and re-reading that context was about 70% of all usage. Images (about 3k tokens each) and
+the files loaded in every session (profile, CLAUDE.md, memory index, skill descriptions: about 9k)
+were minor.
+
+What helps, most first:
+
+1. **Compact earlier**: `/autocompact 400k` (saved for the current model; `/autocompact auto`
+   undoes it). Replaying those sessions with a 400k window roughly halves the tokens (an optimistic
+   estimate), at the price of about twice as many compactions, each of which loses detail.
+2. **Tell compaction what to keep**: a `## Compact instructions` section in your profile (see
+   [profiles/leon.md](profiles/leon.md)): the goal and plan, your decisions and corrections, files
+   and commits, numbers with their sources, the next step.
+3. **`/clear` between unrelated tasks.** The docs, the memory and resuming-work rebuild the picture
+   in a fresh session for about 40k tokens; call 2,000 of an all-day session costs far more.
+4. **Look at many figures in a subagent**, so the images stay out of the main context.
+5. **Keep memory short.** Only the index (`MEMORY.md`, its first 200 lines / 25 KB) loads by itself;
+   notes are read on demand. Notes that grow into logs are not costly but unreliable (a search finds
+   a superseded claim), so **maintaining-memory** trims them and archives the originals.
+
+`/usage` shows your own numbers (7-day view; it flags long-context usage).
 
 ## Installation
 
@@ -274,6 +304,10 @@ git remote add origin <a PRIVATE repository> && git push -u origin main
   there gets its aliases at the next commit on the server.
 - log-and-ship commits memory changes to the vault when it exists; pushing waits for your request,
   as in any repository. Pull before a session if you edited notes elsewhere.
+- The hook stages **every** changed note, including notes another session is editing. To leave
+  those out, run its alias step by hand, `git add` the notes you mean, and `git commit --no-verify`.
+- `memory/archive/` holds the full originals of notes trimmed by maintaining-memory (tracked by the
+  `.gitignore` lines above; not in the index; found by search).
 
 ## Configuration reference
 
@@ -295,7 +329,7 @@ Every key is optional. Read by the skill(s) in the second column.
 | `numbers_script`, `numbers_log` | auditing-paper-numbers | the script that prints every number in the paper, and the file it writes (what the audit reads) |
 | `review_figures`, `journal`, `field` | reviewing-manuscript | the canonical figure renders the reviewers get, and the venue and field for their brief |
 | `stats` | choosing-statistics | sidedness, correction, alpha and permutation draws, declared before any result |
-| `resume` | resuming-work | how far back the brief looks; the size above which a memory file is flagged |
+| `resume` | resuming-work, maintaining-memory | how far back the brief looks; the size above which a memory note is flagged (`memory_cap_kb`, 40) |
 | `organize` | organizing-projects | output and scratch folders, large-file and scratch-age limits, CLAUDE.md length |
 | `pages` | publishing-drafts | every published page with its URL, source, builder and inputs |
 | `launch`, `running_doc`, `verdict_scripts`, `plot_entrypoint` | launching-experiments, the guard hook | the sweep entry points (`launch.entrypoints`, which the guard refuses to run in the foreground), concurrency limits, seeds, scoring and plotting commands |
@@ -421,6 +455,10 @@ the environment that runs your figure scripts.
 
 **A watermark or provenance plugin flags a `SKILL.md` and offers to "clean" it.** Do not: such
 cleaners delete the `description:` line, and a skill without its description never triggers.
+
+**Sessions use a lot of tokens or reach the usage limit early.** Long context is the usual cause:
+see [Context, tokens and memory](#context-tokens-and-memory) (`/autocompact`, compact instructions,
+`/clear` between tasks).
 
 **The hooks do nothing.** Check `/hooks` in Claude Code, that `python3` can import `yaml`, and — for
 checkpoints — that the project's `.claude/project.yaml` has a `review_checkpoint:` block.
