@@ -31,7 +31,9 @@ It gives `docs_map` (which doc for which work), `memory_dir`, `memory_state_file
   the instruction is stale.
 - **Verify git state before asserting "everything is committed"** — run `git status`/`git log`.
 - **Don't commit others' in-flight edits blind.** If a file has changes you didn't make, or an
-  artifact looks corrupted, flag it and ask before staging.
+  artifact looks corrupted, flag it and ask before staging. `session_board.py --who <file>` (skills
+  repo, `hooks/`) says which session changed it; with the session board installed the guard asks the
+  user before such a commit — name that session in your question, never approve it yourself.
 
 ## Step 1 — update the right doc(s)
 

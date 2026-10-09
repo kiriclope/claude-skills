@@ -17,6 +17,8 @@ Per project:
     unstage or fix it. `git add …` earlier in the same command and `-a` are taken into account
     (simulated on a copy of the index). A `TIDY_OK=1` prefix skips it — only for files the user named.
     Off per project with `organize: {commit_check: false}`. (organizing-projects: project_audit.py --staged)
+  * `git commit` that includes a file another Claude Code session changed in the last hour and has not committed
+    → ask the user, naming that session (session_board.py; any repository, once the board hooks are installed).
 
 Only commands are matched, never text: commit messages and heredoc bodies are removed first, and a
 launcher counts only where a command starts (after ;, &&, ||, |, (, a newline or `bash -c '`).
@@ -30,9 +32,11 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import time
 
 DEFAULT_LAUNCHERS = ["sweep.py", "rerun_dual.py"]
-SKILLS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "plugins", "research-core", "skills")
+HERE = os.path.dirname(os.path.abspath(__file__))
+SKILLS = os.path.join(HERE, "..", "plugins", "research-core", "skills")
 REVIEW_STATUS = os.path.join(SKILLS, "running-review-checkpoints", "scripts")
 ORGANIZE = os.path.normpath(os.path.join(SKILLS, "organizing-projects", "scripts"))
 
@@ -144,32 +148,55 @@ def _pending_adds(code, cdir, root):
     return adds
 
 
-def tidy_issue(code, cwd):
-    """Deny reason when the commit would contain clear mess (organizing-projects: project_audit.py --staged)."""
-    if not cwd or re.search(r"(?:^|[\s;&|(])TIDY_OK=1\s", code) or not os.path.isdir(ORGANIZE):
-        return None
-    try:
-        cdir = _commit_dir(code, cwd)
-        root = _toplevel(cdir) if cdir else ""
-        if not root or not os.path.exists(os.path.join(root, ".claude", "project.yaml")):
-            return None
-        sys.path.insert(0, ORGANIZE)
-        import project_audit as pa
-        cfg = pa.load_cfg(root)
-        if cfg.get("commit_check") is False:
-            return None
-        commit_all = re.search(COMMIT + r"[^;&|\n]*\s(?:--all\b|-[a-zA-Z]*a)", code) is not None
-        res = pa.check_commit(root, cfg, _pending_adds(code, cdir, root), commit_all)
-    except Exception:                                   # never let the gate crash the hook
-        return None
-    if not res["block"]:
-        return None
-    items = "; ".join(f"{p} — {why}" for p, why in res["block"][:6])
-    more = f"; … and {len(res['block']) - 6} more" if len(res["block"]) > 6 else ""
+def _tidy_reason(root, block):
+    items = "; ".join(f"{p} — {why}" for p, why in block[:6])
+    more = f"; … and {len(block) - 6} more" if len(block) > 6 else ""
     return (f"Tidy check ({os.path.basename(root)}, this commit only): {items}{more}. Unstage or fix these "
             "(git restore --staged <path>), then commit. Only if the user explicitly named these files for this "
             "commit, prefix the commit with TIDY_OK=1. Full list and proposals: "
             f"python {ORGANIZE}/project_audit.py --staged")
+
+
+def _board_reason(root, hits):
+    import session_board as sb
+    return ("Session board: this commit includes changes another Claude Code session made in the last hour and has "
+            f"not committed: {'; '.join(sb.describe(hits, time.time(), root))}. Commit them only if the user "
+            "confirms they belong in this commit; otherwise unstage them (git restore --staged <path>) or ask "
+            "that session first (SendMessage to its name).")
+
+
+def commit_issue(code, cwd, session_id=None):
+    """(decision, reason) for what the `git commit` in code would contain, or None.
+    deny: clear mess (organizing-projects: project_audit.py --staged), in repositories with .claude/project.yaml.
+    ask:  a file another session changed in the last hour and has not committed (session_board.py), any repository.
+    `git add …` earlier in the same command and `-a` are simulated on a copy of the index."""
+    if not cwd or not os.path.isdir(ORGANIZE):
+        return None
+    try:
+        cdir = _commit_dir(code, cwd)
+        root = _toplevel(cdir) if cdir else ""
+        if not root:
+            return None
+        sys.path.insert(0, ORGANIZE)
+        sys.path.insert(0, HERE)
+        import project_audit as pa
+        import session_board as sb
+        cfg = pa.load_cfg(root)
+        tidy = os.path.exists(os.path.join(root, ".claude", "project.yaml")) and cfg.get("commit_check") is not False \
+            and not re.search(r"(?:^|[\s;&|(])TIDY_OK=1\s", code)
+        board = bool(session_id) and os.path.exists(sb.board_path())
+        if not (tidy or board):
+            return None
+        commit_all = re.search(COMMIT + r"[^;&|\n]*\s(?:--all\b|-[a-zA-Z]*a)", code) is not None
+        with pa.simulated_index(root, _pending_adds(code, cdir, root), commit_all) as (env, _):
+            block = pa.staged_check(root, cfg, env)["block"] if tidy else []
+            hits = sb.foreign_touches([os.path.join(root, p) for p in pa.staged_paths(root, env)], session_id) \
+                if board and not block else []
+        if block:
+            return "deny", _tidy_reason(root, block)
+        return ("ask", _board_reason(root, hits)) if hits else None
+    except Exception:                                   # never let the gate crash the hook
+        return None
 
 
 def _launcher_issue(code, cwd):
@@ -191,7 +218,7 @@ def _launcher_issue(code, cwd):
     return None
 
 
-def decide(cmd, cwd=None):
+def decide(cmd, cwd=None, session_id=None):
     """Return (decision, reason) or None. decision ∈ {"ask", "deny"}."""
     code = _strip_text(cmd)
     if _at_command(code, r"git\s+(?:-C\s+\S+\s+)?push\b"):
@@ -205,9 +232,9 @@ def decide(cmd, cwd=None):
         due, why = review_due(code, cwd)
         if due:
             return "deny", why
-        why = tidy_issue(code, cwd)
-        if why:
-            return "deny", why
+        verdict = commit_issue(code, cwd, session_id)
+        if verdict:
+            return verdict
     why = _launcher_issue(code, cwd)
     if why:
         return "deny", why
@@ -221,7 +248,7 @@ def main():
         return 0
     if payload.get("tool_name") != "Bash":
         return 0
-    verdict = decide(payload.get("tool_input", {}).get("command", ""), payload.get("cwd"))
+    verdict = decide(payload.get("tool_input", {}).get("command", ""), payload.get("cwd"), payload.get("session_id"))
     if verdict:
         decision, reason = verdict
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
@@ -282,11 +309,25 @@ def _demo():
                   (f"cd {clean} && git add -A && {commit}", "/", "deny"),        # the cd before the commit is followed
                   (f"git -C {clean} commit -am 'x'" + t, "/", "deny"),           # -a takes the modified t.log
                   (f"git -C {clean} commit -m 'x'" + t, "/", None)]
+        # session board: another session's uncommitted change in the commit → ask; one's own or an old one → pass
+        os.environ["SESSION_BOARD"] = board = os.path.join(d, "board.json")
+        ok_py = os.path.realpath(os.path.join(clean, "src", "ok.py"))
+        add = f"git add src/ok.py && {commit}"
+        board_cases = [(add, "me", 300, "ask"), (add, "other", 300, None), (add, "me", 2 * 3600, None)]
         bad = 0
         for cmd, cwd, want in cases:
             got = decide(cmd, cwd); got = got[0] if got else None
             ok = got == want; bad += not ok
             print(f"{'✓' if ok else '✗'} {want!s:5} {got!s:5} {cmd.splitlines()[0][:70]}")
+        for cmd, sid, age, want in board_cases:
+            now = time.time()
+            json.dump({"sessions": {"other": {"name": "Figure five", "last_seen": now}, "me": {"last_seen": now}},
+                       "touches": {ok_py: {"other": [now - age, "edit"]}}}, open(board, "w"))
+            got = decide(cmd, clean, sid); got = got[0] if got else None
+            ok = got == want; bad += not ok
+            print(f"{'✓' if ok else '✗'} {want!s:5} {got!s:5} [{sid}; ok.py changed by 'other' {age // 60} min ago]")
+        del os.environ["SESSION_BOARD"]
+        cases += board_cases
         untouched = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=clean,
                                    capture_output=True, text=True).stdout == ""
         bad += not untouched

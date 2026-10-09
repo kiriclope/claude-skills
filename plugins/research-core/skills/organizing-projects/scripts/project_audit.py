@@ -32,6 +32,7 @@ Usage:
     python project_audit.py --demo
 """
 import argparse
+import contextlib
 import datetime as dt
 import os
 import re
@@ -419,11 +420,14 @@ def staged_check(root, cfg, env=None):
     return {"block": sorted(block.items()), "propose": prop, "staged": len(changes)}
 
 
-def check_commit(root, cfg, adds=(), commit_all=False):
-    """staged_check of the commit that follows `git add <args>` (each (cwd, args) in adds) and, with commit_all,
-    `git commit -a`. The adds run against a throwaway copy of the index; the real index is never touched."""
+@contextlib.contextmanager
+def simulated_index(root, adds=(), commit_all=False):
+    """Yield (env, notes): env points GIT_INDEX_FILE at a throwaway copy of the index after `git add <args>` (each
+    (cwd, args) in adds) and, with commit_all, `git add -u` — what `git commit` would see. The real index is never
+    touched; env is None when there is nothing to simulate. notes: adds that failed or timed out."""
     if not adds and not commit_all:
-        return {**staged_check(root, cfg), "notes": []}
+        yield None, []
+        return
     idx = _git(root, "rev-parse", "--git-path", "index").strip()
     idx = idx if os.path.isabs(idx) else os.path.join(root, idx)
     notes = []
@@ -440,6 +444,18 @@ def check_commit(root, cfg, adds=(), commit_all=False):
                 notes.append(f"`git add {' '.join(args)}` timed out in the simulation"); continue
             if r.returncode:
                 notes.append(f"`git add {' '.join(args)}` would fail: {r.stderr.decode(errors='ignore').strip()[:200]}")
+        yield env, notes
+
+
+def staged_paths(root, env=None):
+    """Every path the commit would change, renamed-from paths included (relative to root)."""
+    return [q for _, p, old in _changes(root, env) for q in (p, old) if q]
+
+
+def check_commit(root, cfg, adds=(), commit_all=False):
+    """staged_check of the commit that follows `git add <args>` (each (cwd, args) in adds) and, with commit_all,
+    `git commit -a` (simulated_index: the real index is never touched)."""
+    with simulated_index(root, adds, commit_all) as (env, notes):
         return {**staged_check(root, cfg, env), "notes": notes}
 
 

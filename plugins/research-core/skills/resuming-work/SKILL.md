@@ -1,6 +1,6 @@
 ---
 name: resuming-work
-description: Pick a project back up — what changed since a date, what is running (screens, processes, queue files), whether a review checkpoint is due, the newest state in memory, open items — and find the past session that worked on something. Also memory hygiene: oversized state files, rules copied across projects, duplicate memory folders (proposals only). Use when starting a session, when the user asks "where were we", "what's running", "catch me up on this project", "which session had X", or when memory looks bloated or contradictory. Not for reviewing the changed code itself → use running-review-checkpoints.
+description: Pick a project back up — what changed since a date, what is running (screens, processes, queue files), which other Claude Code sessions are live and what they changed, whether a review checkpoint is due, the newest state in memory, open items — and find the past session that worked on something. Also memory hygiene: oversized state files, rules copied across projects, duplicate memory folders (proposals only). Use when starting a session, when the user asks "where were we", "what's running", "catch me up on this project", "which session had X", or when memory looks bloated or contradictory. Not for reviewing the changed code itself → use running-review-checkpoints.
 ---
 
 # Resuming work
@@ -16,13 +16,17 @@ python <this skill>/scripts/resume_brief.py --repo <project> [--days 3 | --since
 ```
 It prints: git (branch, ahead/behind, uncommitted files, commits since the date) · running work
 (screens, python processes inside the project, queue files and their last log line) · the review
-checkpoint (due / not due) · the newest dated entries of the memory state file · docs changed
-since the date · open items (TODO, FIXME, NEXT:, unchecked boxes) · memory hygiene flags.
+checkpoint (due / not due) · other live sessions (the session board: name, repository, branch, last
+prompt, the files each changed and has not committed) · the newest dated entries of the memory state
+file · docs changed since the date · open items (TODO, FIXME, NEXT:, unchecked boxes) · memory hygiene
+flags.
 
 ## Step 2 — tell the user, in ten lines or fewer
 
 1. **Where things stand** — the last result or decision, with its date.
 2. **What is running** — and whether it is still alive (a process, a growing log), not just listed in memory.
+   **Who else is working here** — another live session's uncommitted files are its work in progress:
+   do not edit or commit them without asking its owner (`SendMessage` to its name) or the user.
 3. **What is due** — a review checkpoint, a finished run waiting for verdicts and figures.
 4. **Open items** — the two or three that matter, not the whole list.
 5. **Proposed next step**, as a question. If the user's answer is vague, use clarifying-requests.

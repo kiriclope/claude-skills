@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-09 — research-core 0.11.0 (session board: parallel sessions know each other)
+- **hooks/session_board.py** (new): hooks on SessionStart, UserPromptSubmit, PreToolUse (Bash), PostToolUse
+  (Bash and edits) and SessionEnd keep `~/.claude/active_sessions.json`: each session's name (the
+  background-job name `SendMessage` takes, else its first prompt), folder, repository, branch, last
+  prompt, and the files it changed. Bash commands are attributed from modification times after the
+  command started, and labeled as a guess. A starting session is told which others are live and what
+  they changed and have not committed; an edit to a file with another session's uncommitted change from the
+  last hour gets a one-time note naming that session. `--list`, `--who <file>`; demo 10 checks
+  (twelve concurrent hooks lose nothing).
+- **Bash guard**: asks before a commit that includes another session's uncommitted change from the last
+  hour, naming the session (any repository, once the board is installed). The tidy check and this check
+  share one simulated index (`project_audit.simulated_index`, `staged_paths`). Demo 32 cases.
+- **resuming-work**: the brief has a SESSIONS section (other live sessions, this project's first).
+  **log-and-ship**: `--who` before committing changes you did not make; never answer the guard's ask yourself.
+
 ## 2026-10-09 — research-core 0.10.1 (from the first backlog cleanup, rnn and dual)
 - **project_audit.py --staged**: an untracked file counts as imported only when the import resolves to
   its path; a bare file name counts only next to the staged file or when no tracked file shares it

@@ -4,6 +4,8 @@ Prints, for the git project around --repo:
   * git: branch, ahead/behind, uncommitted files, commits since --since
   * running work: detached screens, this user's python processes inside the project, recent queue files
   * review checkpoint: due / not due (running-review-checkpoints), when the project has a baseline
+  * other Claude Code sessions live on this machine and the files they changed and have not committed
+    (the session board, hooks/session_board.py in the skills repo, when its hooks are installed)
   * memory: the newest dated entries of the state file (project.yaml memory_dir + memory_state_file)
   * docs changed since --since, and open items (TODO, FIXME, NEXT:, unchecked boxes)
   * memory hygiene: oversized memory files, duplicate memory folders for this project, rules copied
@@ -33,6 +35,8 @@ import tempfile
 CLAUDE_ROOT = os.environ.get("CLAUDE_PROJECTS_ROOT", os.path.expanduser("~/.claude/projects"))
 REVIEW = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "running-review-checkpoints",
                       "scripts", "review_status.py")
+BOARD = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), *[".."] * 5, "hooks",
+                                      "session_board.py"))
 DEFAULTS = {"since_days": 3, "memory_cap_kb": 40}
 DATE = re.compile(r"\b(20\d\d)-(\d\d)-(\d\d)\b")
 OPEN_ITEM = re.compile(r"\b(TODO|FIXME|NEXT:|OPEN:)|^\s*[-*] \[ \]")
@@ -215,6 +219,19 @@ def checkpoint_section(root, cfg):
            {"state": "due" if "DUE" in summary else "not due"}
 
 
+def sessions_section(root):
+    """Other Claude Code sessions live on this machine (the session board, when its hooks are installed)."""
+    if not os.path.exists(BOARD):
+        return ["session board: not installed (hooks/session_board.py in the skills repo)"], {"live": None}
+    lines = sh([sys.executable, BOARD, "--list", "--repo", root]).splitlines()
+    head = lines[0] if lines else ""
+    n = int(m.group(1)) if (m := re.search(r"(\d+) live session", head)) else 0
+    if not n:
+        return ["no other session on the board (live = seen in the last day)"], {"live": 0}
+    rule = "another session's uncommitted file: ask its owner (SendMessage to its name) before editing or committing it"
+    return [l.strip() if l.startswith("  •") else l[2:] for l in lines[1:]] + [rule], {"live": n}
+
+
 def memory_entries(path, n=5):
     """The n newest dated headings / bullets of a markdown memory file: (date, line, next line)."""
     lines = open(path, errors="ignore").read().splitlines()
@@ -390,7 +407,8 @@ def brief(root, args, claude_root):
     dirs = project_dirs(root, claude_root)
     mem = memory_dir(cfg, dirs)
     sections = [("GIT", git_section(root, since)), ("RUNNING", running_section(root, cfg, since)),
-                ("REVIEW", checkpoint_section(root, cfg)), ("MEMORY", memory_section(cfg, mem, since)),
+                ("REVIEW", checkpoint_section(root, cfg)), ("SESSIONS", sessions_section(root)),
+                ("MEMORY", memory_section(cfg, mem, since)),
                 ("DOCS", docs_section(root, cfg, mem, since)), ("HYGIENE", hygiene_section(root, cfg, claude_root))]
     print(f"RESUME BRIEF · {os.path.basename(root)} · since {since}")
     for title, (lines, _) in sections:
@@ -468,10 +486,24 @@ def _demo():
         class A:                                                            # the CLI defaults
             since, days = "2000-01-01", None
         import contextlib, io
+        import time
+        board = os.path.join(t, "board.json")                              # another session, live in this project
+        with open(os.path.join(root, "notes.py"), "w") as f:
+            f.write("x = 1\n")
+        json.dump({"sessions": {"cccc1111": {"name": "Figure five", "repo": os.path.realpath(root),
+                                             "last_seen": time.time()}},
+                   "touches": {os.path.realpath(os.path.join(root, "notes.py")): {"cccc1111": [time.time(), "edit"]}}},
+                  open(board, "w"))
+        os.environ["SESSION_BOARD"] = board
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             data = brief(root, A, claude)
         out = buf.getvalue()
+        del os.environ["SESSION_BOARD"]
+        os.remove(os.path.join(root, "notes.py"))
+        checks.append(("sessions: another live session and its uncommitted file are listed",
+                       not os.path.exists(BOARD) or (data["SESSIONS"]["live"] == 1 and "'Figure five'" in out
+                                                     and "notes.py" in out)))
         checks.append(("git: the commit is listed", data["GIT"]["commits"] == 1 and "first analysis" in out))
         checks.append(("memory: newest dated entry first", data["MEMORY"] and data["MEMORY"][0][0] == "2026-10-05"))
         checks.append(("docs: changed doc listed", "docs/log.md" in data["DOCS"]["changed"]))

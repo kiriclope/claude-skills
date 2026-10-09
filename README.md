@@ -249,23 +249,9 @@ starting it. Without it, the convention skills (code, paper, results, figures) a
 
 ### Install the hooks (recommended)
 
-Add both entries to `~/.claude/settings.json` (merge with any `hooks` you already have):
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      { "matcher": "Bash",
-        "hooks": [ { "type": "command", "timeout": 10,
-                     "command": "python3 ~/claude-skills/hooks/guard_bash.py" } ] }
-    ],
-    "Stop": [
-      { "hooks": [ { "type": "command", "timeout": 30,
-                     "command": "python3 ~/claude-skills/plugins/research-core/skills/running-review-checkpoints/scripts/review_status.py --hook stop" } ] }
-    ]
-  }
-}
-```
+Copy the `hooks` block from [hooks/README.md](hooks/README.md#install-user-level-all-projects--add-to-claudesettingsjson)
+into `~/.claude/settings.json`, merging with any `hooks` you already have. It installs the Bash guard,
+the review-checkpoint Stop hook and the session board; each part works without the others.
 
 Run `/hooks` in Claude Code to check that they loaded. They need `python3` with PyYAML.
 
@@ -364,7 +350,9 @@ Skills are advice; these rules are enforced by Claude Code whatever the session 
 | | the project's training launcher run in the foreground | refused — run it in `screen -dmS`, `tmux -d`, a scheduler (`sbatch`, `qsub`), `nohup … &` or the launcher's `--per_run_screen` mode. Launchers come from `launch.entrypoints` in `project.yaml` (default `sweep.py`, `rerun_dual.py`) |
 | | a commit while a review checkpoint is due | refused until the checkpoint is done — **opted-in projects only** |
 | | a commit that stages clear mess: a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a `_v2` / `_old` copy of code | refused — unstage or fix it; `TIDY_OK=1` only for a file you named — **projects with a `project.yaml`** (off: `organize: {commit_check: false}`) |
+| | a commit that includes a file another Claude Code session changed in the last hour and has not committed | asks you, naming that session — **every repository**, with the session board installed |
 | `review_status.py --hook stop` (end of every turn) | a review checkpoint is due | Claude runs the checkpoint before ending the turn (never twice in a row) — **opted-in projects only** |
+| `session_board.py` (session start, each prompt, each edit or shell command, session end) | several sessions at once | not a rule: it keeps `~/.claude/active_sessions.json` (who works where, which files they changed), tells a starting session which others are live, and tells a session when a file it edits has another session's uncommitted change |
 
 The guard matches commands, never text: a commit message or a heredoc that mentions `git push` or a
 launcher does not trigger it. The commit tidy check (`project_audit.py --staged`) looks at that commit
@@ -391,7 +379,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `verify_refs.py` | verifying-citations | references against Crossref and OpenAlex |
 | `stats_floor.py` | choosing-statistics | the smallest p a sign test, Wilcoxon, Mann-Whitney or permutation test can reach at a given n |
 | `materials.py` | reviewing-manuscript | gathers the text, canonical figures and numbers log the reviewer agents receive |
-| `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, newest memory state, open items |
+| `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, other live sessions, newest memory state, open items |
 | `memory_links.py` | resuming-work | Obsidian `aliases:` for memory notes, and the `[[links]]` that resolve nowhere |
 | `memory_trim.py` | maintaining-memory | oversized notes; snapshot; checks a trimmed draft (front matter, numbers, scripts it no longer describes); archives and applies |
 | `project_audit.py` | organizing-projects | untracked or ignored sources, version-suffixed copies, large files, stale scratch, unindexed docs; `--staged`: the same for one commit, plus the README lines it needs |
@@ -399,6 +387,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `run_card.py` | run-card | per-stage training settings of a sweep, read from the training code |
 | `lint_skills.py` | maintaining-skills | the skills themselves: format, length, personal facts in shared skills, drifted copies |
 | `guard_bash.py` | (hook) | the enforced rules above |
+| `session_board.py` | (hook) | which sessions are live and which files each changed; `--list`, `--who <file>` |
 
 ## Repository layout
 
@@ -410,7 +399,7 @@ plugins/
   lowrank-rnn/                    skills for the low-rank RNN code base
   personal/                       maintainer-only (figure-gallery)
 python/cbstyle/                   the colorblind palette package (pip install)
-hooks/                            guard_bash.py and its README
+hooks/                            guard_bash.py, session_board.py and their README
 templates/project.yaml            per-project configuration template
 profiles/<person>.md              personal profiles (linked as ~/.claude/CLAUDE.md)
 personal_patterns.txt             names and paths that must never appear in shared skills
