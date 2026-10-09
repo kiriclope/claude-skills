@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-09 — research-core 0.10.1 (from the first backlog cleanup, rnn and dual)
+- **project_audit.py --staged**: an untracked file counts as imported only when the import resolves to
+  its path; a bare file name counts only next to the staged file or when no tracked file shares it
+  (dual's `from src.common import plot_utils` flagged an untracked `utils/plot_utils.py`). The import
+  parser no longer runs across lines.
+- **organizing-projects**: before proposing to version or clear a file, find what uses it (paper,
+  resolved imports, figure inputs, docs, memory) and its size; clearing = commit once, then remove
+  (recoverable by hash), a large file goes outside the repository; plan for the review checkpoint
+  that large deletions trigger.
+- **running-review-checkpoints**: `--mark` in its own command before the commit.
+
 ## 2026-10-09 — research-core 0.10.0 (tidy check at every commit)
 - **organizing-projects**: `project_audit.py --staged [--all]` checks one commit. It blocks only clear
   mess (a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a

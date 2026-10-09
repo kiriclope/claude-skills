@@ -77,8 +77,8 @@ Docs / memory in sync: <yes, or which doc is now stale>
 ## Step 4 — act, then record
 
 1. Apply what the user changed; revert what they rejected, and show the diff.
-2. Record it: `review_status.py --mark --note "<approved 1, 3; changed 2 → …>"`. The note says what
-   the user decided. **Never mark a review the user did not explicitly approve in this checkpoint**
+2. Record it: `review_status.py --mark --note "<approved 1, 3; changed 2 → …>"`, in its own command
+   before the commit (the commit gate checks before a command runs). The note says what the user decided. **Never mark a review the user did not explicitly approve in this checkpoint**
    — not in auto mode, not because the changes look small.
 3. `.claude/review_log.md` goes into the project's next commit (log-and-ship).
 

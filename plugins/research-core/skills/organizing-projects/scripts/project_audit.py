@@ -348,31 +348,50 @@ def _doc_proposals(root, cfg, new, gone, tracked):
     return prop
 
 
-def _untracked_refs(root, cfg, env, kept):
-    """Untracked source files that a staged file imports or names: the commit will not stand on its own."""
+IMPORT = re.compile(r"^[ \t]*(?:from[ \t]+([\w.]+)[ \t]+import[ \t]+(\([^)]*\)|[\w \t,]+)"   # from a.b import c, (d, e)
+                    r"|import[ \t]+([\w. \t,]+))", re.M)                                     # import a.b as x, y
+
+
+def _imported_modules(text):
+    """Dotted names a Python file imports: `from a.b import c` gives a.b and a.b.c; `import a.b as x` gives a.b."""
+    mods = set()
+    for frm, names, plain in IMPORT.findall(text):
+        if frm:
+            mods.add(frm)
+            names = names.strip("()").split(",")
+            mods.update(f"{frm}.{n.split()[0]}" for n in names if n.strip())
+        else:
+            mods.update(n.split()[0] for n in plain.split(",") if n.strip())
+    return mods
+
+
+def _untracked_refs(root, cfg, env, kept, tracked):
+    """Untracked source files that a staged file imports or names by path: the commit will not stand on its own.
+    A bare file name counts only next to the staged file, or when no tracked file has that name."""
     untracked = [u for u in _z(_git(root, "ls-files", "-z", "--others", "--exclude-standard", env=env))
                  if _is_source(u) and not _under(u, cfg["output_dirs"] + cfg["scratch_dirs"])][:3000]
     if not untracked:
         return []
-    by_name, by_stem = {}, {}
-    for u in untracked:
-        by_name.setdefault(os.path.basename(u), []).append(u)
-        if u.endswith(".py"):
-            by_stem.setdefault(os.path.splitext(os.path.basename(u))[0], []).append(u)
-    alternatives = "|".join(map(re.escape, sorted(by_name, key=len, reverse=True)))
-    name_re = re.compile(rf"(?<![\w.-])({alternatives})(?![\w-])")
-    stem_re = re.compile(r"\b(?:from|import)\s+(?:[\w.]*\.)?(" + "|".join(map(re.escape, by_stem)) + r")\b") \
-        if by_stem else None
+    names = {}
+    for t in tracked:
+        names.setdefault(os.path.basename(t), set()).add(t)
     prop, seen = [], set()
     for _, p in kept:
         if os.path.splitext(p)[1][1:].lower() not in {"py", "sh", "md", "tex", "yaml", "yml", "ipynb"}:
             continue
         text = _read(root, p)
-        hits = [u for m in name_re.finditer(text) for u in by_name[m.group(1)]]
-        if stem_re and p.endswith(".py"):
-            hits += [u for m in stem_re.finditer(text) for u in by_stem[m.group(1)]]
-        for u in hits:
-            if u not in seen and (u.endswith(".py") or os.path.dirname(u) == os.path.dirname(p) or u in text):
+        mods = _imported_modules(text) if p.endswith(".py") else set()
+        here = os.path.dirname(p)
+        for u in untracked:
+            if u in seen:
+                continue
+            b, d = os.path.basename(u), os.path.dirname(u)
+            dotted = os.path.splitext(u)[0].replace("/", ".")
+            stem = os.path.splitext(b)[0]
+            hit = u in text \
+                or (_names(text, b) and (d == here or b not in names)) \
+                or (u.endswith(".py") and (dotted in mods or (d == here and stem in mods)))
+            if hit:
                 seen.add(u)
                 consequence = "the doc points to a file git does not have" if p.endswith(".md") \
                     else "a fresh clone will not run"
@@ -396,7 +415,7 @@ def staged_check(root, cfg, env=None):
         elif _under(p, cfg["scratch_dirs"]):
             prop.append((p, "scratch file: promote it (`git mv` into scripts/, add a docstring) or leave it out"))
     prop += _doc_proposals(root, cfg, new, gone, tracked)
-    prop += _untracked_refs(root, cfg, env, [(st, p) for st, p in kept if p not in block])
+    prop += _untracked_refs(root, cfg, env, [(st, p) for st, p in kept if p not in block], tracked)
     return {"block": sorted(block.items()), "propose": prop, "staged": len(changes)}
 
 
@@ -521,7 +540,7 @@ def _demo_staged():
         w("README.md", "# P\nsrc/ holds the model; run sweep.py. old.py is legacy.\n")
         w("CLAUDE.md", "| [docs/a.md](docs/a.md) | A |\n")
         w("scripts/README.md", "- a.py: does A\n")
-        for f in ("src/model.py", "sweep.py", "docs/a.md", "scripts/a.py", "fig.py"):
+        for f in ("src/model.py", "src/plot_utils.py", "sweep.py", "docs/a.md", "scripts/a.py", "fig.py"):
             w(f)
         w("old.py", "legacy = True\n")                   # unique content, so its removal is not seen as a rename
         git("init", "-q"); git("add", "-A"); git("commit", "-qm", "init")
@@ -532,7 +551,8 @@ def _demo_staged():
         for f in ("results/plot.png", "fig_v2.py", "fig.py~", "notes/private.md", "run.log", "scratchpad/try.py",
                   "docs/b.md", "newtool.py", "analysis/x.py", "scripts/b.py", "docs/review_2026-10-09.md"):
             w(f)
-        w("big.bin", "0" * 5000); w("src/model.py", "from src import helper\n"); w("src/helper.py")
+        w("big.bin", "0" * 5000); w("src/model.py", "from src import helper\nfrom src import plot_utils\n")
+        w("src/helper.py"); w("utils/plot_utils.py")      # untracked copy named like the tracked src/plot_utils.py
         git("add", "-f", "results/plot.png", "big.bin", "fig_v2.py", "fig.py~", "notes/private.md", "run.log",
             "scratchpad/try.py", "docs/b.md", "newtool.py", "analysis/x.py", "scripts/b.py",
             "docs/review_2026-10-09.md", "src/model.py")
@@ -551,7 +571,7 @@ def _demo_staged():
              has("newtool.py", "top-level script") and has("analysis/", "top-level folder")
              and has("scripts/b.py", "scripts/README.md")
              and has("README.md", "still names old.py, which this commit removes")),
-            ("staged finds the untracked module staged code imports; nothing else proposed",
+            ("staged finds the untracked module staged code imports, not a same-named copy; nothing else",
              has("src/helper.py", "untracked") and len(r["propose"]) == 10)]
 
 

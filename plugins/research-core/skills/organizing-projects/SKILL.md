@@ -40,8 +40,10 @@ a missing README — then a numbered tidy plan. Settings: `organize:` in `.claud
 
 ## Step 2 — the plan, for approval
 
-Present the plan as groups, each with its concrete commands and what it touches; ask which
-groups to run (AskUserQuestion, multiSelect). Typical groups:
+Before proposing to version or clear a file, find what uses it, and put the answer in the question
+(one per group): the paper text, imports by tracked code (resolve the import to a path: a bare name
+collides with same-named modules elsewhere), figure scripts that read its output, docs, memory —
+and its size (a large file changes the answer). Typical groups:
 
 | Group | Action |
 |---|---|
@@ -59,6 +61,10 @@ The target layout, what git tracks vs ignores, and naming rules: `references/lay
 - Moves with `git mv`; then grep for every reference to the old path (imports, docs, CLAUDE.md,
   project.yaml) and update it; run each moved script's `--help` to prove it still imports.
 - Deletions only of files the user approved; never `rm -rf` a folder.
+- **Clearing** a file git never had: commit it once, then `git rm` it in the next commit, so it stays
+  recoverable by hash; repoint its citations (docs, code, memory) to that commit. A file over
+  `large_file_mb` is moved outside the repository instead (ask first). A tracked file needs only `git rm`.
+- Large deletions trigger the review checkpoint again: prepare the next commits, then one checkpoint.
 - Never rewrite git history (large files already committed stay; only new ones are kept out).
 - One commit per group (log-and-ship), so each is easy to revert.
 - Re-run the audit and show the before/after counts.
