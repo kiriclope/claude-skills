@@ -112,6 +112,18 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | [checking-derivations](plugins/research-core/skills/checking-derivations/SKILL.md) | Derive with sympy, state assumptions, then check numerically against the real model (Jacobian vs autograd vs finite differences). | Deriving or editing an equation; a formula and a simulation disagree. |
 | [flow-verdict](plugins/lowrank-rnn/skills/flow-verdict/SKILL.md) · [traj-verdict](plugins/lowrank-rnn/skills/traj-verdict/SKILL.md) · [bifurcation-probe](plugins/lowrank-rnn/skills/bifurcation-probe/SKILL.md) | *(lowrank-rnn)* Score flow fields, trajectories and fixed points of low-rank RNNs with the project's scripts instead of eyeballing figures, with the known misinterpretation traps listed. | Interpreting κ-plane flows, trajectories or bifurcations. |
 
+### Validate
+
+Each validation skill runs the real pipeline on inputs whose answer is known, and prints PASS / FAIL
+lines. Each check is a past error that reached a figure or a conclusion.
+
+| Skill | What it does | Use it when |
+|---|---|---|
+| [validating-pipelines](plugins/research-core/skills/validating-pipelines/SKILL.md) | Plants effects of known size (and none) in synthetic data shaped like the real data, runs the real pipeline, and scores offset, shrinkage or inflation, sign, false positives, interval coverage and the smallest detectable effect; pins the paper's numbers and flags the ones a code change moved. | A new measure gives its first result; before claiming that something does not change; after editing analysis code that feeds the paper. |
+| [validating-decoders](plugins/research-core/skills/validating-decoders/SKILL.md) | Runs a decoder pipeline on shuffled labels (through the identical pipeline), pure noise (must sit at chance: leakage), imbalanced noise, nuisance-matched trials (licks, running, session), fewer trials and held-out sessions or animals. | A decoder, CCGP, axis or dPCA result is about to be reported; *"is it above chance"*, *"is it just licks"*. |
+| [validating-networks](plugins/lowrank-rnn/skills/validating-networks/SKILL.md) | *(lowrank-rnn)* Per trained run: did it learn, does dual_dpa hide damage, do the logged accuracies reproduce from the checkpoints, did frozen parameters stay frozen, does it work only at its trained noise or delay, do the trials sit on the wells, is there a slow set. | A sweep finished; before flow-verdict, traj-verdict or any figure; *"do these nets really work"*. |
+| [validating-claims](plugins/research-core/skills/validating-claims/SKILL.md) | A ledger of every claim with the controls that could falsify it (the falsifying result written before the control runs); flags claims uncontrolled, failed, pending or stale, and claim sentences in the draft with no entry. | A result becomes a claim in a draft; before sharing or submitting; *"what would falsify this"*. |
+
 ### Figures and code
 
 | Skill | What it does | Use it when |
@@ -159,12 +171,14 @@ flowchart LR
     A[vague request] --> B[clarifying-requests]
     B --> C[planning-research]
     C --> D[launching-experiments]
-    D --> E[auditing-results]
+    D --> V[validating-networks<br/>-pipelines, -decoders]
+    V --> E[auditing-results]
     E --> T[choosing-statistics]
     T --> F[thinking-critically<br/>fresh review]
     F --> G[making-figures]
     G --> H[writing-paper]
-    H --> I[auditing-paper-numbers<br/>verifying-citations]
+    H --> Q[validating-claims]
+    Q --> I[auditing-paper-numbers<br/>verifying-citations]
     I --> M[reviewing-manuscript]
     M --> J[log-and-ship]
     R[running-review-checkpoints] -. every ~300 lines or 3 commits .-> J
@@ -173,9 +187,11 @@ flowchart LR
 ```
 
 For example, *"look at the new sweep"* becomes a precise question (which arm, score or mechanism?),
-the result is scored seed by seed against a criterion written beforehand, an independent agent tries
-to break the conclusion, the figure is rendered in the house style and looked at, and the result is
-logged and committed — with a human checkpoint along the way if a lot of code changed.
+the trained nets and the analysis are first checked on inputs whose answer is known, the result is
+scored seed by seed against a criterion written beforehand, an independent agent tries to break the
+conclusion, the figure is rendered in the house style and looked at, each claim in the draft is tied
+to the controls that could falsify it, and the result is logged and committed — with a human
+checkpoint along the way if a lot of code changed.
 
 ## Context, tokens and memory
 
@@ -315,6 +331,7 @@ Every key is optional. Read by the skill(s) in the second column.
 | `numbers_script`, `numbers_log` | auditing-paper-numbers | the script that prints every number in the paper, and the file it writes (what the audit reads) |
 | `review_figures`, `journal`, `field` | reviewing-manuscript | the canonical figure renders the reviewers get, and the venue and field for their brief |
 | `stats` | choosing-statistics | sidedness, correction, alpha and permutation draws, declared before any result |
+| `validation` | validating-claims | the claims ledger (`claims_file`), the smallest n a claim may rest on (`min_n`), control types required per claim kind |
 | `resume` | resuming-work, maintaining-memory | how far back the brief looks; the size above which a memory note is flagged (`memory_cap_kb`, 40) |
 | `organize` | organizing-projects, the guard hook | output and scratch folders, large-file and scratch-age limits, CLAUDE.md length, the commit tidy check (`commit_check`) |
 | `pages` | publishing-drafts | every published page with its URL, source, builder and inputs |
@@ -385,6 +402,11 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `project_audit.py` | organizing-projects | untracked or ignored sources, version-suffixed copies, large files, stale scratch, unindexed docs; `--staged`: the same for one commit, plus the README lines it needs |
 | `pages_check.py` | publishing-drafts | every page in `pages:` has its source and builder in the repo and is up to date |
 | `run_card.py` | run-card | per-stage training settings of a sweep, read from the training code |
+| `recovery_check.py` | validating-pipelines | a pipeline on planted effects: offset, shrinkage, inflation, sign, false positives, coverage, detectable effect |
+| `pin_numbers.py` | validating-pipelines | a numbers log against its reviewed snapshot: CHANGED, GONE, NEW |
+| `decoder_check.py` | validating-decoders | a decoder on shuffled labels, noise, imbalanced noise, nuisance-matched trials, fewer trials, held-out groups |
+| `net_check.py` | validating-networks | trained low-rank RNN runs: learned, hidden damage, reproduction, frozen drift, noise and delay tuning, field vs trials, slow sets (in the project root: it imports the project's model) |
+| `claims_ledger.py` | validating-claims | every claim against its required controls; claim sentences in the draft with no ledger entry |
 | `lint_skills.py` | maintaining-skills | the skills themselves: format, length, personal facts in shared skills, drifted copies |
 | `guard_bash.py` | (hook) | the enforced rules above |
 | `session_board.py` | (hook) | which sessions are live and which files each changed; `--list`, `--who <file>` |

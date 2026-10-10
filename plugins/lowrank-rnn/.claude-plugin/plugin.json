@@ -1,6 +1,6 @@
 {
   "name": "lowrank-rnn",
-  "version": "0.3.0",
-  "description": "Low-rank RNN κ-plane analysis skills: flow-verdict, traj-verdict, bifurcation-probe. Expect flow_verdict.py / traj_verdict.py / bifurcation_*.py at the project root.",
+  "version": "0.4.0",
+  "description": "Low-rank RNN κ-plane analysis skills: flow-verdict, traj-verdict, bifurcation-probe, run-card, validating-networks. Expect flow_verdict.py / traj_verdict.py / bifurcation_*.py / net_check.py at the project root.",
   "author": { "name": "Leon" }
 }

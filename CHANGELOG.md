@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-10-09 — research-core 0.12.0, lowrank-rnn 0.4.0 (validation skills: catch wrong results before a figure)
+Four skills, each with a verdict script and a `--demo`; each check is a past error that reached a figure,
+a conclusion or the paper. They run the real pipeline on inputs whose answer is known.
+- **validating-pipelines** (new): `recovery_check.py` plants effects of known size (and none) through an
+  adapter (`simulate`, `estimate`) and reports OFFSET, SHRINKAGE, INFLATION, SIGN FLIP, NOT MONOTONE,
+  FALSE POSITIVES, UNDERCOVERAGE and the DETECTABLE effect (demo: a sound pipeline, an offset distance, a
+  per-condition normalization, pseudoreplication). `pin_numbers.py` pins a reviewed numbers log and flags
+  CHANGED, GONE and NEW numbers after a code change.
+- **validating-decoders** (new): `decoder_check.py` runs the adapter's own `evaluate()` on shuffled labels,
+  pure noise (LEAKAGE when it decodes above chance; judged against chance, since a leak inflates the null
+  too), imbalanced noise (METRIC UNBALANCED), nuisance-matched trials (CONFOUNDED), fewer trials and held-out
+  groups (demo: leaky feature selection, plain accuracy, pseudo-trials resampled before the split, a lick
+  confound).
+- **validating-networks** (lowrank-rnn, new): `net_check.py` at the project root, per run: NOT LEARNED,
+  HIDDEN DAMAGE (dual_dpa against after_gng/dpa), MISMATCH (logged accuracies not reproduced from the
+  checkpoints with the run's own config), FROZEN DRIFT (each stage's freezes read from its `train.log`), NOISE-TUNED, DELAY-TUNED, FIELD≠TRIALS, SLOW SET.
+  On real runs it flags the 2026-10-01 log nets as noise-tuned, a non-learner whose dual_dpa hid damage,
+  and `wi.bias` training during Dual in every sweep before the 2026-09-21 fix.
+- **validating-claims** (new): `claims_ledger.py` checks a YAML ledger of claims, each with the controls its
+  kind requires and the result that would falsify it, written before the control runs: CONTROLLED, FAILED,
+  UNCONTROLLED, PENDING, STALE; with the draft, GONE and UNLEDGERED sentences. `--init` writes a skeleton
+  from a draft. The ledger path comes from `validation.claims_file` in `project.yaml` (new `validation:`
+  block: `claims_file`, `min_n`, `required`).
+- **auditing-results** points to the four scripts for checks a table cannot do. 12 eval cases (3 per skill),
+  each a past failure: a null result with no detectable effect, the participation ratio against n, pooled
+  cross-validation called generalization; a distance with no zero, per-condition z-scoring, trial-level
+  tests; correct-trial choice decoding, a single-split null, selection before the split; nets read off
+  their trained noise, dual_dpa hiding GNG damage, a continuous attractor scored as no wells.
+
 ## 2026-10-09 — research-core 0.11.0 (session board: parallel sessions know each other)
 - **hooks/session_board.py** (new): hooks on SessionStart, UserPromptSubmit, PreToolUse (Bash), PostToolUse
   (Bash and edits) and SessionEnd keep `~/.claude/active_sessions.json`: each session's name (the

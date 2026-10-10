@@ -81,6 +81,12 @@ stats:
   alpha: 0.05
   min_perm_draws: 1000
 
+# validating-claims (and the other validating-* skills)
+validation:
+  claims_file: null                   # e.g. docs/paper/claims.yaml — the claims ledger claims_ledger.py checks
+  min_n: 5                            # below this many units (seeds, mice) a claim is flagged exploratory
+  required: {}                        # replaces the default control types of a kind, e.g. {difference: [null, confound, matched-n]}
+
 # resuming-work
 resume:
   since_days: 3                       # how far back the brief looks

@@ -60,6 +60,15 @@ Before comparing sets, write the list "what differs between these sets besides t
 interest" (counts, conditions, units, scaling, preprocessing) and neutralize each item, or add a
 design-matched control set.
 
+When a check needs more than a table, run the validation script built for it:
+
+| Concern | Skill · script |
+|---|---|
+| a decoder's null, leakage, class balance, nuisance, held-out sessions | validating-decoders · `decoder_check.py` |
+| a measure's zero, sign, scale, false-positive rate; the detectable effect behind a null result | validating-pipelines · `recovery_check.py` |
+| trained low-rank RNNs: accuracies reproduce, frozen stayed frozen, trained noise and delay only | validating-networks · `net_check.py` |
+| the controls a claim still lacks before it goes into a draft | validating-claims · `claims_ledger.py` |
+
 ## 5. Make sure the analysis describes the right object
 
 - Every option that changes the task or the dynamics must reach the analysis/plotting code; load

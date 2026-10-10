@@ -36,6 +36,10 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
 | training misbehaves | `debugging-training` |
 | numbers just came out, before any conclusion | `auditing-results` |
 | choosing a test, a p-value, a star | `choosing-statistics` |
+| a new measure or pipeline, its first result; "did the numbers change" | `validating-pipelines` |
+| a decoder / CCGP / axis result; "is it above chance", "is it just licks" | `validating-decoders` |
+| a finished sweep, before any flow, trajectory or figure; "do these nets really work" | `validating-networks` |
+| a result becomes a claim in a draft; "what would falsify this" | `validating-claims` |
 | a conclusion that matters, "think critically" | `thinking-critically` |
 | deriving or checking math | `checking-derivations` |
 | low-rank RNN flows, trajectories, g·λ | `flow-verdict`, `traj-verdict`, `bifurcation-probe` |
