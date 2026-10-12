@@ -31,7 +31,11 @@ before running it on a whole large sweep while training jobs share the GPUs.
 | NOISE-TUNED | FLAG | nets at ×0 or ×1.5 of the trained noise fail DPA (2026-10-01; untied ring8 nets 2026-10-08) | a claim at another noise level needs nets retrained there; measure geometry at the trained noise |
 | DELAY-TUNED | FLAG | — (generalization claim) | "holds a memory" means at the trained delay only |
 | FIELD≠TRIALS | FLAG | the deterministic and the noise-averaged fields disagree on "all down" (5/8 vs 8/8); wells exist but trials do not sit there | read the wells as the landscape; occupancy comes from trials (traj-verdict) |
+| UNCHECKED | FLAG | — | no logged accuracy in `results.jsonl`: MISMATCH, NOT LEARNED and HIDDEN DAMAGE were not checked; find the run's log line before reading anything else |
 | SLOW SET | FLAG | flow_verdict scored 0/4 on an arm holding \|κ₀\| = 1.05 for 5 s: a continuous attractor has no isolated wells | map the slow set, report τ_slow against the delay; isolated-well verdicts do not apply |
+
+A run that loaded `gng_ckpt` without `dpa_ckpt` trained neither DPA nor GNG: its after-DPA accuracy
+(an untrained net) and its GNG freezes are not judged, and whether it learned is read on the source run.
 
 Each `·` line gives the numbers behind the verdicts: accuracy at each noise multiple, the delay
 probe, the distance of each sample class's end-of-delay state to the nearest well (in trial

@@ -50,8 +50,10 @@ that control was run on the current data.
    ```
    It lists every claim-like sentence (a statistic or a claim verb). Merge sentences that make
    one claim and delete the ones that are not claims.
-2. **Fill each entry**: kind, unit, n, source (the numbers-log key or the file the number comes
-   from), and one control per required type, each with `falsifies_if`, `command` and `output`:
+2. **Fill each entry**: kind, unit, n, source (the data file the number comes from — not the numbers
+   log, which every audit regenerates and which would make every control STALE), and one control per
+   required type, each with `falsifies_if`, `command` and `output`. Paths are relative to the project
+   root (the folder holding `.claude/project.yaml`):
    ```yaml
    claims:
      - id: retention
@@ -59,7 +61,7 @@ that control was run on the current data.
        kind: effect
        unit: seed
        n: 8
-       source: paper/numbers.json:retention.after_gng_dpa
+       source: results/dual/x/results.jsonl         # the data the number comes from
        controls:
          - name: label shuffle
            type: null

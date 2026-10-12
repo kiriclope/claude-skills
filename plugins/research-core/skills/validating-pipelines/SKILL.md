@@ -40,9 +40,9 @@ each condition removes the difference you measure, and pooled trials make every 
        ...
        return data
    def estimate(data):
-       return {"value": score(data), "p": ..., "ci": (lo, hi)}   # p and ci optional
+       return {"value": score(data), "p": ..., "ci": (lo, hi)}   # p and a 95% ci optional
    ```
-2. **Run it**:
+2. **Run it from the project root**, so the adapter can import the project's code:
    ```bash
    python <this skill>/scripts/recovery_check.py --adapter analysis/recovery_<measure>.py --reps 50
    ```
@@ -57,7 +57,8 @@ each condition removes the difference you measure, and pooled trials make every 
    | SHRINKAGE / INFLATION | per-condition normalization, regularization, a ratio of noisy terms | normalize across conditions jointly; report the recovered fraction |
    | SIGN FLIP | an axis or a difference taken the wrong way round | fix the convention, then re-check every figure that uses it |
    | FALSE POSITIVES | trials or bins treated as independent; train/test overlap | test at the unit of the claim (choosing-statistics); disjoint folds |
-   | UNDERCOVERAGE | the CI ignores a variance component | bootstrap over the unit of replication |
+   | UNDERCOVERAGE | the CI ignores a variance component, or is not a 95% interval (mean ± s.e.m. is 68%) | bootstrap over the unit of replication |
+   | NON-FINITE ESTIMATE | a fit failed and returned nan or inf | fix the pipeline; nothing else is judged until every run returns a number |
 
 4. **Pin the paper's numbers** once they have been reviewed, and check them after every code change:
    ```bash

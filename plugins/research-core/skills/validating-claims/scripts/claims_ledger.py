@@ -7,9 +7,11 @@ the output it wrote, the result and a status. This script checks the ledger agai
   CONTROLLED     every control type the claim's kind requires was run and passed; outputs exist and are newer
                  than the data the claim rests on
   FAILED         a control came out against the claim: change the claim (weaken, qualify, remove), never the control
-  UNCONTROLLED   a required control type is missing from the ledger
+  UNCONTROLLED   a required control type is missing from the ledger, or a control has no falsifies_if (it does
+                 not say what result would refute the claim, so it tests nothing)
   PENDING        a required control is listed but not run yet (status pending, or no result)
-  STALE          a control's output is missing, or older than the claim's source (the data changed after the control)
+  STALE          a control's output is missing or older than the claim's source (the data changed after the control),
+                 or a source or output is not given, so whether the control is current cannot be checked
 and, with --text:
   GONE           the claim's text fragment is no longer in the manuscript (the ledger is out of date)
   UNLEDGERED     a manuscript sentence that reads like a claim (a statistic or a claim verb) and that no ledger
@@ -32,6 +34,10 @@ Usage:
     python claims_ledger.py --init --text docs/paper/results_draft.md > claims.yaml    # skeleton from the text
     … --start '^## Abstract' --stop '^## Methods'      # only that part of the text (revision notes, methods out)
     python claims_ledger.py --demo
+Paths (source, output) are relative to the project root (the folder holding .claude/project.yaml), else to the
+ledger's folder. `source` is the data the number comes from (a results file), not a numbers log that every audit
+regenerates: a regenerated log would make every control STALE. The text is markdown (or plain text without
+--start/--stop).
 Exit 1 when any claim is not CONTROLLED or the text has GONE / UNLEDGERED items.
 """
 import argparse
@@ -64,27 +70,34 @@ def _mtime(path, base):
     return os.path.getmtime(p) if p and os.path.exists(p) else None
 
 
+def _ctype(control):
+    """A control's type; YAML reads a bare `type: null` as None, which here is the null-control type."""
+    return "null" if "type" in control and control["type"] is None else control.get("type")
+
+
 def check_claim(c, base, required, min_n):
-    """(verdict, [reasons]) for one ledger entry. Paths are relative to base (the ledger's folder)."""
+    """(verdict, [reasons]) for one ledger entry. Paths are relative to base (the project root or the ledger's
+    folder)."""
     reasons, verdicts = [], set()
     kind = c.get("kind")
     controls = c.get("controls") or []
-    for t in sorted({x.get("type") for x in controls} - TYPES - {None}):
+    for t in sorted({_ctype(x) for x in controls} - TYPES - {None}):
         reasons.append(f"unknown control type '{t}' (known: {', '.join(sorted(TYPES))})")
     if kind not in required:
         reasons.append(f"kind '{kind}' unknown: one of {', '.join(required)}")
         verdicts.add("UNCONTROLLED")
     for t in required.get(kind, []):
-        if not any(x.get("type") == t for x in controls):
+        if not any(_ctype(x) == t for x in controls):
             reasons.append(f"no '{t}' control (required for {kind} claims)")
             verdicts.add("UNCONTROLLED")
     src_path = str(c.get("source", "")).split(":")[0]
     src_t = _mtime(src_path, base)
     for x in controls:
-        name = x.get("name") or x.get("type")
+        name = x.get("name") or _ctype(x)
         status = (x.get("status") or "pending").lower()
         if not x.get("falsifies_if"):
             reasons.append(f"'{name}': no falsifies_if — write what result would refute the claim before running it")
+            verdicts.add("UNCONTROLLED")
         if status == "failed":
             reasons.append(f"'{name}' FAILED: {x.get('result', 'no result recorded')}")
             verdicts.add("FAILED")
@@ -102,11 +115,16 @@ def check_claim(c, base, required, min_n):
             verdicts.add("STALE")
         elif not x.get("output"):
             reasons.append(f"'{name}': no output file recorded (cannot tell whether it is current)")
+            verdicts.add("STALE")
     n, unit = c.get("n"), c.get("unit")
     if isinstance(n, int) and n < min_n:
         reasons.append(f"n = {n} {unit or 'units'}: below {min_n}, exploratory only — say so in the text")
     if c.get("source") and src_path and src_t is None:
-        reasons.append(f"source {src_path} not found")
+        reasons.append(f"source {src_path} not found (cannot tell whether the controls are current)")
+        verdicts.add("STALE")
+    elif not c.get("source") and controls:
+        reasons.append("no source: give the data the number comes from, so the controls can be dated against it")
+        verdicts.add("STALE")
     verdict = next((v for v in ORDER if v in verdicts), "CONTROLLED")
     return verdict, reasons
 
@@ -116,9 +134,8 @@ def claim_sentences(text):
     text = re.sub(r"```.*?```", " ", text, flags=re.S)
     out = []
     for para in re.split(r"\n\s*\n", text):
-        if para.lstrip().startswith(("#", "|", "<!--")):
-            continue
-        for s in SENT.split(" ".join(para.split())):
+        prose = [l for l in para.splitlines() if not l.lstrip().startswith(("#", "|", "<!--"))]   # headings, tables
+        for s in SENT.split(" ".join(" ".join(prose).split())):
             if len(s) > 30 and (STAT.search(s) or VERB.search(s)):
                 out.append(s.strip())
     return out
@@ -146,12 +163,13 @@ def check_text(claims, text, start=None, stop=None):
     return gone, unledgered
 
 
-def report(ledger_path, text_path=None, cfg=None, start=None, stop=None):
+def report(ledger_path, text_path=None, cfg=None, start=None, stop=None, base=None):
+    """Print the verdicts; paths in the ledger resolve against base (default: the ledger's folder)."""
     cfg = cfg or {}
     with open(ledger_path) as f:
         led = yaml.safe_load(f) or {}
     claims = led.get("claims") or []
-    base = os.path.dirname(os.path.abspath(ledger_path))
+    base = base or os.path.dirname(os.path.abspath(ledger_path))
     required = {**REQUIRED, **(cfg.get("required") or {})}
     min_n = cfg.get("min_n", MIN_N)
     rows = [(c.get("id", f"#{i}"), *check_claim(c, base, required, min_n)) for i, c in enumerate(claims, 1)]
@@ -208,6 +226,8 @@ Go/No-Go training leaves the DPA memory intact (after_gng/dpa 0.93, 8/8 seeds).
 The choice axis does not change with learning.
 Optogenetic silencing during the delay reduces performance because it removes the memory.
 These results are summarized in Fig. 2.
+
+## Licking
 The lick rate increases in DualGo trials relative to DPA trials (p = 0.02, n = 9 mice).
 """
     checks = []
@@ -235,6 +255,9 @@ The lick rate increases in DualGo trials relative to DPA trials (p = 0.02, n = 9
              "controls": [{"name": "laser-off sessions", "type": "ablation", "falsifies_if": "same drop OFF vs OFF",
                            "result": "shift 3x OFF-vs-OFF noise", "status": "passed",
                            "output": "old_ablation.json"}]},
+            {"id": "no_falsifier", "text": "Go/No-Go training leaves", "kind": "effect", "unit": "seed", "n": 8,
+             "source": "numbers.json:x", "controls": [{"name": "shuffle", "type": "null", "result": "fine",
+                                                       "status": "passed", "output": "shuffle.json"}]},
             {"id": "removed_claim", "text": "Dimensionality collapses after learning", "kind": "effect",
              "unit": "mouse", "n": 9, "controls": [{"name": "matched n", "type": "null", "falsifies_if": "x",
                                                     "result": "ok", "status": "passed"}]},
@@ -259,10 +282,29 @@ The lick rate increases in DualGo trials relative to DPA trials (p = 0.02, n = 9
              v["choice_axis_stable"] == "UNCONTROLLED" and "n = 3" in reasons["choice_axis_stable"]),
             ("a control older than the data it controls is STALE", v["opto_mechanism"] == "STALE"),
             ("a ledger claim no longer in the text is GONE", res["gone"] == ["removed_claim"]),
-            ("a claim-like sentence with no ledger entry is UNLEDGERED; a figure pointer is not",
-             any("lick rate increases" in s for s in res["unledgered"])
+            ("a claim-like sentence with no ledger entry is UNLEDGERED, also right under a heading; a figure "
+             "pointer is not", any("lick rate increases" in s for s in res["unledgered"])
              and not any("summarized in Fig" in s for s in res["unledgered"])),
+            ("a control with no falsifies_if tests nothing: UNCONTROLLED", v["no_falsifier"] == "UNCONTROLLED"),
         ]
+        # a project: ledger in paper/, paths from the project root, the null type written bare (YAML reads None)
+        for sub in (".claude", "paper", "results"):
+            os.makedirs(os.path.join(d, "proj", sub))
+        with open(os.path.join(d, "proj", ".claude", "project.yaml"), "w") as f:
+            f.write("validation:\n  claims_file: paper/claims.yaml\n")
+        for rel, age in (("results/results.jsonl", 3600), ("results/shuffle.json", 0)):
+            with open(os.path.join(d, "proj", rel), "w") as f:
+                f.write("{}")
+            os.utime(os.path.join(d, "proj", rel), (now - age, now - age))
+        with open(os.path.join(d, "proj", "paper", "claims.yaml"), "w") as f:
+            f.write("claims:\n- id: decoding\n  text: decoded\n  kind: effect\n  unit: mouse\n  n: 9\n"
+                    "  source: results/results.jsonl\n  controls:\n  - name: shuffle\n    type: null\n"
+                    "    falsifies_if: within the null\n    result: 0.81 vs 0.50\n    status: passed\n"
+                    "    output: results/shuffle.json\n")
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            code = main(["--ledger", os.path.join(d, "proj", "paper", "claims.yaml")])
+        checks.append(("a bare `type: null` is a null control, and paths resolve from the project root",
+                       code == 0 and "CONTROLLED" in out.getvalue()))
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)
@@ -274,7 +316,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ledger",
                     help="claims ledger (YAML); default: validation.claims_file of the project")
-    ap.add_argument("--text", help="manuscript (.md / .tex / .txt): GONE and UNLEDGERED checks, or --init source")
+    ap.add_argument("--text", help="manuscript (markdown; plain text without --start/--stop): GONE and UNLEDGERED "
+                                   "checks, or --init source")
     ap.add_argument("--init", action="store_true",
                     help="print a skeleton ledger from the claim-like sentences of --text")
     ap.add_argument("--start", help="regex: scan the text from the first heading matching it (e.g. '^## Abstract')")
@@ -293,8 +336,8 @@ def main(argv=None):
         if not (root and cfg.get("claims_file")):
             ap.error("--ledger is required (or validation.claims_file in .claude/project.yaml, or --init / --demo)")
         a.ledger = os.path.join(root, cfg["claims_file"])
-    cfg, _ = _project_cfg(os.path.dirname(os.path.abspath(a.ledger)))
-    res = report(a.ledger, a.text, cfg, a.start, a.stop)
+    cfg, root = _project_cfg(os.path.dirname(os.path.abspath(a.ledger)))
+    res = report(a.ledger, a.text, cfg, a.start, a.stop, base=root)
     return 1 if res["bad"] else 0
 
 

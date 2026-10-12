@@ -1,6 +1,6 @@
 ---
 name: reviewing-code-readability
-description: Review research code for readability and the house conventions — can a colleague tell what it decides, run it from its docstring and trust its numbers — then fix what fails without changing behavior. Runs readability_check.py (hard-coded derived constants, swallowed code, silent excepts, opaque names, missing docstring/Usage, hex colors) and a colleague test. Use when code was just written or edited and before committing it, or when asked to review, clean up or make a script readable. Not for correctness bugs → /code-review; for reuse and simplification → /simplify.
+description: Review research code for readability and the house conventions — can a colleague tell what it decides, run it from its docstring and trust its numbers — then fix what fails without changing behavior. Runs readability_check.py (hard-coded derived constants, swallowed code, silent excepts, opaque names, missing docstring/Usage, hex colors) and a colleague test; for a new script, a fresh agent hunts bugs, each finding backed by a concrete failing input. Use when code was just written or edited and before committing it, or when asked to review, clean up or make a script readable. Not for a branch- or PR-wide review → /code-review; for reuse and simplification → /simplify.
 ---
 
 # Reviewing code readability
@@ -63,7 +63,29 @@ Read the changed code as a stranger would. For each item, a concrete finding or 
 9. **Prints unit by unit.** Results come per seed/subject with a `SUMMARY: k/N` line.
 10. **Project rules.** Each `code_rules` item from `project.yaml` holds.
 
-## Step 3 — report
+## Step 3 — bug hunt by a fresh agent (a new script, before its first commit)
+
+Readability checks and a self-written `--demo` miss the bugs their author did not imagine. On
+2026-10-11 two fresh agents found 8 real bugs in 1,450 lines of new validation scripts that had
+passed both: a NaN score that printed PASS, and a reused variable that made every run after the
+first skip three checks. Run this for every new script and every script that prints verdicts;
+skip it for small edits to reviewed code.
+
+- **A fresh subagent** (not a fork, never shown your reasoning): the file paths, the code they
+  call, the expected use, permission to run the script and its demo, no permission to edit.
+  ```
+  Find bugs in <files> (they call <paths>). Expected use: <who runs it, how often, on what data>.
+  You may run <command> and <demo command>; do not edit any file. Report each finding as
+  file:line · the input or situation · the wrong result it gives · the smallest fix.
+  No finding without a concrete failing case; no style comments.
+  ```
+- **The concrete case is the rule**: an input and the wrong output it produces. Look first where
+  research scripts break: nan or inf, an empty or one-class input, the second pass of a loop, an
+  unbalanced split, a path given from another folder, a config field older runs lack.
+- **Verify each finding yourself** against the code before reporting it, then fix it and add the
+  case to the script's `--demo`, checking that the case fails on the old version.
+
+## Step 4 — report
 
 One table, most misleading first (wrong comments, hidden constants, swallowed code before
 cosmetics):
@@ -73,7 +95,7 @@ cosmetics):
 
 End with the checker's SUMMARY line and what you did not check (e.g. "did not run it").
 
-## Step 4 — fix (when asked, or for code you just wrote yourself)
+## Step 5 — fix (when asked, or for code you just wrote yourself)
 
 - **Behavior-preserving edits only.** Before and after a fix, run the script on a small real case
   and compare the printed numbers — identical, or explain the difference (a fix that changes a
@@ -90,5 +112,6 @@ End with the checker's SUMMARY line and what you did not check (e.g. "did not ru
 - [ ] rules loaded (writing-research-code, project `code_rules`)
 - [ ] `readability_check.py` run on the changed files — SUMMARY: … 
 - [ ] colleague test done (10 items)
+- [ ] new or verdict-printing script: fresh-agent bug hunt; each fixed bug is a `--demo` case that fails without the fix
 - [ ] findings reported, most misleading first
 - [ ] fixes behavior-preserving, verified by running; no unasked renames

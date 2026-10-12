@@ -12,9 +12,12 @@ The script calls evaluate() on:
   real data                 the score being validated
   shuffled labels           (within groups) → the null: mean, s.d., 95th percentile, permutation p
   pure-noise X              same shape and per-feature scale, real labels and groups → must sit in the null band
-  noise X, 75/25 classes    → must stay at CHANCE: a metric that rewards the majority class drifts toward 0.75
+  noise X, imbalanced       all of the larger class, a third as many of the other (≥ 75/25) → must stay at CHANCE:
+                            a metric that rewards the majority class drifts toward the majority share
   nuisance-matched trials   the nuisance distribution equalized across classes (quantile bins) → the score that
-                            does not come from the nuisance
+                            does not come from the nuisance, against shuffled labels on those same trials and
+                            against unmatched subsets of the same size (does matching remove the signal, or only
+                            trials?)
   fewer trials              n, n/2, n/4 → how much the score depends on the trial count
   held-out groups           (evaluate_across) train on all groups but one, test on it
 Verdicts (fail):
@@ -24,10 +27,17 @@ Verdicts (fail):
                       resampled (pseudo-)trials that land in both train and test
   CHANCE MISPLACED    the shuffle null is not at CHANCE: the metric or the class balance is not what you assume
   METRIC UNBALANCED   with 75/25 classes and no signal the score leaves the chance band
-  CONFOUNDED          the real score is above the null but the nuisance-matched score falls into the null band
+  CONFOUNDED          the real score is above the null, the nuisance itself is decoded above it, and the
+                      nuisance-matched score falls into the null of the matched trials while unmatched subsets
+                      of the same size stay above it
+  NON-FINITE SCORE    evaluate() returned nan or inf (a failed fit): nothing else is judged
 Information: NOT ABOVE NULL (real ≤ null 95th: no evidence of decoding), NUISANCE (how well the nuisance
-itself is decoded, its correlation with the labels, the score drop after matching), N-DEPENDENCE,
+itself is decoded, its correlation with the labels, the score after matching against its own null; "too few
+trials to tell" when same-size unmatched subsets also fall into it), N-DEPENDENCE,
 HELD-OUT GROUPS (generalization across sessions or mice).
+
+The adapter is imported with its own folder and the current folder on the module path, so run the script from
+the project root when the adapter imports the project's code (from analysis.decode import …).
 
 Usage:
     python decoder_check.py --adapter analysis/decoder_adapter.py [--perms 50] [--draws 5] [--seed 0]
@@ -49,7 +59,7 @@ def load_adapter(path):
     if spec is None or spec.loader is None:
         sys.exit(f"{path}: not a Python module")
     mod = importlib.util.module_from_spec(spec)
-    sys.path.insert(0, os.path.dirname(os.path.abspath(path)))
+    sys.path[:0] = [os.path.dirname(os.path.abspath(path)), os.getcwd()]   # the adapter's folder; the project root
     spec.loader.exec_module(mod)
     for fn in ("load", "evaluate"):
         if not callable(getattr(mod, fn, None)):
@@ -75,6 +85,10 @@ def _sub(d, idx):
     return {"X": d["X"][idx], "y": d["y"][idx], "groups": None if d["groups"] is None else d["groups"][idx]}
 
 
+def _xyg(sub):
+    return {"X": sub["X"], "y": sub["y"], "g": sub["groups"]}
+
+
 def _bins(v, q=4):
     v = np.asarray(v, float)
     if len(np.unique(v)) <= q:
@@ -93,40 +107,62 @@ def matched_idx(y, nuis, rng, q=4):
     return np.sort(np.array(idx, int))
 
 
+class NonFiniteScore(ValueError):
+    pass
+
+
+def _n_calls(d, perms, draws):
+    """evaluate() calls after the first, for the time estimate."""
+    n, n_classes = len(d["y"]), len(np.unique(d["y"]))
+    return (perms + draws + (draws if n_classes == 2 else 0)
+            + len(d["nuisance"]) * (1 + 2 * draws + max(20, perms // 2))
+            + draws * sum(int(n * f) >= 20 for f in (0.5, 0.25)))
+
+
 def probes(mod, perms=50, draws=5, seed=0, log=print):
     rng = np.random.default_rng(seed)
     d = mod.load()
     d = {"X": np.asarray(d["X"], float), "y": np.asarray(d["y"]),
          "groups": None if d.get("groups") is None else np.asarray(d["groups"]), "nuisance": d.get("nuisance") or {}}
-    ev = lambda X, y, g: float(mod.evaluate(X, y, g, rng))
+
+    def ev(X, y, g):
+        score = float(mod.evaluate(X, y, g, rng))
+        if not np.isfinite(score):          # sklearn's cross_val_score returns nan when a fold's fit fails
+            raise NonFiniteScore(f"evaluate() returned {score}: a fit failed; fix the pipeline before validating it")
+        return score
     t0 = time.time()
     r = {"chance": float(getattr(mod, "CHANCE", 0.5)), "n": len(d["y"])}
     r["real"] = ev(d["X"], d["y"], d["groups"])
-    log(f"  one evaluate() call: {time.time() - t0:.1f} s; about {perms + 2 * draws + 6} more calls to go")
+    log(f"  one evaluate() call: {time.time() - t0:.1f} s; about {_n_calls(d, perms, draws)} more calls to go")
     r["null"] = np.array([ev(d["X"], _shuffle_within(d["y"], d["groups"], rng), d["groups"]) for _ in range(perms)])
     r["noise_draws"] = draws
     r["noise"] = np.mean([ev(_noise_like(d["X"], rng), d["y"], d["groups"]) for _ in range(draws)])
     classes = np.unique(d["y"])
-    if len(classes) == 2:                             # 75/25 classes, no signal
-        keep = np.concatenate([np.flatnonzero(d["y"] == classes[0]),
-                               rng.choice(np.flatnonzero(d["y"] == classes[1]),
-                                          max(2, int((d["y"] == classes[0]).sum() / 3)), replace=False)])
+    if len(classes) == 2:                             # ≥ 75/25 classes, no signal
+        major, minor = sorted((np.flatnonzero(d["y"] == c) for c in classes), key=len, reverse=True)
+        keep = np.concatenate([major, rng.choice(minor, min(len(minor), max(2, len(major) // 3)), replace=False)])
         imb = _sub(d, np.sort(keep))
         r["imbalanced"] = np.mean([ev(_noise_like(imb["X"], rng), imb["y"], imb["groups"]) for _ in range(draws)])
+        r["majority_share"] = len(major) / len(keep)
     r["nuisance"] = {}
     for name, v in d["nuisance"].items():
         v = np.asarray(v, float)
         yv = (d["y"] == classes[-1]).astype(float) if len(classes) == 2 else d["y"].astype(float)
         corr = float(np.corrcoef(yv, v)[0, 1]) if v.std() > 0 else 0.0
         decod = ev(d["X"], (v > np.median(v)).astype(int) if len(np.unique(v)) > 2 else v.astype(int), d["groups"])
-        scores = []
-        for _ in range(draws):
-            idx = matched_idx(d["y"], v, rng)
-            if len(idx) >= 20:
-                m = _sub(d, idx)
-                scores.append(ev(m["X"], m["y"], m["groups"]))
-        r["nuisance"][name] = {"corr": corr, "decoded": decod, "matched": np.mean(scores) if scores else None,
-                               "kept": len(matched_idx(d["y"], v, rng))}
+        res = {"corr": corr, "decoded": decod, "matched": None}
+        idx = matched_idx(d["y"], v, rng)
+        if len(idx) >= 20:
+            m = _sub(d, idx)
+            res["kept"] = len(idx)
+            res["matched"] = np.mean([ev(**_xyg(_sub(d, matched_idx(d["y"], v, rng)))) for _ in range(draws)])
+            # the bar for the matched score: shuffled labels on the matched trials (fewer trials, wider null) …
+            res["matched_null"] = np.array([ev(m["X"], _shuffle_within(m["y"], m["groups"], rng), m["groups"])
+                                            for _ in range(max(20, perms // 2))])
+            # … and unmatched subsets of the same size: do they stay above it (matching removed the signal)?
+            res["same_n"] = np.mean([ev(**_xyg(_sub(d, np.sort(rng.choice(len(d["y"]), len(idx), replace=False)))))
+                                     for _ in range(draws)])
+        r["nuisance"][name] = res
     r["by_n"] = {}
     for frac in (0.5, 0.25):
         n = int(len(d["y"]) * frac)
@@ -161,16 +197,31 @@ def verdicts(r):
     if leak and "imbalanced" in r:
         info.append(("METRIC", "class-balance probe not judged: the leak inflates it"))
     elif "imbalanced" in r and abs(r["imbalanced"] - r["chance"]) > max(2 * sd, 0.05):
-        fails.append(("METRIC UNBALANCED", f"75/25 classes, no signal: {r['imbalanced']:.3f} (chance {r['chance']:.3f})"
-                                           " — use balanced accuracy or AUC, or subsample the classes"))
+        share = r["majority_share"]
+        fails.append(("METRIC UNBALANCED", f"{share:.0%}/{1 - share:.0%} classes, no signal: {r['imbalanced']:.3f} "
+                                           f"(chance {r['chance']:.3f}) — use balanced accuracy or AUC, or subsample "
+                                           "the classes"))
     for name, n in r["nuisance"].items():
-        line = (f"{name}: correlation with the labels {n['corr']:+.2f}; decoded at {n['decoded']:.3f}; "
-                + (f"score after matching {n['matched']:.3f} on {n['kept']} trials (real {r['real']:.3f})"
-                   if n["matched"] is not None else "too few trials to match"))
-        info.append(("NUISANCE", line))
-        if n["matched"] is not None and r["real"] > hi and n["matched"] <= hi:
+        line = f"{name}: correlation with the labels {n['corr']:+.2f}; decoded at {n['decoded']:.3f}; "
+        if n["matched"] is None:
+            info.append(("NUISANCE", line + "too few trials to match"))
+            continue
+        m_hi = np.quantile(n["matched_null"], 0.95)
+        info.append(("NUISANCE", line + f"score after matching {n['matched']:.3f} on {n['kept']} trials (their null "
+                                        f"95th {m_hi:.3f}; unmatched subsets of that size {n['same_n']:.3f}; "
+                                        f"real {r['real']:.3f})"))
+        if r["real"] <= hi or n["matched"] > m_hi:
+            continue
+        if n["same_n"] <= m_hi:
+            info.append(("NUISANCE", f"{name}: too few matched trials to tell — subsets of the same size also fall "
+                                     "into the null"))
+        elif n["decoded"] > hi:
             fails.append(("CONFOUNDED", f"with {name} matched across classes the score falls to {n['matched']:.3f}, "
-                                        f"inside the null band (≤ {hi:.3f}): the decoder reads {name}"))
+                                        f"inside the null of those trials (≤ {m_hi:.3f}), while unmatched subsets of "
+                                        f"the same size score {n['same_n']:.3f}: the decoder reads {name}"))
+        else:
+            info.append(("NUISANCE", f"{name}: the matched score falls into its null, but {name} itself is not "
+                                     "decoded above the null — look at which trials matching removed"))
     info.insert(0, ("REAL", f"{r['real']:.3f} vs shuffle null {mu:.3f} ± {sd:.3f} (95th {hi:.3f}), "
                             f"permutation p = {p:.3g} over {len(null)} shuffles"))
     if r["real"] <= hi:
@@ -196,7 +247,13 @@ def report(name, r, fails, info):
 
 def check(path, perms=50, draws=5, seed=0, quiet=False):
     mod = load_adapter(path)
-    r = probes(mod, perms, draws, seed, log=(lambda *a: None) if quiet else print)
+    try:
+        r = probes(mod, perms, draws, seed, log=(lambda *a: None) if quiet else print)
+    except NonFiniteScore as e:
+        if not quiet:
+            print(f"DECODER CHECK · {os.path.basename(path)}\n  ✗ NON-FINITE SCORE: {e}\n"
+                  "SUMMARY: FAIL — NON-FINITE SCORE")
+        return [("NON-FINITE SCORE", str(e))], [], None
     fails, info = verdicts(r)
     if not quiet:
         report(os.path.basename(path), r, fails, info)
@@ -265,6 +322,39 @@ def evaluate(X, y, groups, rng):                  # pseudo-trials resampled from
     return cross_val_score(LogisticRegression(C=1.0, max_iter=1000), X[idx], y[idx], cv=cv,
                            scoring="balanced_accuracy").mean()
 ''',
+    "failed_fit.py": '''
+import numpy as np, demo_data
+def load(): return demo_data.make(np.random.default_rng(1))
+def evaluate(X, y, groups, rng):                  # one fit in four fails: cross_val_score's error_score is nan
+    return float("nan") if rng.random() < 0.25 else 0.5
+''',
+    "few_nogo.py": '''
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+import numpy as np, demo_data
+def load():                                       # 170 trials of the first class, 30 of the second
+    d = demo_data.make(np.random.default_rng(1), n=400)
+    keep = np.r_[np.flatnonzero(d["y"] == 0)[:170], np.flatnonzero(d["y"] == 1)[:30]]
+    return {"X": d["X"][keep], "y": d["y"][keep], "groups": d["groups"][keep]}
+def evaluate(X, y, groups, rng):
+    cv = StratifiedKFold(5, shuffle=True, random_state=0)
+    return cross_val_score(LogisticRegression(C=0.1, max_iter=500), X, y, cv=cv, scoring="balanced_accuracy").mean()
+''',
+    "lick_correlated_only.py": '''
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+import numpy as np, demo_data
+def load():               # neurons carry the label only; licks follow it 90/10 (the old rule called this CONFOUNDED)
+    d = demo_data.make(np.random.default_rng(22), signal=0.45)
+    d["nuisance"]["lick"] = (np.random.default_rng(122).random(len(d["y"])) < np.where(d["y"] == 1, 0.9, 0.1)) * 1.0
+    return d
+def evaluate(X, y, groups, rng):
+    clf = make_pipeline(StandardScaler(), LogisticRegression(C=0.1, max_iter=500))
+    cv = StratifiedKFold(5, shuffle=True, random_state=0)
+    return cross_val_score(clf, X, y, cv=cv, scoring="balanced_accuracy").mean()
+''',
     "lick_confound.py": '''
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -282,7 +372,8 @@ def evaluate(X, y, groups, rng):
 
 def _demo():
     want = {"good.py": set(), "leaky_selection.py": {"LEAKAGE"}, "plain_accuracy.py": {"METRIC UNBALANCED"},
-            "pseudotrials.py": {"LEAKAGE"}, "lick_confound.py": {"CONFOUNDED"}}
+            "pseudotrials.py": {"LEAKAGE"}, "failed_fit.py": {"NON-FINITE SCORE"}, "few_nogo.py": set(),
+            "lick_correlated_only.py": set(), "lick_confound.py": {"CONFOUNDED"}}
     checks = []
     with tempfile.TemporaryDirectory() as d:
         with open(os.path.join(d, "demo_data.py"), "w") as f:
@@ -311,7 +402,7 @@ def main(argv=None):
     ap.add_argument("--perms", type=int, default=50, help="label shuffles for the null (default 50)")
     ap.add_argument("--draws", type=int, default=5, help="draws per noise / matching / subsampling probe (default 5)")
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--demo", action="store_true", help="five built-in pipelines: one sound, four with known flaws")
+    ap.add_argument("--demo", action="store_true", help="built-in pipelines: sound ones, and ones with known flaws")
     a = ap.parse_args(argv)
     if a.demo:
         return _demo()

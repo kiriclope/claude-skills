@@ -3,6 +3,7 @@
 You write a small adapter module (a .py file) next to the analysis:
     def simulate(effect, rng):  -> data with the effect planted (same n, trials, noise, nuisance as the real data)
     def estimate(data):         -> the pipeline's output: a number, or a dict {"value": x, "p": p, "ci": (lo, hi)}
+                                   (ci = a 95% interval; mean ± s.e.m. is a 68% one and fails UNDERCOVERAGE)
 optional:
     EFFECTS = [0, 0.1, 0.2, 0.4]       planted effect sizes (0 must be included: the null)
     def truth(effect): ...             what the measure SHOULD read for that effect (enables bias and slope checks)
@@ -16,11 +17,15 @@ detection rate (p < alpha) and CI coverage, then the verdicts:
                   (a per-condition normalization, regularization, averaging over the wrong axis)
   INFLATION       slope > 1 + tol
   SIGN FLIP       the estimate goes down when the effect goes up
-  NOT MONOTONE    a larger planted effect gives a smaller mean estimate
+  NOT MONOTONE    the mean estimate does not follow the truth in order (with truth(); without it, it neither
+                  rises nor falls steadily with the planted effect)
   FALSE POSITIVES the null is detected more often than alpha allows (pseudoreplication, leakage, a wrong test)
   UNDERCOVERAGE   95% intervals contain the truth clearly less often than 95% (beyond 2.5 binomial s.e.)
-and as information: the smallest planted effect detected with power ≥ 0.8 — the positive control a
+  NON-FINITE ESTIMATE  estimate() returned nan or inf (a failed fit): nothing else is judged
+and as information: the smallest planted effect (in size) detected with power ≥ 0.8 — the positive control a
 null-result claim needs ("the pipeline would have seen an effect of this size").
+The adapter is imported with its own folder and the current folder on the module path: run from the project root
+when it imports the project's code.
 
 Usage:
     python recovery_check.py --adapter analysis/recovery_adapter.py [--reps 50] [--effects 0 0.1 0.3] [--alpha 0.05]
@@ -43,7 +48,7 @@ def load_adapter(path):
     if spec is None or spec.loader is None:
         sys.exit(f"{path}: not a Python module")
     mod = importlib.util.module_from_spec(spec)
-    sys.path.insert(0, os.path.dirname(os.path.abspath(path)))
+    sys.path[:0] = [os.path.dirname(os.path.abspath(path)), os.getcwd()]   # the adapter's folder; the project root
     spec.loader.exec_module(mod)
     for fn in ("simulate", "estimate"):
         if not callable(getattr(mod, fn, None)):
@@ -51,17 +56,24 @@ def load_adapter(path):
     return mod
 
 
-def _as_dict(out):
-    if isinstance(out, dict):
-        return out
-    return {"value": float(out)}
+class NonFiniteEstimate(ValueError):
+    pass
+
+
+def _as_dict(out, effect):
+    d = out if isinstance(out, dict) else {"value": out}
+    if not np.isfinite(float(d["value"])):
+        raise NonFiniteEstimate(f"estimate() returned {d['value']} for planted effect {effect:g}: a fit failed; "
+                                "fix the pipeline before validating it")
+    return d
 
 
 def run(mod, effects, reps, seed=0):
     """{effect: list of estimate dicts}; each repetition has its own RNG stream."""
     res = {}
     for i, e in enumerate(effects):
-        res[e] = [_as_dict(mod.estimate(mod.simulate(e, np.random.default_rng([seed, i, r])))) for r in range(reps)]
+        res[e] = [_as_dict(mod.estimate(mod.simulate(e, np.random.default_rng([seed, i, r]))), e)
+                  for r in range(reps)]
     return res
 
 
@@ -110,18 +122,22 @@ def verdicts(rows, alpha, slope_tol=0.2, offset_sd=0.25):
         for r in with_t:                                 # 95% nominal, minus 2.5 binomial s.e. at this many runs
             if r["cover"] is not None and r["cover"] < 0.95 - 2.5 * math.sqrt(0.95 * 0.05 / r["n"]):
                 fails.append(("UNDERCOVERAGE", f"effect {r['effect']:g}: 95% CI covers the truth in {r['cover']:.0%}"))
-    means = [r["mean"] for r in sorted(rows, key=lambda r: r["effect"])]
+    known = all(r["truth"] is not None for r in rows)       # truth() given: the estimate must follow it in order
+    means = [r["mean"] for r in sorted(rows, key=lambda r: r["truth"] if known else r["effect"])]
     tol = 2 * max(r["se"] for r in rows)
-    if any(b < a - max(tol, 1e-9 * (1 + abs(a))) for a, b in zip(means, means[1:])) and \
-            not any(f[0] == "SIGN FLIP" for f in fails):
-        fails.append(("NOT MONOTONE", "a larger planted effect gives a smaller mean estimate: "
+    drops = lambda ms: any(b < a - max(tol, 1e-9 * (1 + abs(a))) for a, b in zip(ms, ms[1:]))
+    if drops(means) and (known or drops(means[::-1])) and not any(f[0] == "SIGN FLIP" for f in fails):
+        fails.append(("NOT MONOTONE", "the mean estimate does not follow the planted effect in order: "
                                       + ", ".join(f"{m:.3g}" for m in means)))
-    powered = [r["effect"] for r in sorted(rows, key=lambda r: r["effect"])
+    elif not known and drops(means):
+        info.append(("DECREASING", "the estimate falls as the planted effect grows: check that sign against the "
+                                   "hypothesis (give truth() to have it checked)"))
+    powered = [r["effect"] for r in sorted(rows, key=lambda r: abs(r["effect"]))
                if r["effect"] != 0 and r["detect"] is not None and r["detect"] >= 0.8]
     if any(r["detect"] is not None for r in rows):
-        info.append(("DETECTABLE", f"smallest planted effect detected with power ≥ 0.8: {powered[0]:g}" if powered
-                     else "no planted effect reaches power 0.8: a null result from this pipeline is not evidence "
-                          "of absence at these sizes"))
+        info.append(("DETECTABLE", f"smallest planted effect detected with power ≥ 0.8: {abs(powered[0]):g} in size"
+                     if powered else "no planted effect reaches power 0.8: a null result from this pipeline is not "
+                                     "evidence of absence at these sizes"))
     return fails, info
 
 
@@ -145,7 +161,13 @@ def check(path, effects=None, reps=50, alpha=0.05, seed=0, quiet=False):
     mod = load_adapter(path)
     effects = effects or list(getattr(mod, "EFFECTS", [])) or sys.exit("no effects: set EFFECTS or --effects")
     t0 = time.time()
-    res = run(mod, effects, reps, seed)
+    try:
+        res = run(mod, effects, reps, seed)
+    except NonFiniteEstimate as e:
+        if not quiet:
+            print(f"GROUND-TRUTH RECOVERY · {os.path.basename(path)}\n  ✗ NON-FINITE ESTIMATE: {e}\n"
+                  "SUMMARY: FAIL — NON-FINITE ESTIMATE")
+        return [("NON-FINITE ESTIMATE", str(e))], [], []
     rows = summarize(res, getattr(mod, "truth", None), getattr(mod, "NULL_VALUE", 0.0), alpha)
     fails, info = verdicts(rows, alpha)
     if not quiet:
@@ -190,6 +212,25 @@ def estimate(d):                            # z-scoring each condition separatel
     a, b = ((x - x.mean()) / x.std() for x in d)
     return {"value": a.mean() - b.mean(), "p": stats.ttest_ind(a, b).pvalue}
 ''',
+    "suppression.py": '''
+import numpy as np
+from scipy import stats
+EFFECTS = [-1.0, -0.5, 0, 0.5, 1.0]
+def truth(e): return -e                     # a suppression index: correct when it falls as the drive grows
+def simulate(e, rng):
+    return rng.normal(-e, 1, 40)
+def estimate(d):
+    return {"value": d.mean(), "p": stats.ttest_1samp(d, 0).pvalue}
+''',
+    "failed_fit.py": '''
+import numpy as np
+EFFECTS = [0, 0.5]
+def truth(e): return e
+def simulate(e, rng):
+    return rng.normal(e, 1, 20)
+def estimate(d):                            # a fit that fails on one draw in ten
+    return float("nan") if d[0] > 1.3 else d.mean()
+''',
     "pseudorep.py": '''
 import numpy as np
 from scipy import stats
@@ -206,7 +247,7 @@ def estimate(d):                            # trials pooled as if independent: t
 
 def _demo():
     want = {"good.py": set(), "offset.py": {"OFFSET"}, "normalized.py": {"SHRINKAGE"},
-            "pseudorep.py": {"FALSE POSITIVES"}}
+            "suppression.py": set(), "failed_fit.py": {"NON-FINITE ESTIMATE"}, "pseudorep.py": {"FALSE POSITIVES"}}
     checks = []
     with tempfile.TemporaryDirectory() as d:
         for name, src in DEMO.items():
@@ -221,6 +262,9 @@ def _demo():
         fails, info, _ = check(os.path.join(d, "normalized.py"), reps=60, quiet=True)
         checks.append(("normalized.py: no planted effect reaches power 0.8 (a null result would mean nothing)",
                        any("no planted effect" in i for _, i in info)))
+        fails, info, _ = check(os.path.join(d, "suppression.py"), reps=60, quiet=True)
+        checks.append(("suppression.py: the detectable effect is the smallest in size (0.5), not the most negative",
+                       any(v == "DETECTABLE" and ": 0.5 in size" in i for v, i in info)))
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)
@@ -235,7 +279,7 @@ def main(argv=None):
     ap.add_argument("--reps", type=int, default=50, help="runs per effect (default 50)")
     ap.add_argument("--alpha", type=float, default=0.05, help="detection threshold on p (default 0.05)")
     ap.add_argument("--seed", type=int, default=0, help="base seed (each run has its own stream)")
-    ap.add_argument("--demo", action="store_true", help="four built-in pipelines: one sound, three with known flaws")
+    ap.add_argument("--demo", action="store_true", help="built-in pipelines: sound ones, and ones with known flaws")
     a = ap.parse_args(argv)
     if a.demo:
         return _demo()

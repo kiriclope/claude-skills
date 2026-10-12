@@ -6,7 +6,8 @@ A code edit, a new seed or a changed default can move a paper's numbers without 
   CHANGED   |new − old| > atol + rtol·|old|
   NEW       a key that was not pinned
   GONE      a pinned key no longer in the log
-Re-pin only after the user has looked at the changes and accepted them.
+Re-pin only after the user has looked at the changes and accepted them. Re-pinning prints the changes it accepts
+and keeps the previous snapshot as <snapshot>.prev.
 
 Usage:
     python pin_numbers.py --pin   --log paper/numbers.json --snapshot paper/numbers.pinned.json
@@ -19,6 +20,7 @@ import datetime as dt
 import json
 import math
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -50,6 +52,10 @@ def _commit(path):
 def pin(log, snapshot):
     with open(log) as f:
         values = flatten(json.load(f))
+    if os.path.exists(snapshot):                 # show what this re-pin accepts; keep the approved one
+        compare(log, snapshot)
+        shutil.copy2(snapshot, snapshot + ".prev")
+        print(f"previous snapshot kept as {snapshot}.prev")
     with open(snapshot, "w") as f:
         json.dump({"pinned": dt.datetime.now().isoformat(timespec="seconds"), "commit": _commit(log),
                    "log": os.path.basename(log), "values": values}, f, indent=1, sort_keys=True)
@@ -97,6 +103,13 @@ def _demo():
         checks += [("a moved number is CHANGED", [c[0] for c in changed] == ["fig3.acc"]),
                    ("a dropped number is GONE", gone == ["fig4.push[1]"]),
                    ("a new number is NEW; booleans are not numbers", added == ["fig5.wells"])]
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            pin(log, snap)                                              # a re-pin, by mistake or on purpose
+        with open(snap + ".prev") as f:
+            prev = json.load(f)["values"]
+        checks.append(("a re-pin shows the changes it accepts and keeps the approved snapshot",
+                       "CHANGED  fig3.acc" in out.getvalue() and prev.get("fig3.acc") == 0.8134))
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)

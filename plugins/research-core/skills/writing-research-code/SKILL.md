@@ -43,6 +43,9 @@ choice was made — and so that the numbers it prints cannot silently drift from
   ("# direct verification — never trust a finder unchecked"). Date decisions that came from a
   discussion ("Which field (2026-09-25): …"). Shape tags on tensors: `# (B, T, rank)`.
   Unicode math (κ₀, σ, λ) is welcome in comments and printed output.
+- **A deliberate shortcut names its limit**: `# shortcut: <the limit>, <when to upgrade>`
+  (`# shortcut: loads every run into memory, stream it past ~10⁴ runs`). An unmarked shortcut
+  reads as an oversight; a marked one is a decision the next reader can revisit.
 - Section rules for long files: `# ── trials ─────────────`.
 - Match the surrounding code's density and idiom; do not reformat code you did not change.
 - Comments and docstrings in American English; existing identifiers keep their spelling
@@ -74,8 +77,12 @@ choice was made — and so that the numbers it prints cannot silently drift from
 
 Run the code on a small real case and read the output before saying it works. For a fix,
 reproduce the bug first, then show it gone. For a refactor, show identical output before and
-after. Say plainly what was not run. Then review it with the `reviewing-code-readability` skill
-(its checker on the changed lines + the colleague test) before calling it done.
+after. Then review it with the `reviewing-code-readability` skill (its checker on the changed
+lines + the colleague test) before calling it done.
+
+**End the reply with what you skipped or did not check**: one or two lines naming what was not
+run, the cases not covered, and any risk the user must know. A report that only lists what
+worked reads as "everything was checked".
 
 ## Never
 

@@ -46,7 +46,8 @@ shows on inputs whose answer is known.
    def evaluate_across(X_train, y_train, X_test, y_test):   # optional: held-out sessions / animals
        return score_decoder(fit_decoder(X_train, y_train), X_test, y_test)
    ```
-2. **Run it** (each probe calls `evaluate()`; the first line tells how long one call takes):
+2. **Run it from the project root**, so the adapter can import the project's code (each probe calls
+   `evaluate()`; the first line tells how long one call takes and how many calls follow):
    ```bash
    python <this skill>/scripts/decoder_check.py --adapter analysis/decoder_adapter_<variable>.py --perms 50
    ```
@@ -54,10 +55,11 @@ shows on inputs whose answer is known.
 
    | Verdict | Meaning | Fix |
    |---|---|---|
+   | NON-FINITE SCORE | `evaluate()` returned nan or inf (a failed fit; `cross_val_score` returns nan by default) | fix the pipeline; nothing else is judged until every call returns a number |
    | LEAKAGE | noise decodes above chance | move every fitted step inside the folds; resample within folds; no self-projection |
    | CHANCE MISPLACED | the shuffle null is not where you think chance is | if LEAKAGE, fix that first; else the metric or the class balance: state the null's value as chance |
    | METRIC UNBALANCED | imbalanced classes score above chance on noise | balanced accuracy or AUC, or subsample to equal classes |
-   | CONFOUNDED | after matching the nuisance across classes the score falls into the null | the claim is about the nuisance; restrict the trial set or add the nuisance as a covariate |
+   | CONFOUNDED | after matching the nuisance across classes the score falls into the null of the matched trials, while unmatched subsets of the same size stay above it and the nuisance itself decodes | the claim is about the nuisance; restrict the trial set or add the nuisance as a covariate. "Too few matched trials to tell" means matching left no power: the question stays open |
    | NOT ABOVE NULL | no evidence of decoding | report it as such; check the detectable effect (validating-pipelines) before calling it absent |
    | N-DEPENDENCE | the score changes with trial count | compare conditions, stages or animals at matched n |
    | HELD-OUT GROUPS | generalization to unseen sessions or animals | what a "generalizes" claim needs (validating-claims) |

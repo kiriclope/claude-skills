@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-10-12 — research-core 0.13.0, lowrank-rnn 0.4.1 (bugs found by a fresh-agent review)
+Two fresh agents reviewed the validation scripts (ponytail's review procedure: every finding needs a concrete
+failing input). Each fixed bug is now a `--demo` case that fails on the previous version.
+- **decoder_check.py**: a nan score printed PASS (now NON-FINITE SCORE); CONFOUNDED compared the matched trials'
+  score with the full set's null, so a label-only decoder whose licks follow the label was called confounded (11
+  of 36 simulated runs; now 1 of 36): the matched score is judged against shuffled labels on the matched trials,
+  with unmatched subsets of the same size as the power control, and the nuisance must itself decode; crash when
+  the first class had more than 3× the trials of the second; adapters could not import project code (the
+  current folder is now on the module path); the time estimate counts every call.
+- **recovery_check.py**: nan estimates printed PASS or crashed (NON-FINITE ESTIMATE); a correct measure that
+  falls with the planted effect failed NOT MONOTONE (now ordered by truth()); DETECTABLE reports the smallest
+  effect in size; the ci must be a 95% interval (documented).
+- **claims_ledger.py**: a bare `type: null` read as no type; paths now resolve from the project root; a claim
+  sentence right under a heading was skipped; a control without `falsifies_if` is UNCONTROLLED, and one without
+  an output or a source is STALE (was CONTROLLED); `source` documented as the data file, not the numbers log.
+- **pin_numbers.py**: re-pinning prints the changes it accepts and keeps `<snapshot>.prev`.
+- **reviewing-code-readability**: new Step 3, a fresh-agent bug hunt for every new or verdict-printing script,
+  each finding with a concrete failing case, each fixed bug added to the demo. (Ponytail itself is not part of
+  these plugins. A later test on four real tasks, 16 headless runs, found that its lite mode halved the code with
+  the same correctness and controls, and it still asked on a vague request; it is now enabled per project.)
+- **validating-networks**: UNCHECKED (a run with no logged accuracy) and runs that loaded `gng_ckpt`.
+- **writing-research-code** (two of ponytail's rules): end the reply with what was skipped or not checked; mark a
+  deliberate shortcut `# shortcut: <the limit>, <when to upgrade>`.
+
 ## 2026-10-09 — research-core 0.12.0, lowrank-rnn 0.4.0 (validation skills: catch wrong results before a figure)
 Four skills, each with a verdict script and a `--demo`; each check is a past error that reached a figure,
 a conclusion or the paper. They run the real pipeline on inputs whose answer is known.
