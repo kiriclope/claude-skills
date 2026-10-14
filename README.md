@@ -84,7 +84,7 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Twenty-nine skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+Thirty-four skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds one maintainer-only skill.
 
 ### Think and plan
@@ -93,6 +93,7 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 |---|---|---|
 | [clarifying-requests](plugins/research-core/skills/clarifying-requests/SKILL.md) | Acts as your reflection partner: looks in the context first, mirrors back what you seem to want (and the deeper question behind it), asks at most four sharp questions with concrete options, then writes a five-line task spec. | A request is vague, or you say *"help me think this through"*. |
 | [planning-research](plugins/research-core/skills/planning-research/SKILL.md) | Turns a question into a falsifiable hypothesis, predictions, controls, a success criterion fixed in advance and a staged run plan; re-plans honestly after results. | *"What should we try next?"*, *"design a sweep"*, before anything expensive. |
+| [advising-research](plugins/research-core/skills/advising-research/SKILL.md) | Makes the main session the advisor: it keeps your decisions and writes the code, and hands planning, sweep launching and result checking to the agents your profile assigns (each on its own model), with self-contained written handoffs. The checker never sees the author's reasoning, and every approval stays with you. | At a phase boundary: a plan is needed, a sweep launches or finishes, results come in. |
 | [thinking-critically](plugins/research-core/skills/thinking-critically/SKILL.md) | Plan → act → a **fresh agent** (never shown Claude's reasoning) re-checks every claim against the evidence and the literature → revise with a calibrated confidence. Every claim is tagged *observed*, *derived*, *recalled* or *assumed*; unverified recall is where hallucinations hide. | *"Think critically"*, interpreting results, proposing mechanisms, literature claims. |
 
 ### Run experiments
@@ -158,7 +159,9 @@ lines. Each check is a past error that reached a figure or a conclusion.
 ### Personal
 
 [figure-gallery](plugins/personal/skills/figure-gallery/SKILL.md) publishes figures to the
-maintainer's local browser gallery. It is machine-specific; colleagues can ignore it.
+maintainer's local browser gallery. It is machine-specific; colleagues can ignore it. The plugin also holds the three
+agents advising-research routes to (`plugins/personal/agents/`: research-planner, sweep-runner, result-checker), each
+pinned to the maintainer's choice of model; colleagues copy them into `~/.claude/agents/` and set their own models.
 
 ## How they work together
 
@@ -419,7 +422,7 @@ plugins/
   research-core/                  general skills, any research project
     skills/<skill>/SKILL.md       instructions, plus scripts/ and references/ where needed
   lowrank-rnn/                    skills for the low-rank RNN code base
-  personal/                       maintainer-only (figure-gallery)
+  personal/                       maintainer-only (figure-gallery; agents/ for advising-research)
 python/cbstyle/                   the colorblind palette package (pip install)
 hooks/                            guard_bash.py, session_board.py and their README
 templates/project.yaml            per-project configuration template

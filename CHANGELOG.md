@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-14 — research-core 0.14.0, personal 0.2.0 (advising-research: route each phase to its model)
+- **advising-research** (new): the main session is the advisor. It keeps the user's decisions and writes the
+  code, and hands planning, sweep launching and result checking to the agents the profile's **Model routing**
+  table assigns, with self-contained PLAN / SWEEP / CHECK handoffs. Approvals stay with the user, the sweep-runner
+  launches only the approved table, and the checker gets the evidence, not the author's reasoning. No model
+  names in the skill.
+- **personal/agents** (new): research-planner (fable), sweep-runner (sonnet), result-checker (opus), linked into
+  `~/.claude/agents/`. The sweep-runner model was chosen by a dry test (16 runs + 4 reruns, $11): Sonnet matched
+  Opus 4.8 on clean launch, a `--run_filter` that selects 16 runs instead of 4 (both stopped), check-on and finish,
+  once the failed-run rule was made unambiguous (it had stopped Sonnet before the figures).
+- Profile: Model routing table; advising-research row in "Which skill when". README: the skill and the agents.
+
 ## 2026-10-12 — research-core 0.13.0, lowrank-rnn 0.4.1 (bugs found by a fresh-agent review)
 Two fresh agents reviewed the validation scripts (ponytail's review procedure: every finding needs a concrete
 failing input). Each fixed bug is now a `--demo` case that fails on the previous version.

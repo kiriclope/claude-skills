@@ -25,6 +25,15 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
   never red vs green, never hue alone; describe colors by name + shape when discussing a figure.
 - Ask before launching anything long-running or outward-facing; commit only when asked, push only on "push it".
 
+## Model routing (`advising-research`; agents in `~/.claude/agents/` → `plugins/personal/agents/`)
+
+| Phase | Who | Model |
+|---|---|---|
+| plan | `research-planner` | Fable (alias `fable`) |
+| code | main session | Opus 5.5 (the session model) |
+| sweep launch / check-on / finish | `sweep-runner` | Sonnet (alias `sonnet`): matched Opus 4.8 on a dry test, 2026-10-14 (`~/tmp/sweeprunner_trial/REPORT.md`); revert with `model: claude-opus-4-8` in the agent |
+| check results | `result-checker` (fresh context) | Opus 5.5 (alias `opus`) |
+
 ## Which skill when (load it before starting — these never trigger on their own often enough)
 
 | When | Skill |
@@ -32,6 +41,7 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
 | my request is vague | `clarifying-requests` |
 | starting a session, "where were we" | `resuming-work` |
 | planning an experiment, "what next" | `planning-research` |
+| a phase boundary: a plan is needed, a sweep launches or finishes, results come in | `advising-research` (routes it) |
 | launching or monitoring a sweep / long job; "what did we train" | `launching-experiments`; `run-card` |
 | training misbehaves | `debugging-training` |
 | numbers just came out, before any conclusion | `auditing-results` |
