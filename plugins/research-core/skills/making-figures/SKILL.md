@@ -39,6 +39,28 @@ If none exist, grep for `def save_fig`, `def plot_`, `rcParams` before writing a
 - **Every panel must support exactly the claim its caption makes.** If you cannot state that
   claim in one sentence, the panel is not ready.
 
+### Evidence figures (the figure behind a verdict — auditing-results §0)
+
+An evidence figure proves one verdict to the user. It is not a paper panel: build it fast,
+but it must decide the claim at a glance.
+- **Every unit** (seed / mouse / session) as its own point or trace. A mean can go on top,
+  but never alone.
+- **The criterion drawn in the figure**: a threshold line, the chance level or null band,
+  the target region. Label it ("criterion −1σ", "shuffle 95%").
+- **Pass vs fail by shape AND fill** (filled circle = pass, open square = fail), never by
+  color alone.
+- **The figure's main title is the VERDICT line** ("design2 → discarded: w1 one side per
+  seed; w4 loses GNG"). Panel titles stay as orienting labels; name the outlier.
+- **One panel per reason in VERDICT.** For a discard, show the failure itself: the run that
+  diverged, the null band that swallows the effect, the seed that misses. If the reason is a
+  cost (accuracy lost, instability), that cost gets its own panel with its criterion drawn
+  in it. **Why:** in the first test, w4 was discarded for losing the Go/NoGo task, but the
+  figure showed only depth, where w4 looked like a success.
+- **No abbreviation without a key in the figure**, and fix every `check_figure` overlap
+  before reporting. Keep the legend short; for more detail, write the key in the caption.
+- Save it next to the run's outputs (or under `figures_root`/verdicts/), then render,
+  check and look at it as in Step 3.
+
 ## Step 2 — style (one style for main AND supplementary figures)
 
 ```python

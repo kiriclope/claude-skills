@@ -10,6 +10,28 @@ were opposite: a working configuration written off because a mean hid it, and an
 matched the hypothesis but was produced by trial count or normalization. **The effect that
 matches the hypothesis is the one least likely to be audited — audit it hardest.**
 
+## 0. No verdict without its evidence figure — kept OR discarded
+
+Every verdict (solved, works, fails, discarded, superseded, "not worth pursuing") ships with
+a figure that shows it and a verdict card. This applies to quick exploratory dead ends too,
+where one small panel is enough, and above all in auto mode.
+**Why:** in auto mode, results were solved or dropped in one line of text. The user could
+not see why, and could not catch a wrong discard (see §1: a working seed written off by a
+mean). A discard without a figure cannot be reviewed.
+
+```
+CLAIM      one sentence, in the field's terms
+CRITERION  the threshold fixed before looking (planning-research), or "none fixed: exploratory"
+FIGURE     path/to/evidence.png   (rendered, checked and opened: making-figures, "Evidence figures")
+LOOK AT    what in the figure decides it, with colors named + shapes ("open squares below the dashed gray line")
+VERDICT    kept / discarded / superseded, because …; what it does NOT show
+```
+- Put the card in the reply and append it, with the date, to the project's verdict log
+  (`project.yaml` → `verdict_log`, default `docs/verdicts.md`). That gives one history of
+  what was tried and why it was dropped.
+- If no figure can show the verdict (a crash, a missing file), say so in FIGURE and give
+  the log line instead. Never leave the field out.
+
 Helpers: `scripts/audit_table.py` (`per_unit_table`, `flat_columns`, `matched_n`,
 `participation_ratio`; `python audit_table.py --demo` shows each failure mode).
 
@@ -95,6 +117,7 @@ claims with their labels, never your reasoning; check each of its objections bef
 it. Skip it for exploratory looks (a review costs ~5–10 min).
 
 ## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
+- [ ] evidence figure + verdict card in the reply and the verdict log (discards included)
 - [ ] per-unit table + `SUMMARY: k/N`, criterion fixed in advance
 - [ ] all outcomes enumerated (not only the occupied one); continuous sets checked; residuals verified
 - [ ] effects in noise units

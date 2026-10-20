@@ -1,6 +1,6 @@
 {
   "name": "research-core",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Project-agnostic research workflow skills: planning, experiments, debugging, result audits, validation of pipelines, decoders and claims, derivations, figures, code, paper writing, numbers and citation audits, literature, reviewer responses, logging, skill maintenance.",
   "author": { "name": "Leon" }
 }

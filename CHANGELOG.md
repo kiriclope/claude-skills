@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-20 — research-core 0.15.0 (evidence figure behind every verdict)
+- **auditing-results** §0 (new, top): no verdict without its evidence figure, whether kept or discarded and
+  including exploratory dead ends. A verdict card (claim · criterion · figure · look at · verdict) goes in the
+  reply and is appended to the project's verdict log. Why: in auto mode, results were solved or dropped in one
+  line of text, so a wrong discard could not be caught.
+- **making-figures**: "Evidence figures" spec: every unit shown, the criterion drawn, pass/fail by shape + fill,
+  the figure's main title is the VERDICT line, one panel per reason in VERDICT (a cost, such as lost accuracy,
+  gets its own panel), no abbreviation without a key, and every check_figure overlap fixed.
+- Tested on the rnn design2 wells discard (fresh agent, auto mode, no mention of figures): the card, the log and
+  a per-seed figure came unprompted, and w4 s0/s1 were not written off. The figure lacked the GNG accuracy
+  panel behind the w4 discard → the panel-per-reason rule.
+- `templates/project.yaml`: `verdict_log:` (default `docs/verdicts.md`). Profile: "Show me, don't tell me" line.
+
 ## 2026-10-14 — research-core 0.14.0, personal 0.2.0 (advising-research: route each phase to its model)
 - **advising-research** (new): the main session is the advisor. It keeps the user's decisions and writes the
   code, and hands planning, sweep launching and result checking to the agents the profile's **Model routing**
