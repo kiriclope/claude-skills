@@ -65,10 +65,16 @@ user so they send the thread to Claude.
    ("OLD … (retired)", with a pointer to the new link) so two pages never share a title, and update
    every cross-link and the ledger.
 
-## Step 4 — update the ledger
+## Step 4 — update the ledger and the archive
 
 Record the url, source, builder and sharing state in `pages:`; commit the builder and the ledger with
-the work (log-and-ship). Then read the comments again (Step 1).
+the work (log-and-ship). If the user's profile names a **pages archive** (a private git repo), copy the
+built page there as `<archive>/<project key>/<page>/<page>.html` — the project key is the project's folder
+name in `~/.claude/projects/`, the page is the built file's name — add or update its row in the archive's
+README table (page, URL, builder), and commit there; push only when the user says so. Why: built pages are
+gitignored or outside any repo and a live page keeps no history, so a published version could not be
+recovered — and the code repos shared with colleagues must not carry them. Then read the comments again
+(Step 1).
 
 ## Text documents for collaboration
 
@@ -82,4 +88,4 @@ only when the user asks for one.
 - Publish without reading a live page this session has not published, or over edits you did not merge.
 - Give a new page the title of an old one, or delete a page without the user's explicit request.
 
-One line in the reply: pages published (url, label), comment threads handled, ledger updated.
+One line in the reply: pages published (url, label), comment threads handled, ledger and archive updated.

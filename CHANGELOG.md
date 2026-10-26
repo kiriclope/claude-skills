@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-26 — research-core 0.15.1 (pages archive)
+- **publishing-drafts** Step 4: when the profile names a pages archive (a private git repo), every published page
+  is copied to `<archive>/<project key>/<page>/<page>.html`, its README row updated and committed there. Why: the
+  built pages were untracked everywhere (no recoverable version), and the code repos shared with colleagues must
+  not carry them. Profile leon.md: the archive is `~/claude-artefacts`.
+
 ## 2026-10-20 — research-core 0.15.0 (evidence figure behind every verdict)
 - **auditing-results** §0 (new, top): no verdict without its evidence figure, whether kept or discarded and
   including exploratory dead ends. A verdict card (claim · criterion · figure · look at · verdict) goes in the

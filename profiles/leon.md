@@ -82,6 +82,8 @@ Keep, in this order:
 Drop: tool outputs and file contents that can be re-read, images, superseded attempts.
 
 ## Machine facts
+- **Pages archive:** `~/claude-artefacts` (private git, laid out like claude-memory): `publishing-drafts`
+  copies every published page there and commits.
 - `ask-kimi` / `extract-chat` / `kimi-write` were removed (2026-10-02; they never worked):
   do not delegate doc writing or reading to a cheap-worker CLI.
 - Figures are viewed through the gallery at localhost:8000 (`figure-gallery` skill).
