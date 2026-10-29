@@ -47,7 +47,8 @@ Every statement that will appear in the conclusion goes in a numbered ledger wit
 
 ## 3 — Fresh critical review
 
-Spawn a **new** agent — Agent tool, `subagent_type: general-purpose`. **Not a fork**: a fork
+Spawn a **new** agent — Agent tool, `subagent_type`: the critical-review agent of the user's profile
+(**Model routing** table), else `general-purpose`. **Not a fork**: a fork
 inherits your context, your reasoning and your blind spots. Fill `references/reviewer_brief.md`
 with ONLY: the question, the plan and its pre-stated criterion, pointers to the evidence, and the
 numbered claims with their tags. **Do not include your justification or your confidence.**

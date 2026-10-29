@@ -109,6 +109,7 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | Skill | What it does | Use it when |
 |---|---|---|
 | [auditing-results](plugins/research-core/skills/auditing-results/SKILL.md) | Unit by unit (seed, subject, session) instead of means; all outcomes, not only the visited one; effects in noise units; nulls; matched trial counts and normalizations; pseudoreplication; an honest finding / assumption / limitation split. | Numbers just came out, before any conclusion. |
+| [concluding-research](plugins/research-core/skills/concluding-research/SKILL.md) | Concludes one question across all its verdict cards: checks they can be pooled, rebuilds each hypothesis's status (established / supported / not supported / refuted / open) with independent units, lists discards and how decisive they were, shows contradictions, answers in plain words with a figure, and proposes 2–3 ranked next experiments as draft pre-run cards; rewrites the question's section of `docs/conclusions.md`. | After a series of verdicts on one question; *"what do we know about X?"*, *"conclude"*. |
 | [choosing-statistics](plugins/research-core/skills/choosing-statistics/SKILL.md) | Chooses the test from the design before any result is seen — unit of replication, pairing, nesting (mixed model or GEE), exact small-n tests and the smallest p they can reach — then reports that test whatever it gives; no test shopping. | A comparison, p-value or star is about to be computed. |
 | [checking-derivations](plugins/research-core/skills/checking-derivations/SKILL.md) | Derive with sympy, state assumptions, then check numerically against the real model (Jacobian vs autograd vs finite differences). | Deriving or editing an equation; a formula and a simulation disagree. |
 | [flow-verdict](plugins/lowrank-rnn/skills/flow-verdict/SKILL.md) · [traj-verdict](plugins/lowrank-rnn/skills/traj-verdict/SKILL.md) · [bifurcation-probe](plugins/lowrank-rnn/skills/bifurcation-probe/SKILL.md) | *(lowrank-rnn)* Score flow fields, trajectories and fixed points of low-rank RNNs with the project's scripts instead of eyeballing figures, with the known misinterpretation traps listed. | Interpreting κ-plane flows, trajectories or bifurcations. |
@@ -178,6 +179,8 @@ flowchart LR
     V --> E[auditing-results]
     E --> T[choosing-statistics]
     T --> F[thinking-critically<br/>fresh review]
+    F --> N[concluding-research<br/>across verdicts]
+    N -. next steps .-> C
     F --> G[making-figures]
     G --> H[writing-paper]
     H --> Q[validating-claims]
@@ -397,7 +400,8 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `freeze_check.py` | debugging-training | parameter checksums before and after a step, gradient-norm tables |
 | `audit_numbers.py` | auditing-paper-numbers | numbers in a manuscript against the numbers log |
 | `verify_refs.py` | verifying-citations | references against Crossref and OpenAlex |
-| `stats_floor.py` | choosing-statistics | the smallest p a sign test, Wilcoxon, Mann-Whitney or permutation test can reach at a given n |
+| `stats_floor.py` | choosing-statistics | the smallest p a sign test, Wilcoxon, Mann-Whitney or permutation test can reach at a given n; `--counts N`: which solved/not-solved counts can differ at all |
+| `collect_cards.py` | concluding-research | every verdict card on one question, with its verdict, criterion and plan lines and what limits pooling |
 | `materials.py` | reviewing-manuscript | gathers the text, canonical figures and numbers log the reviewer agents receive |
 | `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, other live sessions, newest memory state, open items |
 | `memory_links.py` | resuming-work | Obsidian `aliases:` for memory notes, and the `[[links]]` that resolve nowhere |

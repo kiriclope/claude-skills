@@ -1,5 +1,59 @@
 # Changelog
 
+## 2026-10-29 — research-core 0.19.0 (concluding-research)
+- **New skill concluding-research**: one question across all its verdict cards → pooling check (scoring, criterion,
+  metric, code, seeds), a hypothesis ledger with calibrated status (established = confirmed on fresh seeds; an
+  undecidable test is open, not "not supported"), discards with how decisive they were, contradictions and corrections
+  (listed, cards not edited), a plain answer with a status-by-shape figure, 2–3 next experiments ranked by how much they
+  would change the answer as draft pre-run cards, a fresh review, and the question's section rewritten in place in
+  `docs/conclusions.md`. Script `collect_cards.py` lists the cards and flags after-data / open / corrected ones.
+- Tested on rnn's Dual-curriculum question (21 cards; ~/.claude/jobs/f1653fb5/tmp/conclude_test/): the fresh review
+  caught a silently skipped failing run and a card appended mid-session. Fixed in the skill: a run account per
+  hypothesis (no quiet exclusions), re-collect before writing, uncarded runs listed, "N cannot decide" written as open
+  even when every replicate agrees, replicates (seeds) counted rather than runs, re-tallied as a pooling option, "what
+  would overturn it" instead of a post-hoc falsifier, the reviewer's plan = the cards' own criteria, a defined ledger
+  figure (per-card shapes: supports / against / no effect / cannot decide; x = card order), answer up to 8 lines.
+  `collect_cards.py`: headings by default (`--body` opt-in), more correction words, Question / Claim tested as Plan.
+  **Why:** answers spread over ~10 cards per question; titles outlived their corrected evidence; a discard was logged on a
+  count no outcome could reverse.
+- Wired: profile skill table, project.yaml template (`conclusions_doc`), planning-research Step 3, README.
+
+## 2026-10-29 — research-core 0.18.0 (a plan before every arm)
+- **planning-research** Step 1, the pre-run card: every arm, even a quick "try X", gets six lines (WHY, PREDICTS, CRITERION
+  with its cost side, FLOOR, RIVALS, N) opened at the top of the verdict log before the run, status RUNNING; the verdict
+  fills in below it. **Why:** none of 25 verdict cards in one project quoted a plan; two set their criterion after the run.
+- **Can N decide it?** Run stats_floor.py before the launch; a design whose every outcome misses the criterion is changed
+  or labeled a pilot. The full plan: rivals each with their control (or "at best open"), the noise floor planned as an arm,
+  independent units (runs sharing a parent stage count once). After results: the verdict words of auditing-results §0
+  (supported / not supported / refuted / open), not "confirmed / inconclusive".
+- **choosing-statistics** `stats_floor.py --counts N`: for two arms of N solved/not-solved units, the counts Fisher's exact
+  test can separate from each baseline (better or worse), and the discordant pairs McNemar needs for twins; self-tests
+  added. At N = 6 a 5/6 baseline leaves no count that shows an arm helps.
+- **The scientific-method rules of the card** (planning-research Step 1): premises cite a checked source (a test card's
+  WHY rested on an overstated line of an uncorrected card); WHY "none: a screen" supports no mechanism; STAGE exploring /
+  confirming: an exploring pass stays "open" until fresh seeds repeat it with the criterion unchanged (forking paths), with
+  the number of arms tried for the question; a quantitative prediction from theory when there is one (severity).
+- **launching-experiments** `record_provenance.py --card <verdict log> --card_heading "<heading>"`: freezes the card
+  into each run directory as precard.md + sha256 in provenance.json (missing or ambiguous heading → error); the verdict
+  quotes that copy and explains any later edit of the log's card (auditing-results).
+- **launching-experiments** (launch table, checklist), **advising-research** (the planner returns a card per arm) and
+  **auditing-results** (the entry is written under its open card; Plan slot) point to the card.
+
+## 2026-10-29 — research-core 0.17.0, personal 0.2.1 (scientific method in the verdict; model routing)
+- **auditing-results §0**: hypotheses marked as planned or after the data; rivals per test (strong inference); the noise
+  floor beside every effect; calibrated words (supported / not supported / refuted / open); exact intervals and Fisher's
+  test for counts; a Next line. In the chat the evidence figure comes first and the whole entry right below it. "Who runs
+  it": the profile's audit agent when one is assigned.
+- **making-figures, Evidence figures**: the noise floor drawn next to the effect, or the panel says none was measured.
+- **planning-research**: save the plan, dated, before the run, so the verdict can quote it.
+- **thinking-critically** step 3: the fresh review runs on the profile's critical-review agent.
+- **personal agents**: `effort: medium` on research-planner, sweep-runner and result-checker; new `critical-reviewer`
+  (read-only, on the model the profile assigns). Profile: model routing for auditing-results and thinking-critically.
+- Re-tested on the delay-pin verdict (~/tmp/verdict_format_trial/, v2): it ends open, not discarded; its notes on the
+  rules (no word for a large effect without a floor, Fisher vs twins, shared parent stages) are open items.
+- Figures stay on the main session: Sonnet vs Opus on one evidence figure, scored blind, failed the fixed criterion
+  (worse figure 7 vs 6 defects, a wrong noise band); ~/tmp/figure_model_trial/REPORT.md.
+
 ## 2026-10-29 — research-core 0.16.0 (a verdict is an argument: hypotheses → tests → panels → conclusions)
 - **auditing-results §0**: the verdict card (claim / criterion / figure / look at / verdict) becomes a verdict entry
   organized by hypothesis: each test names what it compares, its criterion (fixed before / exploratory / shown only), its

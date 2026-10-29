@@ -22,7 +22,7 @@ The model names live in that table and in the agent files, never in this skill.
 
 | Phase | Who | Gets (the handoff) | Returns |
 |---|---|---|---|
-| plan | planner agent | the PLAN handoff below | the plan block of planning-research, filled |
+| plan | planner agent | the PLAN handoff below | the plan block of planning-research, filled, with its pre-run card per arm |
 | code | main session | the approved plan | the diff, its checks (writing-research-code) |
 | sweep | sweep-runner agent | the SWEEP handoff below | per-seed launch / status / finish report |
 | check | checker agent, fresh | the CHECK handoff below | per-unit table, verdict vs the CRITERION, objections |
@@ -57,7 +57,8 @@ QUESTION      the user's words, and when they asked
 STATE         what is settled and open; the docs and memory notes to read (paths)
 ALREADY RUN   sweeps and analyses that bear on it (paths), so nothing is re-proposed
 CONSTRAINTS   the user's rules that apply (seeds policy, budget, no engineered constraints, …)
-RETURN        the plan block of planning-research; cost; what you read
+RETURN        the plan block of planning-research and a pre-run card per arm (its Step 1, with
+              stats_floor.py's answer for N); cost; what you read
 ```
 
 ```

@@ -27,7 +27,8 @@ seeds          exploring: 4 · definitive: 8   (say which mode)
 fixed params   everything else, with values (diff vs the baseline config, not the full dump)
 runs           n_arms × n_seeds = N  → batches of ≤ max_concurrent
 cost           est. wall clock per batch, GPUs used
-success        what result counts as success (see planning-research)
+success        the pre-run card of planning-research Step 1 (WHY, PREDICTS, CRITERION with its cost
+               side, FLOOR, RIVALS, N and what it can decide), opened in the verdict log
 outputs        verdict scripts + figures that will be produced
 ```
 
@@ -60,7 +61,8 @@ Check: loss decreases, checkpoint written, provenance written, analysis script r
   python <this skill>/scripts/record_provenance.py --run_dir <run_dir> --repo . --seed <s> --config <run_dir>/config.json
   ```
   (`python scripts/record_provenance.py --demo` to see it.) If the tree is dirty, the diff is
-  saved next to it — say so to the user, or commit first.
+  saved next to it — say so to the user, or commit first. Add `--card <verdict log> --card_heading
+  "<the card's heading>"` to freeze the run's pre-run card (planning-research Step 1) as `precard.md`.
 - Relaunch must be a **resume**: skip runs whose final checkpoint exists.
 
 ## Step 4 — monitor
@@ -80,10 +82,10 @@ success. Report failures immediately with the log tail.
 4. Log it (log-and-ship): config, result per seed, verdict, next step.
 
 ## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
-- [ ] plan table shown; user said go
+- [ ] plan table + pre-run card shown; user said go
 - [ ] pilot passed end to end
 - [ ] one screen + one absolute-path log per seed; ≤ max concurrent
-- [ ] config + seed + provenance in every run dir
+- [ ] config + seed + provenance + frozen pre-run card in every run dir
 - [ ] monitor armed for completion and failure
 - [ ] all runs accounted for; verdicts run per seed
 - [ ] figures made and shown; logged

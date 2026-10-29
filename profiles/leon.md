@@ -19,9 +19,9 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
 - Honest assessment over a pleasing story: say "this did not work, here is why"; separate
   data finding / imposed assumption / model limitation.
 - **Show me, don't tell me — especially in auto mode.** Every verdict (solved, works, fails,
-  discarded) comes with a verdict entry that argues it hypothesis by hypothesis (each test → its
-  panel A, B, … of one evidence figure → conclusion), clear to someone who missed the session, also
-  appended to the project's verdict log (`auditing-results` §0).
+  discarded) comes as its evidence figure, the verdict right below it, then the argument hypothesis
+  by hypothesis (prediction → each test on its panel A, B, … → calibrated conclusion), clear to
+  someone who missed the session, also appended to the project's verdict log (`auditing-results` §0).
   Discards most of all: I can't catch a wrong discard I never saw.
 - **American English** everywhere (docs, figures, comments, commits, chat): realize, initialization, behavior,
   labeled, modeling, canceled, center, analyze, gray — not -ise / -our / -lled / -tre.
@@ -30,14 +30,15 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
   never red vs green, never hue alone; describe colors by name + shape when discussing a figure.
 - Ask before launching anything long-running or outward-facing; commit only when asked, push only on "push it".
 
-## Model routing (`advising-research`; agents in `~/.claude/agents/` → `plugins/personal/agents/`)
+## Model routing (`advising-research`; agents in `~/.claude/agents/` → `plugins/personal/agents/`, all at effort medium)
 
 | Phase | Who | Model |
 |---|---|---|
 | plan | `research-planner` | Fable (alias `fable`) |
 | code | main session | Opus 5.5 (the session model) |
 | sweep launch / check-on / finish | `sweep-runner` | Sonnet (alias `sonnet`): matched Opus 4.8 on a dry test, 2026-10-14 (`~/tmp/sweeprunner_trial/REPORT.md`); revert with `model: claude-opus-4-8` in the agent |
-| check results | `result-checker` (fresh context) | Opus 5.5 (alias `opus`) |
+| check results; `auditing-results` | `result-checker` (fresh context) | Opus 5.5 (alias `opus`) |
+| fresh review of `thinking-critically` | `critical-reviewer` | Fable (alias `fable`) |
 
 ## Which skill when (load it before starting — these never trigger on their own often enough)
 
@@ -50,6 +51,7 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
 | launching or monitoring a sweep / long job; "what did we train" | `launching-experiments`; `run-card` |
 | training misbehaves | `debugging-training` |
 | numbers just came out, before any conclusion | `auditing-results` |
+| several verdicts on one question; "what do we know about X", "conclude" | `concluding-research` |
 | choosing a test, a p-value, a star | `choosing-statistics` |
 | a new measure or pipeline, its first result; "did the numbers change" | `validating-pipelines` |
 | a decoder / CCGP / axis result; "is it above chance", "is it just licks" | `validating-decoders` |

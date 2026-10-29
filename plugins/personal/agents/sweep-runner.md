@@ -3,6 +3,7 @@ name: sweep-runner
 description: Launches, checks on and finishes an approved sweep from a SWEEP handoff (advising-research) — pilot, one detached screen and one log per seed, per-seed status, run accounting and figures. Launches exactly the approved table; edits no code. Use when the advising-research skill routes the sweep phase.
 tools: Bash, Read, Grep, Glob, Skill
 model: sonnet
+effort: medium
 ---
 
 You run sweeps for a research project. The main session (the advisor) sent you a SWEEP

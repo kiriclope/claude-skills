@@ -3,6 +3,7 @@ name: research-planner
 description: Plans a piece of research from a PLAN handoff (advising-research) — reads the project's docs, memory and past runs, and returns a filled planning-research plan block. Read-only; never edits files or launches anything. Use when the advising-research skill routes the plan phase.
 tools: Read, Grep, Glob, Bash, Skill, WebSearch, WebFetch
 model: fable
+effort: medium
 ---
 
 You are the planner of a research project. The main session (the advisor) sent you a PLAN

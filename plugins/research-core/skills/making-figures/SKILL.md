@@ -57,6 +57,8 @@ session must understand it with the entry beside it.
   band, the target region. Label it ("criterion 0.95", "shuffle 95%"). A paired criterion (with vs
   without, before vs after) has no line to draw: join each unit's pair with a gray line (pass = it
   moves the right way) or plot the difference against a labeled 0 line.
+- **The noise floor drawn next to the effect:** a band for what a change caused by nothing looks
+  like (seed spread, rescoring noise, a sham run), labeled. If none was measured, the panel says so.
 - **One encoding for the whole figure:** a color, line style or shape means the same thing in every
   panel. Pass vs fail = `cbstyle.PASS` (filled circle) / `cbstyle.FAIL` (open square) with the arm's
   `color=` (markersize may shrink in dense clusters), never color alone; arms or conditions go to
@@ -69,6 +71,7 @@ session must understand it with the entry beside it.
   figure showed only depth, where w4 looked like a success.
 - **No abbreviation without a key in the figure**, and fix every `check_figure` overlap
   before reporting.
+- A conclusion across verdicts (concluding-research) uses its own one-panel ledger figure instead.
 - Save it next to the run's outputs (or under `figures_root`/verdicts/), then render,
   check and look at it as in Step 3; the clarity check of auditing-results §0 reads it with the entry.
 

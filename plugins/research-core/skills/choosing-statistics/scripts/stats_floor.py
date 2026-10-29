@@ -10,11 +10,14 @@ Exact floors, two-sided unless --one_sided:
                                    sign-flip permutation of the mean difference 2/2^n
   two independent groups (n1, n2): Mann-Whitney 2/C(n1+n2, n1) · label permutation 2/C(n1+n2, n1)
   Monte Carlo permutation (B draws): 1/(B+1) — the floor of any p estimated from B shuffles
+  two arms of n binary units (--counts n): Fisher's exact test — for each baseline count, the count the other
+                                   arm needs; twins (paired): McNemar exact = sign test on the discordant pairs
 
 Usage:
     python stats_floor.py --n 9                  # paired designs at n = 9 (+ effect of sign flips)
     python stats_floor.py --n1 5 --n2 5          # two independent groups
     python stats_floor.py --perm 100             # floor of a 100-draw permutation null
+    python stats_floor.py --counts 6             # solved k/6 vs k'/6: which splits can differ at all
     python stats_floor.py --table                # floors for n = 3..15
     python stats_floor.py --demo
 """
@@ -69,6 +72,33 @@ def perm_floor(b):
     return 1 / (b + 1)
 
 
+def fisher_p(k1, k2, n1, n2):
+    """Two-sided Fisher exact p for k1/n1 vs k2/n2 (sum of tables no more likely than the observed one)."""
+    k, n = k1 + k2, n1 + n2
+    prob = [comb(n1, i) * comb(n2, k - i) / comb(n, k) for i in range(max(0, k - n2), min(k, n1) + 1)]
+    obs = comb(n1, k1) * comb(n2, k2) / comb(n, k)
+    return min(1.0, sum(q for q in prob if q <= obs * (1 + 1e-9)))
+
+
+def counts_needed(n, k0, alpha=0.05):
+    """(highest k below k0, lowest k above k0) out of n with Fisher p ≤ alpha against k0/n; None where none can."""
+    up = next((k for k in range(k0 + 1, n + 1) if fisher_p(k0, k, n, n) <= alpha), None)
+    down = next((k for k in range(k0 - 1, -1, -1) if fisher_p(k0, k, n, n) <= alpha), None)
+    return down, up
+
+
+def report_counts(n, alpha):
+    print(f"two arms of {n} binary units each (solved / not), Fisher exact two-sided, α = {alpha}")
+    for k0 in range(n + 1):
+        down, up = counts_needed(n, k0, alpha)
+        need = ([f"≥ {up}/{n} to be better"] if up is not None else []) + \
+               ([f"≤ {down}/{n} to be worse"] if down is not None else [])
+        print(f"  baseline {k0}/{n}: the other arm needs " + (" or ".join(need) if need else "— no count can differ"))
+    d = sign_needed(n, alpha)
+    print(f"  twins (paired, McNemar exact): needs {d} discordant pairs, all one way" if d
+          else f"  twins (paired, McNemar exact): CANNOT reach {alpha} with {n} pairs")
+
+
 def fmt(p):
     return f"{p:.4f}" if p >= 1e-4 else f"{p:.1e}"
 
@@ -91,6 +121,7 @@ def main(argv=None):
     ap.add_argument("--n1", type=int, help="units in group 1 (independent groups)")
     ap.add_argument("--n2", type=int, help="units in group 2 (independent groups)")
     ap.add_argument("--perm", type=int, help="number of draws of a Monte Carlo permutation null")
+    ap.add_argument("--counts", type=int, help="units per arm, binary outcome (two arms, Fisher / McNemar)")
     ap.add_argument("--alpha", type=float, default=0.05)
     ap.add_argument("--one_sided", action="store_true", help="one-sided floors (only if the direction was predicted)")
     ap.add_argument("--table", action="store_true", help="floors for n = 3..15")
@@ -98,7 +129,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.demo:
         return _demo()
-    if not any([a.n, a.n1, a.perm, a.table]):
+    if not any([a.n, a.n1, a.perm, a.table, a.counts]):
         ap.print_help()
         return 0
     if a.n:
@@ -107,6 +138,8 @@ def main(argv=None):
         p = mw_floor(a.n1, a.n2, a.one_sided)
         print(f"two independent groups, n1 = {a.n1}, n2 = {a.n2}: Mann-Whitney / exact label permutation "
               f"floor p = {fmt(p)}" + ("" if p <= a.alpha else f" — CANNOT reach {a.alpha}"))
+    if a.counts:
+        report_counts(a.counts, a.alpha)
     if a.perm:
         print(f"Monte Carlo permutation with {a.perm} draws: floor p = {fmt(perm_floor(a.perm))} "
               f"(a margin below this is noise; use ≥ 1000 draws for a p near {a.alpha})")
@@ -128,6 +161,9 @@ def _demo():
         ("Wilcoxon exact null sums to 2^n", sum(wilcoxon_counts(12)) == 2 ** 12),
         ("Mann-Whitney 3 vs 3: floor .10 — cannot reach .05", abs(mw_floor(3, 3) - 0.1) < 1e-12),
         ("Mann-Whitney 5 vs 5: floor .0079", abs(mw_floor(5, 5) - 2 / 252) < 1e-12),
+        ("Fisher 4/6 vs 5/6: p = 1", abs(fisher_p(4, 5, 6, 6) - 1) < 1e-12),
+        ("Fisher 0/6 vs 6/6: p = .0022", abs(fisher_p(0, 6, 6, 6) - 2 / 924) < 1e-12),
+        ("Fisher at n = 6: from 1/6 only 6/6 differs; from 3/6 nothing", counts_needed(6, 1) == (None, 6) and counts_needed(6, 3) == (None, None)),
         ("100-draw permutation null: floor .0099", abs(perm_floor(100) - 1 / 101) < 1e-12),
     ]
     for name, ok in checks:
