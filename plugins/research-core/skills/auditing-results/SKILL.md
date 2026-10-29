@@ -13,24 +13,54 @@ matches the hypothesis is the one least likely to be audited — audit it hardes
 ## 0. No verdict without its evidence figure — kept OR discarded
 
 Every verdict (solved, works, fails, discarded, superseded, "not worth pursuing") ships with
-a figure that shows it and a verdict card. This applies to quick exploratory dead ends too,
-where one small panel is enough, and above all in auto mode.
+a verdict entry and the figure it walks through. This applies to quick exploratory dead ends
+too, where one hypothesis and one panel are enough, and above all in auto mode.
 **Why:** in auto mode, results were solved or dropped in one line of text. The user could
 not see why, and could not catch a wrong discard (see §1: a working seed written off by a
-mean). A discard without a figure cannot be reviewed.
+mean). A discard without a figure cannot be reviewed. And a card whose numbers sat in one
+paragraph and whose figure was laid out by arm, not by argument, left the user to connect
+them (2026-10-29).
 
+**The entry is an argument, one hypothesis at a time; each test points to its own panel.**
+
+```markdown
+## <date> · <the verdict in one line>
+**Question:** <who asked, when, in their words> · **Data:** <runs or units, by content, not arm codes>
+· **Figure:** `path/to/evidence.png` (panels A–<last>, in the order below)
+
+### H1 · <the hypothesis, one plain sentence that could be false>
+- **Test A: <what is compared, in plain words>.** <how: units, condition>. Criterion (fixed before
+  / exploratory): <…>. **Fig. A** shows <y against x, one mark per unit>; look at <colors named +
+  shapes>. **Result:** <k/N, the two or three numbers that decide it> → for / against H1.
+- **Test B: …**
+- **Conclusion on H1:** supported / refuted / open: <how A and B decide it together>. Not shown: <…>.
+
+### H2 · …
+
+**Verdict:** kept / discarded / superseded / open (not decided: say who decides), because <H1 …, H2 …>.
+Limits: <units, seeds, reviewed or not>.
 ```
-CLAIM      one sentence, in the field's terms
-CRITERION  the threshold fixed before looking (planning-research), or "none fixed: exploratory"
-FIGURE     path/to/evidence.png   (rendered, checked and opened: making-figures, "Evidence figures")
-LOOK AT    what in the figure decides it, with colors named + shapes ("open squares below the dashed gray line")
-VERDICT    kept / discarded / superseded, because …; what it does NOT show
-```
-- Put the card in the reply and append it, with the date, to the project's verdict log
-  (`project.yaml` → `verdict_log`, default `docs/verdicts.md`). That gives one history of
-  what was tried and why it was dropped.
-- If no figure can show the verdict (a crash, a missing file), say so in FIGURE and give
-  the log line instead. Never leave the field out.
+- **One panel per test, one test per panel:** Test A ↔ Fig. A, letters in the order of the text;
+  build the figure with `cbstyle.evidence_figure` (making-figures, "Evidence figures"), whose rows
+  are the hypotheses. A second reason for a discard is a second test with its own panel.
+- **Write for a reader who did not follow the session:** plain sentences, every run named by what it
+  is, every symbol said once in words, only the numbers the argument needs (link the full table:
+  `per-unit table: path`). Each test ends with what it means for its hypothesis. Say in the Question
+  line why the hypothesis was worth testing; take definitions from the project's docs, never invent.
+- **Short:** each test ≤ 5 lines, the Question/Data lines ≤ 4, the whole entry about one screen.
+  Define a term once, where it is first needed, not in a glossary up front.
+- **Criterion slot:** "fixed before (date)", "exploratory", or "none: shown, not a criterion".
+- **Count independent units only:** runs that share a stage (one DPA stage feeding three GNG
+  versions) are one unit at that stage. **Why:** "18/18 stage ends" counted each shared DPA stage three
+  times; the real count was 14/14 (2026-10-29).
+- **Clarity check before reporting:** give a fresh agent the entry and the PNG and nothing else, and
+  ask it to restate, per hypothesis, the hypothesis, what each panel shows with its result, and the
+  conclusion. Any mismatch → fix the text or the figure; at most two rounds. A question the entry
+  cannot answer from its own evidence goes into "Not shown" or the Limits.
+- Put the entry in the reply and append it to the project's verdict log (`project.yaml` →
+  `verdict_log`, default `docs/verdicts.md`): one history of what was tried and why it was dropped.
+- If no figure can show a test (a crash, a missing file), say so in its **Fig.** slot and give the
+  log line instead. Never leave the slot out.
 
 Helpers: `scripts/audit_table.py` (`per_unit_table`, `flat_columns`, `matched_n`,
 `participation_ratio`; `python audit_table.py --demo` shows each failure mode).
@@ -117,7 +147,7 @@ claims with their labels, never your reasoning; check each of its objections bef
 it. Skip it for exploratory looks (a review costs ~5–10 min).
 
 ## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
-- [ ] evidence figure + verdict card in the reply and the verdict log (discards included)
+- [ ] verdict entry (hypotheses → tests → Fig. A, B … → conclusions) + its figure, clarity-checked, in the reply and the verdict log (discards included)
 - [ ] per-unit table + `SUMMARY: k/N`, criterion fixed in advance
 - [ ] all outcomes enumerated (not only the occupied one); continuous sets checked; residuals verified
 - [ ] effects in noise units

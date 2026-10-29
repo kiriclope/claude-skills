@@ -41,25 +41,36 @@ If none exist, grep for `def save_fig`, `def plot_`, `rcParams` before writing a
 
 ### Evidence figures (the figure behind a verdict — auditing-results §0)
 
-An evidence figure proves one verdict to the user. It is not a paper panel: build it fast,
-but it must decide the claim at a glance.
+An evidence figure walks the user through one verdict entry: the same hypotheses, the same tests,
+in the same order. It is not a paper panel: build it fast, but a reader who did not follow the
+session must understand it with the entry beside it.
+- **Laid out by the argument, not by the data:** one row per hypothesis, headed by it, one panel per
+  test, lettered A, B, … in the order the entry cites them (Test A ↔ Fig. A). Use
+  `cbstyle.evidence_figure(rows, verdict)`; it returns `{"A": ax, …}`. **Why:** a 3 × 3 grid by
+  arm put the first claim in the last row and gave the text nothing to point at (2026-10-29).
+- **Each panel title is its test and its result**, in plain words, on two lines ("Does the drug lower
+  the threshold? / 7/8 mice lower"), set with `ax.set_title(…, loc="left")`; this overrides Step 2's
+  short orienting titles. Axis labels in words, with units.
 - **Every unit** (seed / mouse / session) as its own point or trace. A mean can go on top,
   but never alone.
-- **The criterion drawn in the figure**: a threshold line, the chance level or null band,
-  the target region. Label it ("criterion −1σ", "shuffle 95%").
-- **Pass vs fail by shape AND fill** (filled circle = pass, open square = fail), never by
-  color alone.
-- **The figure's main title is the VERDICT line** ("design2 → discarded: w1 one side per
-  seed; w4 loses GNG"). Panel titles stay as orienting labels; name the outlier.
-- **One panel per reason in VERDICT.** For a discard, show the failure itself: the run that
-  diverged, the null band that swallows the effect, the seed that misses. If the reason is a
-  cost (accuracy lost, instability), that cost gets its own panel with its criterion drawn
-  in it. **Why:** in the first test, w4 was discarded for losing the Go/NoGo task, but the
+- **The criterion drawn in the panel that tests it**: a threshold line, the chance level or null
+  band, the target region. Label it ("criterion 0.95", "shuffle 95%"). A paired criterion (with vs
+  without, before vs after) has no line to draw: join each unit's pair with a gray line (pass = it
+  moves the right way) or plot the difference against a labeled 0 line.
+- **One encoding for the whole figure:** a color, line style or shape means the same thing in every
+  panel. Pass vs fail = `cbstyle.PASS` (filled circle) / `cbstyle.FAIL` (open square) with the arm's
+  `color=` (markersize may shrink in dense clusters), never color alone; arms or conditions go to
+  color (+ line style or x position), never to a second set of shapes. One legend.
+- **The main title is the verdict, in one line** ("design2 → discarded: w1 one side per seed; w4
+  loses GNG"). Numbers and caveats belong in the entry, not the title.
+- **Few panels:** ≤ 6. For a discard, show the failure itself (the run that diverged, the null band
+  that swallows the effect, the seed that misses). A cost (accuracy lost, instability) is a test
+  of its own with its own panel. **Why:** w4 was discarded for losing the Go/NoGo task, but the
   figure showed only depth, where w4 looked like a success.
 - **No abbreviation without a key in the figure**, and fix every `check_figure` overlap
-  before reporting. Keep the legend short; for more detail, write the key in the caption.
+  before reporting.
 - Save it next to the run's outputs (or under `figures_root`/verdicts/), then render,
-  check and look at it as in Step 3.
+  check and look at it as in Step 3; the clarity check of auditing-results §0 reads it with the entry.
 
 ## Step 2 — style (one style for main AND supplementary figures)
 

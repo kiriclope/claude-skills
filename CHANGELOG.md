@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-29 — research-core 0.16.0 (a verdict is an argument: hypotheses → tests → panels → conclusions)
+- **auditing-results §0**: the verdict card (claim / criterion / figure / look at / verdict) becomes a verdict entry
+  organized by hypothesis: each test names what it compares, its criterion (fixed before / exploratory / shown only), its
+  panel ("Fig. A": what to look at) and its result, and ends with what it means for the hypothesis; a conclusion per
+  hypothesis, then the verdict (kept / discarded / superseded / open). Written for a reader who missed the session, short,
+  independent units only. A clarity check: a fresh agent restates the entry from the text and the PNG alone (≤ 2 rounds).
+- **making-figures, Evidence figures**: laid out by the argument (one row per hypothesis, panels A, B, … in the text's
+  order), panel title = test + result, one encoding for the whole figure, paired criteria as slope lines or differences,
+  main title = the verdict in one line, ≤ 6 panels.
+- **cbstyle**: `evidence_figure(rows, verdict)` builds that layout and returns the panels by letter; `PASS` / `FAIL` marker
+  styles. Profile and project.yaml template: "verdict entry".
+- Tested on the rnn delay-pin verdict (a 3 × 3 figure by arm, no letters): the rewrite reads hypothesis by hypothesis; the
+  clarity check found 5 text/figure mismatches in round 1, none in round 2. Its 14 notes on the instructions became the
+  sizes in the helper, the open verdict, the shown-only criterion, independent units, paired criteria and the stopping
+  rule. Files: ~/tmp/verdict_format_trial/.
+
 ## 2026-10-26 — research-core 0.15.1 (pages archive)
 - **publishing-drafts** Step 4: when the profile names a pages archive (a private git repo), every published page
   is copied to `<archive>/<project key>/<page>/<page>.html`, its README row updated and committed there. Why: the

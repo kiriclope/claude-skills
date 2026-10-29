@@ -19,8 +19,9 @@ mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + O
 - Honest assessment over a pleasing story: say "this did not work, here is why"; separate
   data finding / imposed assumption / model limitation.
 - **Show me, don't tell me — especially in auto mode.** Every verdict (solved, works, fails,
-  discarded) comes with an evidence figure and a verdict card (claim · criterion · figure ·
-  what to look at · verdict), also appended to the project's verdict log (`auditing-results` §0).
+  discarded) comes with a verdict entry that argues it hypothesis by hypothesis (each test → its
+  panel A, B, … of one evidence figure → conclusion), clear to someone who missed the session, also
+  appended to the project's verdict log (`auditing-results` §0).
   Discards most of all: I can't catch a wrong discard I never saw.
 - **American English** everywhere (docs, figures, comments, commits, chat): realize, initialization, behavior,
   labeled, modeling, canceled, center, analyze, gray — not -ise / -our / -lled / -tre.

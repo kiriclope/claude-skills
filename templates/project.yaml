@@ -46,7 +46,7 @@ launch:
   seeds_definitive: 8
 running_doc: null
 verdict_scripts: []
-verdict_log: docs/verdicts.md         # auditing-results §0: every verdict card (kept or discarded) with its figure
+verdict_log: docs/verdicts.md         # auditing-results §0: every verdict entry (kept or discarded) with its figure
 plot_entrypoint: null
 
 # making-figures: condition → color map (colorblind-safe; values from cbstyle)

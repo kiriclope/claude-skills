@@ -11,6 +11,7 @@ Rules this encodes (the reader may be colorblind; so is the author of these proj
 Usage:
     from cbstyle import OKABE_ITO, PAIR, FP, plot_fixed_points
     plot_fixed_points(ax, points)        # points: list of (x, y, kind)
+    fig, axes = evidence_figure([("H1 · …", 1), ("H2 · …", 2)], "verdict")   # a verdict's figure, panels A–C
     python -m cbstyle --demo out.png     # renders the standard + a deuteranopia/protanopia preview
 """
 import argparse
@@ -56,6 +57,39 @@ def plot_fixed_points(ax, points, legend=True, zorder=6):
                         edgecolor="none", labelcolor="white", handletextpad=0.3, borderpad=0.4)
         leg.set_zorder(zorder + 1)
     return by_kind
+
+
+# Pass / fail of a unit against a criterion (evidence figures): shape AND fill, never color alone.
+PASS = dict(marker="o", markersize=6, linestyle="none")                            # filled circle
+FAIL = dict(marker="s", markersize=6, markerfacecolor="white", linestyle="none")   # open square; pass color=
+
+
+def evidence_figure(rows, verdict, width=7.2, row_height=2.4):
+    """The layout of a verdict's evidence figure (auditing-results §0): one row per hypothesis, headed by it, and
+    panels lettered A, B, … in reading order — the letters the entry's "Test A / Fig. A" lines cite.
+
+    rows     [(hypothesis, n_tests), …], e.g. [("H1 · The pin keeps κ₁ near 0 over the DPA delay", 1), …]
+    verdict  the main title: the verdict in one line
+    width    inches: 7.2 = 183 mm (two columns), 3.5 = 89 mm; text is 7.5–8 pt, the house range at print
+    Returns (fig, axes) with axes = {"A": ax, …}. Title each panel with its test and result:
+    ax.set_title("Does …?\n4/6 above the criterion", loc="left").
+    """
+    import matplotlib.pyplot as plt
+    ncol = max(n for _, n in rows)
+    fig = plt.figure(layout="constrained", figsize=(width, row_height * len(rows) + 0.4))
+    fig.suptitle(verdict, x=0.01, ha="left", fontsize=8)
+    axes = {}
+    for sub, (hypothesis, n) in zip(np.atleast_1d(fig.subfigures(len(rows), 1)), rows):
+        sub.suptitle(hypothesis, x=0.01, ha="left", fontsize=7.5, style="italic")
+        for c, ax in enumerate(sub.subplots(1, ncol, squeeze=False)[0]):
+            if c >= n:
+                ax.axis("off")
+                continue
+            letter = chr(ord("A") + len(axes))
+            ax.text(-0.14, 1.02, letter, transform=ax.transAxes, fontsize=8, fontweight="bold", ha="right",
+                    va="bottom")
+            axes[letter] = ax
+    return fig, axes
 
 
 def plot_manifold(ax, x, y, zorder=5):
@@ -144,6 +178,9 @@ def _demo(path=None):
     h, l = axs[0].get_legend_handles_labels()
     fig.legend(h[:6], l[:6], loc="lower center", ncol=6, fontsize=7, frameon=False, bbox_to_anchor=(0.5, -0.06))
     fig.savefig(path, dpi=200, bbox_inches="tight")
+    ev, axes = evidence_figure([("H1 · one test", 1), ("H2 · two tests", 2)], "Verdict: demo")
+    assert list(axes) == ["A", "B", "C"], axes                    # letters follow rows, then columns
+    plt.close(ev)
     print(f"red/green flagged: {[(a, b, k, round(d, 1)) for a, b, k, d in bad]}")
     print(f"wrote {path}\nSUMMARY: demo OK")
 
