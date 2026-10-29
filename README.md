@@ -92,15 +92,15 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 | Skill | What it does | Use it when |
 |---|---|---|
 | [clarifying-requests](plugins/research-core/skills/clarifying-requests/SKILL.md) | Acts as your reflection partner: looks in the context first, mirrors back what you seem to want (and the deeper question behind it), asks at most four sharp questions with concrete options, then writes a five-line task spec. | A request is vague, or you say *"help me think this through"*. |
-| [planning-research](plugins/research-core/skills/planning-research/SKILL.md) | Turns a question into a falsifiable hypothesis, predictions, controls, a success criterion fixed in advance and a staged run plan; re-plans honestly after results. | *"What should we try next?"*, *"design a sweep"*, before anything expensive. |
+| [planning-research](plugins/research-core/skills/planning-research/SKILL.md) | Turns a question into a falsifiable hypothesis, predictions, rivals with their controls, a planned noise floor and a criterion fixed in advance. Every arm, even a quick *"try X"*, gets a six-line **pre-run card** in the verdict log before it runs (why it should work, from checked premises; what it predicts; criterion with its cost side; floor; rivals; how many runs and whether they can decide, from `stats_floor.py`). Exploring passes stay open until fresh seeds confirm them. Re-plans honestly after results. | *"What should we try next?"*, *"design a sweep"*, before anything expensive. |
 | [advising-research](plugins/research-core/skills/advising-research/SKILL.md) | Makes the main session the advisor: it keeps your decisions and writes the code, and hands planning, sweep launching and result checking to the agents your profile assigns (each on its own model), with self-contained written handoffs. The checker never sees the author's reasoning, and every approval stays with you. | At a phase boundary: a plan is needed, a sweep launches or finishes, results come in. |
-| [thinking-critically](plugins/research-core/skills/thinking-critically/SKILL.md) | Plan → act → a **fresh agent** (never shown Claude's reasoning) re-checks every claim against the evidence and the literature → revise with a calibrated confidence. Every claim is tagged *observed*, *derived*, *recalled* or *assumed*; unverified recall is where hallucinations hide. | *"Think critically"*, interpreting results, proposing mechanisms, literature claims. |
+| [thinking-critically](plugins/research-core/skills/thinking-critically/SKILL.md) | Plan → act → a **fresh agent** (never shown Claude's reasoning; the profile's critical-review agent) re-checks every claim against the evidence and the literature → revise with a calibrated confidence. Every claim is tagged *observed*, *derived*, *recalled* or *assumed*; unverified recall is where hallucinations hide. | *"Think critically"*, interpreting results, proposing mechanisms, literature claims. |
 
 ### Run experiments
 
 | Skill | What it does | Use it when |
 |---|---|---|
-| [launching-experiments](plugins/research-core/skills/launching-experiments/SKILL.md) | Parameters confirmed before launch, a pilot run, one detached screen and one log per seed, concurrency caps, provenance (git hash, config, seed) in every run folder, verdicts and figures before reporting. | Launching, monitoring or resuming sweeps and long jobs. |
+| [launching-experiments](plugins/research-core/skills/launching-experiments/SKILL.md) | Parameters and the pre-run card confirmed before launch, a pilot run, one detached screen and one log per seed, concurrency caps, provenance (git hash, config, seed, the frozen pre-run card) in every run folder, verdicts and figures before reporting. | Launching, monitoring or resuming sweeps and long jobs. |
 | [run-card](plugins/lowrank-rnn/skills/run-card/SKILL.md) | *(lowrank-rnn)* Answers "what exactly did we train?": per stage the loss terms, weights, targets and windows, optimizer, freezing — read from the training code itself, with other runs shown as differences grouped into arms. | *"What loss are we using?"*, before interpreting a sweep or writing Methods. |
 | [debugging-training](plugins/research-core/skills/debugging-training/SKILL.md) | Systematic diagnosis: reproduce on one seed, read the loss curve's shape, NaN hooks, gradient norms, frozen parameters that actually move (weight decay does that), overfit one batch, bisect. | Training misbehaves or results changed after an edit. |
 
@@ -108,7 +108,7 @@ is specific to the low-rank RNN code base; `personal` holds one maintainer-only 
 
 | Skill | What it does | Use it when |
 |---|---|---|
-| [auditing-results](plugins/research-core/skills/auditing-results/SKILL.md) | Unit by unit (seed, subject, session) instead of means; all outcomes, not only the visited one; effects in noise units; nulls; matched trial counts and normalizations; pseudoreplication; an honest finding / assumption / limitation split. | Numbers just came out, before any conclusion. |
+| [auditing-results](plugins/research-core/skills/auditing-results/SKILL.md) | Unit by unit (seed, subject, session) instead of means; all outcomes, not only the visited one; effects in noise units; nulls; matched trial counts and normalizations; pseudoreplication; an honest finding / assumption / limitation split. Each result becomes a **verdict entry** written as an argument: hypothesis → its prediction → each test on its own figure panel (A, B, …) with its noise floor and rival explanations → a calibrated conclusion (supported / not supported / refuted / open). In the chat, the figure comes first and the entry right below it. | Numbers just came out, before any conclusion. |
 | [concluding-research](plugins/research-core/skills/concluding-research/SKILL.md) | Concludes one question across all its verdict cards: checks they can be pooled, rebuilds each hypothesis's status (established / supported / not supported / refuted / open) with independent units, lists discards and how decisive they were, shows contradictions, answers in plain words with a figure, and proposes 2–3 ranked next experiments as draft pre-run cards; rewrites the question's section of `docs/conclusions.md`. | After a series of verdicts on one question; *"what do we know about X?"*, *"conclude"*. |
 | [choosing-statistics](plugins/research-core/skills/choosing-statistics/SKILL.md) | Chooses the test from the design before any result is seen — unit of replication, pairing, nesting (mixed model or GEE), exact small-n tests and the smallest p they can reach — then reports that test whatever it gives; no test shopping. | A comparison, p-value or star is about to be computed. |
 | [checking-derivations](plugins/research-core/skills/checking-derivations/SKILL.md) | Derive with sympy, state assumptions, then check numerically against the real model (Jacobian vs autograd vs finite differences). | Deriving or editing an equation; a formula and a simulation disagree. |
@@ -160,9 +160,19 @@ lines. Each check is a past error that reached a figure or a conclusion.
 ### Personal
 
 [figure-gallery](plugins/personal/skills/figure-gallery/SKILL.md) publishes figures to the
-maintainer's local browser gallery. It is machine-specific; colleagues can ignore it. The plugin also holds the three
-agents advising-research routes to (`plugins/personal/agents/`: research-planner, sweep-runner, result-checker), each
-pinned to the maintainer's choice of model; colleagues copy them into `~/.claude/agents/` and set their own models.
+maintainer's local browser gallery. It is machine-specific; colleagues can ignore it. The plugin also holds the four
+agents the skills route to (`plugins/personal/agents/`, all at effort medium), each pinned to the maintainer's choice of
+model; colleagues copy them into `~/.claude/agents/` and set their own models:
+
+| Agent | Called by | Maintainer's model | Why that model |
+|---|---|---|---|
+| research-planner | advising-research (plan) | Fable | planning gains most from the strongest reasoning |
+| sweep-runner | advising-research (launch, check-on, finish) | Sonnet | matched Opus 4.8 on a dry test of 4 tasks at a sixth of the cost (2026-10-14) |
+| result-checker | advising-research (check), auditing-results | Opus | a fresh context for the audit |
+| critical-reviewer | thinking-critically step 3 | Fable | the independent review of every claim |
+
+Figures stay on the main session: Sonnet and Opus were tested blind on one evidence figure (2 runs each); Sonnet's
+worse figure had a wrong noise band, so the fixed criterion kept Opus (2026-10-29).
 
 ## How they work together
 
@@ -194,10 +204,12 @@ flowchart LR
 
 For example, *"look at the new sweep"* becomes a precise question (which arm, score or mechanism?),
 the trained nets and the analysis are first checked on inputs whose answer is known, the result is
-scored seed by seed against a criterion written beforehand, an independent agent tries to break the
-conclusion, the figure is rendered in the house style and looked at, each claim in the draft is tied
-to the controls that could falsify it, and the result is logged and committed — with a human
-checkpoint along the way if a lot of code changed.
+scored seed by seed against the criterion of the run's pre-run card (written and frozen before the
+launch), an independent agent tries to break the conclusion, and the verdict comes back as its
+figure with the argument below it. Once several verdicts bear on one question, concluding-research
+pulls them together — what is established, refuted or still open — and proposes the next runs as
+draft pre-run cards. In a draft, each claim is tied to the controls that could falsify it, and the
+result is logged and committed — with a human checkpoint along the way if a lot of code changed.
 
 ## Context, tokens and memory
 
@@ -341,6 +353,7 @@ Every key is optional. Read by the skill(s) in the second column.
 | `resume` | resuming-work, maintaining-memory | how far back the brief looks; the size above which a memory note is flagged (`memory_cap_kb`, 40) |
 | `organize` | organizing-projects, the guard hook | output and scratch folders, large-file and scratch-age limits, CLAUDE.md length, the commit tidy check (`commit_check`) |
 | `pages` | publishing-drafts | every published page with its URL, source, builder and inputs |
+| `verdict_log`, `conclusions_doc` | auditing-results, planning-research, concluding-research | where verdict entries and pre-run cards go (`docs/verdicts.md`), and the one section per question of concluding-research (`docs/conclusions.md`) |
 | `launch`, `running_doc`, `verdict_scripts`, `plot_entrypoint` | launching-experiments, the guard hook | the sweep entry points (`launch.entrypoints`, which the guard refuses to run in the foreground), concurrency limits, seeds, scoring and plotting commands |
 | `code_rules` | reviewing-code-readability | the project's own coding rules, one sentence each |
 | `code_check` | reviewing-code-readability | settings of `readability_check.py`: line length, constants that must be derived and where, files allowed to hold colors |
@@ -396,7 +409,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `cb_style.py` → `cbstyle` | making-figures | the colorblind-safe palette, shape-coded fixed-point markers, color-vision simulation |
 | `audit_table.py` | auditing-results | per-unit tables, flat columns (a normalization that removed the effect), matched-n resampling |
 | `check_jacobian.py` | checking-derivations | an analytic Jacobian against autograd and finite differences |
-| `record_provenance.py` | launching-experiments | git hash, uncommitted changes, command, host, GPU and versions into each run folder |
+| `record_provenance.py` | launching-experiments | git hash, uncommitted changes, command, host, GPU and versions into each run folder; `--card` freezes the run's pre-run card as `precard.md` |
 | `freeze_check.py` | debugging-training | parameter checksums before and after a step, gradient-norm tables |
 | `audit_numbers.py` | auditing-paper-numbers | numbers in a manuscript against the numbers log |
 | `verify_refs.py` | verifying-citations | references against Crossref and OpenAlex |
