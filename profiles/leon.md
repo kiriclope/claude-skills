@@ -7,7 +7,9 @@ project's `.claude/project.yaml`; nothing personal belongs inside a shared skill
 ## Who
 Computational neuroscientist: low-rank / EI RNNs (PyTorch), dynamical-systems analysis,
 mouse electrophysiology, paper drafting (Neuron, Nature Neuroscience). Emacs + Org-mode, Linux, screen,
-2× A30. Package manager: **mamba** (`/home/leon/mambaforge`), never conda.
+2× A30. Package manager: **uv** (`uv run python`; one `pyproject.toml` + `uv.lock` per project, as in ~/rnn and
+~/balance_llm; no `LD_PRELOAD` shim). Moving off mamba (2026-10-30): a project without a uv env yet keeps its mamba
+env (`/home/leon/mambaforge`) until it gets one; never conda.
 
 ## How to work with me
 - Concise answers, no padding. Explain the math/science, not just the commands.
