@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-30 — research-core 0.20.0 (reviewing-manuscript)
+- **Pre-checks before the lenses**: `materials.py` prints the numbers audit, claims-ledger and reference checks with
+  their paths filled in (only those whose inputs exist); their outputs go to the reviewers. Lens 2 computes small-n
+  floors with `stats_floor.py --n / --counts`. **Why:** a reviewer agent misread a band a script gets right (2026-10-29).
+- **Claim status (Step 2b)**, after the blind lenses: each Abstract/Results claim mapped to its verdict card or
+  conclusion; text stronger than its status (open, exploring-only, a screen read as mechanism) is must-fix, a claim
+  with no record is should-fix.
+- **Review file** `<reviews_dir>/<date>_<scope>.md` (template `reviews_dir: docs/reviews`): numbered findings; the next
+  review's triage marks each old one fixed / back / not checked. Lenses never see it.
+- **Recall trial** on the dual paper's 2026-08-30 snapshot (~/tmp/review_trial/REPORT.md; lenses 1, 2, 4, 5 on Opus):
+  3 of 5 known must-fix found, 1 partly, 1 inverted (pass mark 4: partial). Fixed from it: variant renders listed
+  for lens 2 (the knob-dependent star sat in a variant the canonical-only rule withheld); a value read by running
+  code counts only with the figure script's own arguments, and code-vs-doc findings are re-checked at the call site.
+
 ## 2026-10-29 — research-core 0.19.0 (concluding-research)
 - **New skill concluding-research**: one question across all its verdict cards → pooling check (scoring, criterion,
   metric, code, seeds), a hypothesis ledger with calibrated status (established = confirmed on fresh seeds; an

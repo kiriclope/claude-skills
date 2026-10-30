@@ -75,6 +75,7 @@ code_check:                           # readability_check.py settings
 review_figures: []                    # patterns of the canonical rendered figures given to the reviewers
 journal: null                         # e.g. Nature Neuroscience — fills the reviewers' brief
 field: null                           # e.g. systems neuroscience
+reviews_dir: docs/reviews             # one file per mock review: numbered findings, each marked fixed / back next time
 
 # choosing-statistics: declared before looking at any result
 stats:

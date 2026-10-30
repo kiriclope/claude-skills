@@ -3,8 +3,9 @@
 Contents: common header · 1 claims ↔ evidence · 2 statistics and methods · 3 novelty and positioning ·
 4 clarity and presentation · 5 reproducibility
 
-Paste the common header, then one lens. Fill `{SCOPE}` (whole paper, a section, or a figure set) and
-`{MATERIALS}` (the output of `scripts/materials.py`). Give nothing else: no chat history, no earlier
+Paste the common header, then one lens. Fill `{SCOPE}` (whole paper, a section, or a figure set),
+`{MATERIALS}` (the output of `scripts/materials.py` plus the pre-check outputs) and `{SKILLS}` (the
+skills folder, the parent of this skill's folder). Give nothing else: no chat history, no earlier
 verdicts, no explanation of what the authors meant.
 
 ## Common header
@@ -25,6 +26,8 @@ Rules:
   missing control, a thin margin, an unclear panel), JUDGMENT CALL (the authors' decision: framing, scope).
 - Do not praise. Do not invent problems: if your lens finds nothing, say "no findings" in one line.
 - Mark what you verified (re-read, recomputed, ran) vs what you suspect.
+- A value read by running code (a window, a bin range, a threshold) counts only when run with the arguments the
+  figure script passes, cited at its call site: a function's default is not what the figure used.
 
 Return:
 | # | severity | where | finding | evidence | suggested fix | verified? |
@@ -47,9 +50,10 @@ and conclusions that rest on a margin within the noise.
 For every statistic: the unit of replication vs the unit of the claim; paired vs independent; nesting
 and random effects (an intercept-only model on trials for a within-animal claim is pseudoreplication);
 sidedness; the family of tests and its correction; whether the test looks chosen after the result;
-small-n floors (a signed-rank test at n = 9 cannot go below p = .0039); CIs using z = 1.96 where t is
-right; null distributions (number of draws, seed, margin above the null); significance stars that
-follow a variant rather than the primary test; corrections (reliability, attenuation) without a floor
+small-n floors (a signed-rank test at n = 9 cannot go below p = .0039; compute each one with
+{SKILLS}/choosing-statistics/scripts/stats_floor.py --n N (paired), --n1 --n2 (two groups), or --counts N (k/N per arm));
+CIs using z = 1.96 where t is right; null distributions (number of draws, seed, margin above the null); significance stars that
+follow a variant rather than the primary test (compare every star with the VARIANT renders in MATERIALS); corrections (reliability, attenuation) without a floor
 that amplify noise; train/test leakage in decoders; per-cloud normalizations that remove the quantity
 measured; sample-size-dependent statistics compared across sets of different size.
 ```

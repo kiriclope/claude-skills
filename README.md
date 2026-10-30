@@ -142,7 +142,7 @@ lines. Each check is a past error that reached a figure or a conclusion.
 | [auditing-paper-numbers](plugins/research-core/skills/auditing-paper-numbers/SKILL.md) | Every number in the draft matched to the current output of the numbers script: matched, mismatched, or unsourced. | Before sharing or submitting a draft. |
 | [verifying-citations](plugins/research-core/skills/verifying-citations/SKILL.md) | Every reference checked against Crossref and OpenAlex (exists, title, first author, year, venue, DOI); each cited claim pinned to a quoted passage. | Adding or reviewing references. |
 | [reviewing-literature](plugins/research-core/skills/reviewing-literature/SKILL.md) | A search protocol across Semantic Scholar, OpenAlex, PubMed, arXiv and bioRxiv; a "they show X, we add Y" comparison matrix; notes checkpointed to `docs/lit/`. | Related work, positioning, novelty. |
-| [reviewing-manuscript](plugins/research-core/skills/reviewing-manuscript/SKILL.md) | A mock referee review: one fresh agent per lens (claims vs evidence, statistics and methods, novelty, clarity, reproducibility), each seeing only the text, the figures and the numbers; findings as must-fix / should-fix / judgment call, each checked before it is applied. | *"Act as a reviewer"*, before sharing or submitting. |
+| [reviewing-manuscript](plugins/research-core/skills/reviewing-manuscript/SKILL.md) | A mock referee review: one fresh agent per lens (claims vs evidence, statistics and methods, novelty, clarity, reproducibility), each seeing only the text, the figures and the numbers; findings as must-fix / should-fix / judgment call, each checked before it is applied; mechanical pre-checks first, each claim checked against its verdict card, a numbered review file the next review starts from. | *"Act as a reviewer"*, before sharing or submitting. |
 | [publishing-drafts](plugins/research-core/skills/publishing-drafts/SKILL.md) | Publishes drafts, figure pages and notes as claude.ai pages with their source and builder in the repo; reads the live page before republishing, keeps the same URL, and answers every reader comment. | Publishing or updating a page; at session start on a project with pages. |
 | [responding-to-reviewers](plugins/research-core/skills/responding-to-reviewers/SKILL.md) | Point-by-point responses with full coverage, no fabricated results, no promises the revision does not keep. | Reviews or a decision letter arrive. |
 
@@ -347,7 +347,7 @@ Every key is optional. Read by the skill(s) in the second column.
 | `colors` | making-figures | the condition → color map (colorblind-safe, from `cbstyle`) |
 | `paper_dir`, `style_guide` | writing-paper | where the manuscript is, the journal style guide |
 | `numbers_script`, `numbers_log` | auditing-paper-numbers | the script that prints every number in the paper, and the file it writes (what the audit reads) |
-| `review_figures`, `journal`, `field` | reviewing-manuscript | the canonical figure renders the reviewers get, and the venue and field for their brief |
+| `review_figures`, `journal`, `field`, `reviews_dir` | reviewing-manuscript | the canonical figure renders the reviewers get, the venue and field for their brief, and where review files go |
 | `stats` | choosing-statistics | sidedness, correction, alpha and permutation draws, declared before any result |
 | `validation` | validating-claims | the claims ledger (`claims_file`), the smallest n a claim may rest on (`min_n`), control types required per claim kind |
 | `resume` | resuming-work, maintaining-memory | how far back the brief looks; the size above which a memory note is flagged (`memory_cap_kb`, 40) |
@@ -415,7 +415,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `verify_refs.py` | verifying-citations | references against Crossref and OpenAlex |
 | `stats_floor.py` | choosing-statistics | the smallest p a sign test, Wilcoxon, Mann-Whitney or permutation test can reach at a given n; `--counts N`: which solved/not-solved counts can differ at all |
 | `collect_cards.py` | concluding-research | every verdict card on one question, with its verdict, criterion and plan lines and what limits pooling |
-| `materials.py` | reviewing-manuscript | gathers the text, canonical figures and numbers log the reviewer agents receive |
+| `materials.py` | reviewing-manuscript | gathers the text, canonical figures and numbers log the reviewer agents receive, and prints the pre-checks to run (numbers, claims ledger, references) |
 | `resume_brief.py` | resuming-work | the catch-up brief: git, running jobs, review status, other live sessions, newest memory state, open items |
 | `memory_links.py` | resuming-work | Obsidian `aliases:` for memory notes, and the `[[links]]` that resolve nowhere |
 | `memory_trim.py` | maintaining-memory | oversized notes; snapshot; checks a trimmed draft (front matter, numbers, scripts it no longer describes); archives and applies |

@@ -7,6 +7,8 @@ placeholders — and resolves each to a file. Flags:
   missing   a referenced figure with no file
   stale     a figure file older than the newest script in figure_code (it may not show the current analysis)
   absent    a numbers log, style guide or figure script named in project.yaml that does not exist
+It also prints the PRE-CHECKS to run before the lenses (numbers vs the numbers log, the claims ledger, the
+references), with their paths filled in; their outputs go to the reviewers with the materials.
 
 The printed list is what every lens reviewer receives — the evidence, never the authors' reasoning.
 
@@ -100,6 +102,27 @@ def collect(root, paper=None, figures=None):
     return texts, figs, extras, code, issues
 
 
+SKILLS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def prechecks(root, texts):
+    """The mechanical checks to run before the lenses, as commands (only those whose inputs exist)."""
+    cfg = load_cfg(root)
+    j = lambda p: p if os.path.isabs(p) else os.path.join(root, p)
+    rel = lambda p: os.path.relpath(p, root)
+    tx = " ".join(rel(t) for t in texts if not t.endswith(".bib"))
+    cmds = []
+    if cfg.get("numbers_log") and os.path.exists(j(cfg["numbers_log"])) and tx:
+        cmds.append(f"python {SKILLS}/auditing-paper-numbers/scripts/audit_numbers.py --text {tx} --log {cfg['numbers_log']}")
+    claims = (cfg.get("validation") or {}).get("claims_file")
+    if claims and os.path.exists(j(claims)):
+        cmds.append(f"python {SKILLS}/validating-claims/scripts/claims_ledger.py --ledger {claims}")
+    paper = cfg.get("paper_dir")
+    bibs = sorted(glob.glob(os.path.join(j(paper), "**", "*.bib"), recursive=True)) if paper else []
+    cmds += [f"python {SKILLS}/verifying-citations/scripts/verify_refs.py {rel(b)}" for b in bibs]
+    return cmds
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default=".", help="project root (where .claude/project.yaml is)")
@@ -122,6 +145,9 @@ def main(argv=None):
         print("figure code:\n" + "\n".join(f"  {rel(c)}" for c in code))
     for kind, msg in issues:
         print(f"[{kind}] {msg}")
+    cmds = prechecks(root, texts)
+    print("PRE-CHECKS (run now; give their output with the materials):\n" + ("\n".join(f"  {c}" for c in cmds)
+          or "  (none: no numbers_log, validation.claims_file or .bib in project.yaml's paths)"))
     print(f"SUMMARY: {len(texts)} text file(s), {len(figs)} figure(s), {len(issues)} issue(s)")
     return 0
 
@@ -146,6 +172,10 @@ def _demo():
         with open(os.path.join(d, ".claude", "project.yaml"), "a") as f:
             f.write("review_figures: ['figs/fig1.png']\n")
         _, figs_cfg, _, _, _ = collect(d)
+        cmds_none = prechecks(d, texts)
+        open(os.path.join(d, "numbers.json"), "w").write("{}")
+        open(os.path.join(d, "paper", "refs.bib"), "w").write("")
+        cmds = prechecks(d, texts)
     kinds = [k for k, _ in issues]
     checks = [("manuscript found", len(texts) == 1),
               ("two referenced figures resolved (path and {{FIG:name}})", len(figs) == 2),
@@ -154,7 +184,10 @@ def _demo():
               ("absent numbers log flagged", kinds.count("absent") == 1),
               ("figures cited only by name → flagged as unlinked", any(k == "unlinked" for k, _ in iss_none) and not figs_none),
               ("--figures glob adds the rendered figures", len(figs_glob) == 2 and not any(k == "unlinked" for k, _ in iss_glob)),
-              ("review_figures in project.yaml is used", [os.path.basename(f) for f in figs_cfg] == ["fig1.png"])]
+              ("review_figures in project.yaml is used", [os.path.basename(f) for f in figs_cfg] == ["fig1.png"]),
+              ("no pre-check without its inputs", cmds_none == []),
+              ("numbers audit and reference check once their files exist",
+               len(cmds) == 2 and "audit_numbers.py" in cmds[0] and cmds[1].endswith("paper/refs.bib"))]
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)
