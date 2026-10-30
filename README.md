@@ -405,7 +405,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 |---|---|---|
 | `review_status.py` | running-review-checkpoints | changed lines and commits since your last review; records reviews; the Stop hook |
 | `readability_check.py` | reviewing-code-readability | hard-coded derived constants, swallowed code, silent excepts, opaque names, missing docstring or Usage, hex colors, nesting, long lines |
-| `check_figure.py` | making-figures | fonts too small at print size, stray bold, overlapping or clipped text, colors a colorblind reader cannot separate |
+| `check_figure.py` | making-figures | fonts too small or too large at print size, stray bold, overlapping or clipped text, colors a colorblind reader cannot separate, text or legends on data points, one color with two meanings; lists every number on the figure to check against the output |
 | `cb_style.py` → `cbstyle` | making-figures | the colorblind-safe palette, shape-coded fixed-point markers, color-vision simulation |
 | `audit_table.py` | auditing-results | per-unit tables, flat columns (a normalization that removed the effect), matched-n resampling |
 | `check_jacobian.py` | checking-derivations | an analytic Jacobian against autograd and finite differences |

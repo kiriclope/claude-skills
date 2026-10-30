@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-30 — research-core 0.21.0 (making-figures)
+- `check_figure`: flags text and legends drawn over data points (`on-data`), one color + marker + style under two
+  legend labels or one label in two colors (`color-meaning`; filled vs open stays allowed), text above 8 pt
+  (`large-font`, panel letters exempt, tick labels as one line), and prints NUMBERS (every number written on the
+  figure, ticks excluded) to tick against the script output. Demo extended (incl. a clean figure that must stay clean);
+  0 issues on the delay-pin evidence figure (81 texts).
+- Rules: one color, one meaning in every figure; numbers on a figure formatted from the variable; evidence figures
+  identify units, label every failing unit, and draw a noise band only over units it was measured on.
+  **Why:** the 2026-08-30 dual snapshot (labels struck through by points, green = NoGo and Lick, a typed 0.93, 11 pt
+  next to 3 pt) and the 2026-10-29 figure-model trial's shared defects.
+
 ## 2026-10-30 — research-core 0.20.0 (reviewing-manuscript)
 - **Pre-checks before the lenses**: `materials.py` prints the numbers audit, claims-ledger and reference checks with
   their paths filled in (only those whose inputs exist); their outputs go to the reviewers. Lens 2 computes small-n

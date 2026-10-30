@@ -52,13 +52,16 @@ session must understand it with the entry beside it.
   the threshold? / 7/8 mice lower"), set with `ax.set_title(…, loc="left")`; this overrides Step 2's
   short orienting titles. Axis labels in words, with units.
 - **Every unit** (seed / mouse / session) as its own point or trace. A mean can go on top,
-  but never alone.
+  but never alone. Units are identified (by name, or by the variable that separates them, e.g. the
+  GNG version), so the argument's rivals can be checked; **every failing unit is labeled by name**.
 - **The criterion drawn in the panel that tests it**: a threshold line, the chance level or null
   band, the target region. Label it ("criterion 0.95", "shuffle 95%"). A paired criterion (with vs
   without, before vs after) has no line to draw: join each unit's pair with a gray line (pass = it
   moves the right way) or plot the difference against a labeled 0 line.
 - **The noise floor drawn next to the effect:** a band for what a change caused by nothing looks
-  like (seed spread, rescoring noise, a sham run), labeled. If none was measured, the panel says so.
+  like (seed spread, rescoring noise, a sham run), labeled. If none was measured, the panel says so. Draw it only over the
+  units it was measured on. **Why:** all four figures of the 2026-10-29 figure-model trial left units
+  unidentified, left failing units unlabeled, or drew the redraw band over units that had no redraw.
 - **One encoding for the whole figure:** a color, line style or shape means the same thing in every
   panel. Pass vs fail = `cbstyle.PASS` (filled circle) / `cbstyle.FAIL` (open square) with the arm's
   `color=` (markersize may shrink in dense clusters), never color alone; arms or conditions go to
@@ -102,6 +105,11 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
   - A project's condition → color map is defined once in `project.yaml` → `colors:` and must
     pass `check_figure`'s colorblind check. Import colors from `cbstyle` (`pip install -e
     ~/claude-skills/python`) — never re-type hex codes in figure scripts.
+- **One color, one meaning across the whole figure** (not only evidence figures): a color + marker
+  + line style means the same condition in every panel. **Why:** a submitted draft's Fig. 3 used green
+  for NoGo in one panel and for Lick in the next (2026-08-30 snapshot review).
+- **Numbers on the figure are formatted from the variable** (`f"{acc:.2f}"`), never typed: a typed
+  "0.93" stayed on a panel after the value became 0.92.
 - Axis limits must contain every feature the claim is about (attractors, wells, the full
   distribution) — check them, don't inherit them.
 
@@ -112,11 +120,14 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
 2. Run the checker before saving:
    ```python
    sys.path.insert(0, "<this skill dir>/scripts"); from check_figure import check_figure
-   check_figure(fig, print_width_mm=183)     # small fonts, stray bold, overlaps, clipping, colorblind
+   check_figure(fig, print_width_mm=183)     # fonts < 5 or > 8 pt, stray bold, overlaps, clipping,
+                                             # colorblind, text/legend on data points, one color two meanings
    ```
+   It also prints NUMBERS: every number written on the figure, panel by panel.
 3. **Open the PNG with the Read tool and look at it.** Check: every panel present and in
    order, legends not covering data, markers distinguishable, limits not clipping features,
-   numbers on the figure match the script's printed output.
+   and **tick every line of NUMBERS against the script's printed output** (a reviewer agent once drew a
+   ±0.021 band where the data gave ±0.011, 2026-10-29).
 4. Fix and repeat. Report only after a clean pass, and show (or publish) the figure — never
    report figure numbers without the figure.
 
@@ -128,6 +139,6 @@ See `references/captions.md` (caption skeleton, panel inventory, shared vocabula
 - [ ] project conventions/helpers loaded and reused
 - [ ] content: real data, one named representative example, claim per panel
 - [ ] style file applied; same style as the main figures
-- [ ] `check_figure` clean
+- [ ] `check_figure` clean; its NUMBERS ticked against the script output
 - [ ] PNG opened and inspected; numbers match the script output
 - [ ] PNG + vector saved; figure shown/published
