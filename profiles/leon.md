@@ -18,12 +18,18 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
   me a few sharp questions with concrete options — be my reflection, not an interrogation.
 - **Review checkpoints** are on in my projects (`running-review-checkpoints`): when one is due, run it
   before ending the turn; never record a review I did not approve.
+- **Every claim carries its measurement, chat included** (`auditing-results`, 2026-11-03 review of seven wrong reports):
+  run and stage, trials, window, metric, k/N; numbers computed this session, never by eye or from a summary; a finder,
+  a loss or a log field is a proxy; "gone / lost" only after the direct test; when I read a figure differently,
+  measure first; an interpretation that changes the next run goes to a fresh critical-reviewer before you send it.
 - Honest assessment over a pleasing story: say "this did not work, here is why"; separate
   data finding / imposed assumption / model limitation.
 - **Show me, don't tell me — especially in auto mode.** Every verdict (solved, works, fails,
-  discarded) comes as its evidence figure, the verdict right below it, then the argument hypothesis
-  by hypothesis (prediction → each test on its panel A, B, … → calibrated conclusion), clear to
-  someone who missed the session, also appended to the project's verdict log (`auditing-results` §0).
+  discarded) comes as its figure, the verdict right below it, the per-unit table, then the argument
+  hypothesis by hypothesis (prediction → each test with its numbers → calibrated conclusion), clear
+  to someone who missed the session, also appended to the project's verdict log (`auditing-results` §0).
+  The figure shows the effect itself, designed for the problem, not the test tally: from your knowledge,
+  the literature, my propositions and our own views (`making-figures`, figure brief; 2026-11-04).
   Discards most of all: I can't catch a wrong discard I never saw.
 - **American English** everywhere (docs, figures, comments, commits, chat): realize, initialization, behavior,
   labeled, modeling, canceled, center, analyze, gray — not -ise / -our / -lled / -tre.

@@ -1,6 +1,6 @@
 ---
 name: auditing-results
-description: Audit an analysis result BEFORE reporting or interpreting it — unit-by-unit (seed / subject / session) instead of means, all outcomes enumerated not only the occupied one, effect sizes in noise units, nulls and shuffles, matched trial counts and normalizations, pseudoreplication, the right between- vs within-subject estimator, decoder leakage, solver residuals, and an honest finding / assumption / limitation split. Use whenever a sweep, analysis or statistic has just produced numbers, before writing a conclusion ("it works", "it fails", "X increases"), before comparing arms, stages or conditions, or when a result looks too clean or exactly as hypothesized. Not for choosing the test → choosing-statistics; for an independent check of a conclusion → thinking-critically.
+description: Audit an analysis result BEFORE reporting or interpreting it — unit-by-unit (seed / subject / session) instead of means, all outcomes enumerated not only the occupied one, effect sizes in noise units, nulls and shuffles, matched trial counts and normalizations, pseudoreplication, the right between- vs within-subject estimator, decoder leakage, solver residuals, and an honest finding / assumption / limitation split. Use whenever a sweep, analysis or statistic has just produced numbers, before writing a conclusion ("it works", "it fails", "X increases") or answering a question about a result in chat ("is it gone", "did it learn"), before comparing arms, stages or conditions, or when a result looks too clean or exactly as hypothesized. Not for choosing the test → choosing-statistics; for an independent check of a conclusion → thinking-critically.
 ---
 
 # Auditing results
@@ -14,18 +14,50 @@ matches the hypothesis is the one least likely to be audited — audit it hardes
 give it the question, the criterion and the evidence (advising-research, CHECK handoff); otherwise the
 main session. The verdict entry and figure of §0 come back to the main session, which reports them.
 
-## 0. No verdict without its evidence figure — kept OR discarded
+## Every claim carries its measurement — chat replies too
+
+Most wrong reports come from quick answers in chat, not from the verdict entries a fresh agent
+checks. Every statement about a result, in an entry, a doc or a one-line reply, follows these rules:
+- **Conditions:** name the unit (run, seed, subject) and its state (stage, checkpoint), the trials
+  (task, condition, trial kind), the time window and the metric. Use the window and metric the task
+  itself scores, not the end of the trial or a feature of a figure.
+- **Denominator:** k/N with the units named. A statement about the units that did X is not a
+  statement about the model.
+- **Numbers come from a computation in this session** (a script's printed output, or the project's
+  claims table: `project.yaml` → `claims_doc` names the measurement and trap for each claim). Never
+  read a number by eye off a figure, and never take one from a compaction summary or a memory note
+  without re-measuring. Anything else is labeled "unchecked".
+- **Name a proxy as a proxy.** A finder's "no isolated fixed point" is not "no memory" (§2,
+  continuous and slow sets). A loss is not a performance. A logged field is whatever its code
+  computes: read the code before relaying the field.
+- **A negative ("gone", "lost", "doesn't exist") needs the direct test**, or a search of every place
+  the thing could be. Otherwise write "not found in <where>".
+- **When the user reads a figure differently, measure first**, then answer.
+- **An interpretation that would change the next run** (a lever chosen or dropped, a mechanism)
+  goes through the fresh review of §7 before it is sent. A reply that only describes results does not.
+
+**Why:** in one project session (2026-11-03), seven wrong reports, six of them in chat:
+- wells called "gone" while the memory sat on a slow set;
+- a latent read off a figure at the trial end instead of the scored window;
+- the units that learned one task stated as the model;
+- a loss read as a stage failing;
+- a logged score that held only one part of the task;
+- a claim with no network named;
+- a file called "missing" after a search of two of five worktrees.
+
+## 0. No verdict without its figure and its table — kept OR discarded
 
 Every verdict (solved, works, fails, discarded, superseded, "not worth pursuing") ships with
-a verdict entry and the figure it walks through. This applies to quick exploratory dead ends
-too, where one hypothesis and one panel are enough, and above all in auto mode.
+a verdict entry, the figure that shows the effect, and the per-unit table of the tests. This applies to quick exploratory dead ends
+too, where one hypothesis and one small figure are enough, and above all in auto mode.
 **Why:** in auto mode, results were solved or dropped in one line of text. The user could
 not see why, and could not catch a wrong discard (see §1: a working seed written off by a
 mean). A discard without a figure cannot be reviewed. And a card whose numbers sat in one
 paragraph and whose figure was laid out by arm, not by argument, left the user to connect
-them (2026-10-29).
+them (2026-10-29). Figures drawn as the test tally (one derived number per unit, pass/fail markers,
+count-sentence titles) were cryptic to the user in every project (2026-11-03).
 
-**The entry is an argument, one hypothesis at a time; each test points to its own panel.** It is
+**The entry is an argument, one hypothesis at a time; each test cites its numbers from the table.** It is
 the report half of the scientific method; the plan half (hypothesis, predictions, criterion) was
 written before the run by planning-research, and the entry quotes it. When the log holds the run's
 open pre-run card (planning-research Step 1), write the entry under it: replace RUNNING in its heading
@@ -36,10 +68,13 @@ screen (WHY "none") supports no mechanism (planning-research Step 1).
 
 ```markdown
 ## <date> · <what was tested, a few words>
-![<the verdict in one line>](path/to/evidence.png)
+![<the verdict in one line>](path/to/figure.png)
 
 **Verdict:** kept / discarded / superseded / open (not decided: say who decides): <one line>, because
 <H1 …, H2 …>.
+
+**Per unit:** <the table inline when it is short, else its path>: units × tests, each cell its
+number and pass/fail, the count per arm.
 
 **Question:** <who asked, when, in their words; why it was worth testing> · **Data:** <runs or units,
 by content, not arm codes> · **Plan:** <the pre-run card above this entry, or a plan § and date> or "none: the hypotheses were written after the data"
@@ -47,8 +82,8 @@ by content, not arm codes> · **Plan:** <the pre-run card above this entry, or a
 ### H1 · <the hypothesis, one plain sentence that could be false> (plan <date> / after the data)
 **Predicts:** if true, <what we will see>; if false, <what we will see instead>.
 - **Test A: <what is compared, in plain words>.** <units, condition>. Criterion (fixed before <date> /
-  exploratory / none: shown only): <…>. **Fig. A** shows <y against x, one mark per unit> and the
-  noise floor <…>; look at <colors named + shapes>. **Result:** <k/N [95% interval], the numbers
+  exploratory / none: shown only): <…>. **Shown:** <where the figure shows it, colors by name +
+  line style, or "table only">; noise floor <…>. **Result:** <k/N [95% interval], the numbers
   that decide it> → for / against H1. **Rivals:** <what else gives this result> → excluded by <control> / not excluded.
 - **Test B: …**
 - **Conclusion on H1:** supported / not supported / refuted / open: <how A and B decide it together>. Not shown: <…>.
@@ -62,9 +97,12 @@ by content, not arm codes> · **Plan:** <the pre-run card above this entry, or a
   gallery link; a bare path is not shown), then gives the whole entry in the chat itself, in this
   order. A summary in place of the entry, or the entry without the figure, is not a verdict. The log
   entry keeps the same order.
-- **One panel per test, one test per panel:** Test A ↔ Fig. A, letters in the order of the text;
-  build the figure with `cbstyle.evidence_figure` (making-figures, "Evidence figures"), whose rows
-  are the hypotheses. A second reason for a discard is a second test with its own panel.
+- **The figure shows the effect; the table holds the tests.** Design the figure for the problem from
+  the brief in making-figures (`../making-figures/references/figure_brief.md`, "Figures that explain a result"):
+  what the system does, an example of each outcome, in the views the reader knows. It is not laid
+  out by test. The per-unit table (units × tests, numbers, pass/fail, counts per arm) is saved next to
+  the figure (`<figure>_table.md`), and every count in the entry comes from it. A second reason for a
+  discard is a second test, a second column of the table, and is shown in the figure when it can be.
 - **A test must be able to fail.** Its outcome if H is true and if H is false must differ (the
   Predicts line). A test whose outcome both predict is not a test: drop it or mark it "shown only".
 - **Before or after the data, said plainly.** Quote the hypothesis and its prediction from the plan
@@ -93,13 +131,15 @@ by content, not arm codes> · **Plan:** <the pre-run card above this entry, or a
 - **Count independent units only:** runs that share a stage (one DPA stage feeding three GNG
   versions) are one unit at that stage. **Why:** "18/18 stage ends" counted each shared DPA stage three
   times; the real count was 14/14 (2026-10-29).
-- **Clarity check before reporting:** give a fresh agent the entry and the PNG and nothing else, and
-  ask it to restate, per hypothesis, the hypothesis and its prediction, what each panel shows with
-  its result and its rivals, and the conclusion. Any mismatch → fix the text or the figure; at most two rounds. A question the entry
+- **Clarity check before reporting:** give a fresh agent the PNG, the entry and the table and
+  nothing else. First, from the PNG alone, it says in one or two sentences what the figure shows: if
+  that is not the verdict, redesign the figure. Then it restates, per hypothesis, the hypothesis and
+  its prediction, each test's result and rivals, and the conclusion, from the entry and the table.
+  Any mismatch → fix the text; at most two rounds. A question the entry
   cannot answer from its own evidence goes into "Not shown" or the Limits.
 - Put the figure and the entry in the reply and append the entry to the project's verdict log (`project.yaml` →
   `verdict_log`, default `docs/verdicts.md`): one history of what was tried and why it was dropped.
-- If no figure can show a test (a crash, a missing file), say so in its **Fig.** slot and give the
+- If no figure can show the effect (a crash, a missing file), say so in the figure slot and give the
   log line instead. Never leave the slot out.
 
 Helpers: `scripts/audit_table.py` (`per_unit_table`, `flat_columns`, `matched_n`,
@@ -187,7 +227,7 @@ claims with their labels, never your reasoning; check each of its objections bef
 it. Skip it for exploratory looks (a review costs ~5–10 min).
 
 ## Checklist (check before reporting; in the reply, one line: "✓ checklist" or the items that failed)
-- [ ] verdict entry (plan → predictions → tests → Fig. A, B … with noise floor and rivals → calibrated conclusions → next) + its figure, clarity-checked, in the reply and the verdict log (discards included)
+- [ ] verdict entry (plan → predictions → tests with noise floor and rivals → calibrated conclusions → next) + its designed figure (the effect) + the per-unit table, clarity-checked, in the reply and the verdict log (discards included)
 - [ ] per-unit table + `SUMMARY: k/N`, criterion fixed in advance
 - [ ] all outcomes enumerated (not only the occupied one); continuous sets checked; residuals verified
 - [ ] effects in noise units
@@ -196,4 +236,5 @@ it. Skip it for exploratory looks (a review costs ~5–10 min).
 - [ ] unit of replication = unit of the claim; estimator matches between/within claim
 - [ ] arm confounds listed and matched
 - [ ] each claim labeled finding / assumption / limitation
+- [ ] every claim in the reply, chat included: unit and state, trials, window, metric, k/N; numbers computed this session; proxies named; negatives directly tested
 - [ ] a verdict that will be reported was reviewed by a fresh agent (thinking-critically), objections triaged

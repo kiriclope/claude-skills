@@ -90,8 +90,8 @@ choosing-statistics skill: `choosing-statistics/scripts/stats_floor.py --counts 
 
 ## Step 4 — the ledger figure (making-figures Steps 2–3)
 
-Not the per-test evidence figure of auditing-results (that one has one panel per test and PASS /
-FAIL markers); a conclusion has one panel, the ledger:
+Not a verdict's figure (that one shows one result's effect, making-figures "Figures that explain a
+result"); a conclusion has one panel, the ledger:
 - one row per hypothesis (≤ 8; the rest stay in the table), labeled with it in plain words;
 - x = the cards in log order, labeled by short name and date (cards share dates, so not by date);
 - one mark where a card bears on a hypothesis, its shape = **what that card says about it**:

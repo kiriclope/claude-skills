@@ -11,7 +11,7 @@ Rules this encodes (the reader may be colorblind; so is the author of these proj
 Usage:
     from cbstyle import OKABE_ITO, PAIR, FP, plot_fixed_points
     plot_fixed_points(ax, points)        # points: list of (x, y, kind)
-    fig, axes = evidence_figure([("H1 · …", 1), ("H2 · …", 2)], "verdict")   # a verdict's figure, panels A–C
+    fig, axes = evidence_figure([("H1 · …", 1), ("H2 · …", 2)], "verdict")   # legacy grid, one row per hypothesis
     python -m cbstyle --demo out.png     # renders the standard + a deuteranopia/protanopia preview
 """
 import argparse
@@ -65,8 +65,9 @@ FAIL = dict(marker="s", markersize=6, markerfacecolor="white", linestyle="none")
 
 
 def evidence_figure(rows, verdict, width=7.2, row_height=2.4):
-    """The layout of a verdict's evidence figure (auditing-results §0): one row per hypothesis, headed by it, and
-    panels lettered A, B, … in reading order — the letters the entry's "Test A / Fig. A" lines cite.
+    """A grid with one row per hypothesis and panels lettered A, B, … in reading order. Legacy: verdict figures are
+    now designed for the problem (making-figures, "Figures that explain a result", 2026-11-04), not laid out by test;
+    kept for the scripts that import it.
 
     rows     [(hypothesis, n_tests), …], e.g. [("H1 · The pin keeps κ₁ near 0 over the DPA delay", 1), …]
     verdict  the main title: the verdict in one line

@@ -27,6 +27,8 @@ vocabulary: {}                        # paper terms, e.g. {memory axis: SAMPLE a
 figure_style: null                    # path to a .mplstyle or module; null = the skill's paper.mplstyle
 figure_docs: []                       # plotting how-tos, color/marker legends to read first
 figure_code: []                       # existing plotting helpers to reuse
+figure_views: []                      # the views a reader of this project knows, each with the code that draws it, e.g.
+                                      # - {view: "flow field of the latent plane, fixed points by shape", code: analysis/run_summary.py draw_flow}
 
 # writing-paper / auditing-paper-numbers / verifying-citations
 paper_dir: null
@@ -47,6 +49,7 @@ launch:
 running_doc: null
 verdict_scripts: []
 verdict_log: docs/verdicts.md         # auditing-results §0: every verdict entry (kept or discarded) with its figure
+claims_doc: null                      # auditing-results: claim → the column that measures it, its pass and its known trap
 conclusions_doc: docs/conclusions.md  # concluding-research: one section per question, rewritten as verdicts come in
 plot_entrypoint: null
 

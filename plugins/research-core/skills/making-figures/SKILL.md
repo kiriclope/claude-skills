@@ -27,8 +27,8 @@ If none exist, grep for `def save_fig`, `def plot_`, `rcParams` before writing a
 
 - **Show the data, not a summary of it.** Results panels are matrices, scatters with every
   unit, traces, spectra. A derived "summary graphic" that re-encodes the conclusion is not
-  evidence; distillation goes in the text and caption. Schematics are for methods/task panels,
-  full-size, never as micro-insets.
+  evidence; distillation goes in the text and caption. A schematic (labeled as one) may explain
+  beside the data, never replace it; full-size, never as micro-insets.
 - **One representative example per single-network/single-subject panel.** Name it in the title
   if it is not the default (e.g. seed 0). No overlays of other examples' markers. Population
   statistics go in their own panel, unit by unit (per seed / per mouse), not as a mean alone.
@@ -39,44 +39,32 @@ If none exist, grep for `def save_fig`, `def plot_`, `rcParams` before writing a
 - **Every panel must support exactly the claim its caption makes.** If you cannot state that
   claim in one sentence, the panel is not ready.
 
-### Evidence figures (the figure behind a verdict — auditing-results §0)
+### Figures that explain a result (a verdict, a conclusion, a paper panel): designed, not templated
 
-An evidence figure walks the user through one verdict entry: the same hypotheses, the same tests,
-in the same order. It is not a paper panel: build it fast, but a reader who did not follow the
-session must understand it with the entry beside it.
-- **Laid out by the argument, not by the data:** one row per hypothesis, headed by it, one panel per
-  test, lettered A, B, … in the order the entry cites them (Test A ↔ Fig. A). Use
-  `cbstyle.evidence_figure(rows, verdict)`; it returns `{"A": ax, …}`. **Why:** a 3 × 3 grid by
-  arm put the first claim in the last row and gave the text nothing to point at (2026-10-29).
-- **Each panel title is its test and its result**, in plain words, on two lines ("Does the drug lower
-  the threshold? / 7/8 mice lower"), set with `ax.set_title(…, loc="left")`; this overrides Step 2's
-  short orienting titles. Axis labels in words, with units.
-- **Every unit** (seed / mouse / session) as its own point or trace. A mean can go on top,
-  but never alone. Units are identified (by name, or by the variable that separates them, e.g. the
-  GNG version), so the argument's rivals can be checked; **every failing unit is labeled by name**.
-- **The criterion drawn in the panel that tests it**: a threshold line, the chance level or null
-  band, the target region. Label it ("criterion 0.95", "shuffle 95%"). A paired criterion (with vs
-  without, before vs after) has no line to draw: join each unit's pair with a gray line (pass = it
-  moves the right way) or plot the difference against a labeled 0 line.
-- **The noise floor drawn next to the effect:** a band for what a change caused by nothing looks
-  like (seed spread, rescoring noise, a sham run), labeled. If none was measured, the panel says so. Draw it only over the
-  units it was measured on. **Why:** all four figures of the 2026-10-29 figure-model trial left units
-  unidentified, left failing units unlabeled, or drew the redraw band over units that had no redraw.
-- **One encoding for the whole figure:** a color, line style or shape means the same thing in every
-  panel. Pass vs fail = `cbstyle.PASS` (filled circle) / `cbstyle.FAIL` (open square) with the arm's
-  `color=` (markersize may shrink in dense clusters), never color alone; arms or conditions go to
-  color (+ line style or x position), never to a second set of shapes. One legend.
-- **The main title is the verdict, in one line** ("design2 → discarded: w1 one side per seed; w4
-  loses GNG"). Numbers and caveats belong in the entry, not the title.
-- **Few panels:** ≤ 6. For a discard, show the failure itself (the run that diverged, the null band
-  that swallows the effect, the seed that misses). A cost (accuracy lost, instability) is a test
-  of its own with its own panel. **Why:** w4 was discarded for losing the Go/NoGo task, but the
-  figure showed only depth, where w4 looked like a success.
-- **No abbreviation without a key in the figure**, and fix every `check_figure` overlap
-  before reporting.
-- A conclusion across verdicts (concluding-research) uses its own one-panel ledger figure instead.
-- Save it next to the run's outputs (or under `figures_root`/verdicts/), then render,
-  check and look at it as in Step 3; the clarity check of auditing-results §0 reads it with the entry.
+**The figure shows the effect itself; the test tally is a table.** What the system does (its dynamics,
+its curves, its outputs, an example of each outcome) is the figure; which unit passed which test is
+the per-unit table under it (auditing-results §0). **Why:** verdict figures built as one derived number
+per seed against a threshold line, with filled/open markers and count-sentence titles, were cryptic to
+the user in every project (2026-11-03: "not well polished… very cryptic", "as bad in other sessions").
+Rebuilt to show the effect, the same results showed what the dots had hidden: wells pushed down while
+the trials went up, and a width trend that the stated explanation did not fit.
+
+**Design it from the problem.** Hand a fresh agent the brief in `references/figure_brief.md` (or follow
+it yourself): the reader, the problem, the data, and four sources the design draws on:
+1. knowledge of the problem: the mechanism, and the picture that would make it obvious;
+2. the literature: how published work on this problem shows such a result (a few searches, the
+   figures borrowed from named, references verified);
+3. the user's propositions: the views and ideas the user asked for or liked, in their words;
+4. the project's own work: its views and the code that draws them (`project.yaml` → `figure_views`,
+   `figure_code`), paper figures, past figures the user approved.
+
+The designer sketches at least three genuinely different designs, says what the reader sees in the
+first 3 seconds of each, picks one and says why (`designs.md`). Then Steps 2–3. The constraints are
+few: real data, colorblind-safe, every unit accounted for (figure or table), a small effect against
+what no effect looks like, readable at a glance (at most two encodings, titles ≤ 2 lines; a second
+message gets its own figure), the title the finding in plain words. The rest is a design call.
+Don't show the designer an earlier figure of the same result (it anchors the design) unless the user
+asked to improve that figure.
 
 ## Step 2 — style (one style for main AND supplementary figures)
 
@@ -105,7 +93,7 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
   - A project's condition → color map is defined once in `project.yaml` → `colors:` and must
     pass `check_figure`'s colorblind check. Import colors from `cbstyle` (`pip install -e
     ~/claude-skills/python`) — never re-type hex codes in figure scripts.
-- **One color, one meaning across the whole figure** (not only evidence figures): a color + marker
+- **One color, one meaning across the whole figure**: a color + marker
   + line style means the same condition in every panel. **Why:** a submitted draft's Fig. 3 used green
   for NoGo in one panel and for Lick in the next (2026-08-30 snapshot review).
 - **Numbers on the figure are formatted from the variable** (`f"{acc:.2f}"`), never typed: a typed

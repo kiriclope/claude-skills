@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-11-04 — research-core 0.23.0 (figures that explain a result: designed, not templated)
+- **making-figures**: the "Evidence figures" rules (one row per hypothesis, one panel per test, criterion line,
+  pass/fail markers, count titles) are replaced by "Figures that explain a result": the figure shows the effect itself;
+  a fresh agent designs it from `references/figure_brief.md` (new), drawing on four sources (its knowledge of the
+  problem, the literature, the user's propositions, the project's own views and code), sketches ≥ 3 different designs
+  and picks one. Few hard constraints: real data, colorblind-safe, every unit accounted for, a small effect against
+  no-effect, readable, the title the finding. A labeled schematic may sit beside the data.
+- **auditing-results §0**: a verdict = the designed figure + the per-unit table (units × tests, saved as
+  `<figure>_table.md`) + the entry; tests cite the table, "Shown:" says where the figure shows it. The clarity check first
+  asks what the figure shows from the PNG alone (not the verdict → redesign), then checks the text.
+- concluding-research: wording; `cbstyle.evidence_figure` kept as legacy; template `figure_views`; profile line rewritten.
+  **Why:** Leon 2026-11-03/04: verdict figures were "very cryptic" scatter and bar plots "in other sessions" too; "be
+  creative … based on their knowledge, the literature of the problem, our propositions and own work". Prototypes on the
+  rnn DPA-hold and balance_llm S1 verdicts showed what the dot panels hid.
+- Tested on those two verdicts (~/tmp/verdict_figure_proto): a prescribed layout vs the open brief. The open brief
+  won: both designers found something the cards had missed (rnn: one slow channel joins trials and wells, the trials
+  rise at the sample; balance_llm: the width trend follows trained rows f·d, not undertraining alone). The LLM page was
+  crowded, so the brief adds: at most two encodings, titles ≤ 2 lines, a second message in its own figure.
+
+## 2026-11-03 — research-core 0.22.0 (auditing-results)
+- New section before §0, **every claim carries its measurement, chat replies too**: unit and state, trials, scored
+  window, metric, k/N; numbers only from a computation in this session (never by eye off a figure, never from a
+  compaction summary); proxies named as proxies (finder, loss, logged field); negatives only after the direct test;
+  measure first when the user reads a figure differently; an interpretation that changes the next run gets §7's fresh
+  review before it is sent. A checklist line. `project.yaml` → `claims_doc` (optional): the project's claim → column
+  table. **Why:** seven wrong reports in one session (2026-11-03), six of them in chat answers that no checker saw.
+
 ## 2026-10-30 — research-core 0.21.0 (making-figures)
 - `check_figure`: flags text and legends drawn over data points (`on-data`), one color + marker + style under two
   legend labels or one label in two colors (`color-meaning`; filled vs open stays allowed), text above 8 pt
