@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-04 — research-core 0.24.0 (review checkpoints at the plan boundary, questions that stand alone)
+- **running-review-checkpoints**: the checkpoint is held when the user accepts a plan or a next step, or asks to
+  commit or push, never at the end of a turn that shows a plan, a verdict or a figure. **Why:** the Stop hook set it
+  off by line count at the end of any turn, and its pop-up covered plans the user had not read yet. Each question now
+  stands alone (what was decided and where, what it changes, why, the alternative; full names), options are the concrete
+  choices with what happens next, the hunk sits in the Approve option's preview; "Still the right direction?" only when
+  there is drift.
+- **review_status.py**: `--hook prompt` (UserPromptSubmit) replaces `--hook stop`, which is now silent (sessions
+  started with the old settings still call it). hooks/README install block, README, profile updated.
+
 ## 2026-11-04 — research-core 0.23.0 (figures that explain a result: designed, not templated)
 - **making-figures**: the "Evidence figures" rules (one row per hypothesis, one panel per test, criterion line,
   pass/fail markers, count titles) are replaced by "Figures that explain a result": the figure shows the effect itself;

@@ -285,7 +285,7 @@ starting it. Without it, the convention skills (code, paper, results, figures) a
 
 Copy the `hooks` block from [hooks/README.md](hooks/README.md#install-user-level-all-projects--add-to-claudesettingsjson)
 into `~/.claude/settings.json`, merging with any `hooks` you already have. It installs the Bash guard,
-the review-checkpoint Stop hook and the session board; each part works without the others.
+the review-checkpoint prompt hook and the session board; each part works without the others.
 
 Run `/hooks` in Claude Code to check that they loaded. They need `python3` with PyYAML.
 
@@ -387,7 +387,7 @@ Skills are advice; these rules are enforced by Claude Code whatever the session 
 | | a commit while a review checkpoint is due | refused until the checkpoint is done — **opted-in projects only** |
 | | a commit that stages clear mess: a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a `_v2` / `_old` copy of code | refused — unstage or fix it; `TIDY_OK=1` only for a file you named — **projects with a `project.yaml`** (off: `organize: {commit_check: false}`) |
 | | a commit that includes a file another Claude Code session changed in the last hour and has not committed | asks you, naming that session — **every repository**, with the session board installed |
-| `review_status.py --hook stop` (end of every turn) | a review checkpoint is due | Claude runs the checkpoint before ending the turn (never twice in a row) — **opted-in projects only** |
+| `review_status.py --hook prompt` (each message of yours) | a review checkpoint is due | Claude holds the checkpoint when you accept a plan or a next step, or ask to commit or push — never over a plan or result you have not read — **opted-in projects only** |
 | `session_board.py` (session start, each prompt, each edit or shell command, session end) | several sessions at once | not a rule: it keeps `~/.claude/active_sessions.json` (who works where, which files they changed), tells a starting session which others are live, and tells a session when a file it edits has another session's uncommitted change |
 
 The guard matches commands, never text: a commit message or a heredoc that mentions `git push` or a
@@ -403,7 +403,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 
 | Script | Skill | What it checks or does |
 |---|---|---|
-| `review_status.py` | running-review-checkpoints | changed lines and commits since your last review; records reviews; the Stop hook |
+| `review_status.py` | running-review-checkpoints | changed lines and commits since your last review; records reviews; the prompt hook |
 | `readability_check.py` | reviewing-code-readability | hard-coded derived constants, swallowed code, silent excepts, opaque names, missing docstring or Usage, hex colors, nesting, long lines |
 | `check_figure.py` | making-figures | fonts too small or too large at print size, stray bold, overlapping or clipped text, colors a colorblind reader cannot separate, text or legends on data points, one color with two meanings; lists every number on the figure to check against the output |
 | `cb_style.py` → `cbstyle` | making-figures | the colorblind-safe palette, shape-coded fixed-point markers, color-vision simulation |

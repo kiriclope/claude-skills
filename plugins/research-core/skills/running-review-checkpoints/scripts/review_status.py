@@ -21,7 +21,7 @@ Usage:
     python review_status.py --off | --on         # switch checkpoints off / on in this project (local, not committed)
     python review_status.py --off --global       # … or everywhere (~/.claude/review_checkpoints.json)
     python review_status.py --reset              # new baseline; the log says earlier changes were not reviewed
-    python review_status.py --hook stop          # Stop hook: block the end of the turn when a review is due
+    python review_status.py --hook prompt        # UserPromptSubmit hook: when due, hold it at the next plan boundary
     python review_status.py --demo               # self-test in a throwaway repository
 """
 import argparse
@@ -257,9 +257,8 @@ def report(root, s):
     print("SUMMARY: review " + ("DUE" if s["due"] else "not due"))
 
 
-def hook_stop(payload):
-    if payload.get("stop_hook_active"):
-        return 0                                                  # already continuing because of us
+def hook_prompt(payload):
+    """UserPromptSubmit hook: when a review is due, tell Claude to hold it at this plan boundary or not this turn."""
     root = repo_root(payload.get("cwd") or os.getcwd())
     if not root:
         return 0
@@ -269,10 +268,11 @@ def hook_stop(payload):
     why = (f"{s['lines']} changed lines" if s["due_lines"] else "") + \
           (" and " if s["due_lines"] and s["due_commits"] else "") + \
           (f"{len(s['commits'])} commits" if s["due_commits"] else "")
-    print(json.dumps({"decision": "block", "reason":
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext":
         f"Review checkpoint due in {os.path.basename(root)}: {why} since the user's last review ({s['since']}). "
-        "Run the running-review-checkpoints skill now: digest, decisions for the user to approve, then "
-        "review_status.py --mark (only after approval) or --defer if the user says not now."}))
+        "If this message accepts a plan or a proposed next step, or asks to commit or push, run the "
+        "running-review-checkpoints skill first, then start the work. Otherwise do not run or mention it this "
+        "turn, and never at the end of a turn that shows the user a plan, a verdict or a figure to read."}}))
     return 0
 
 
@@ -286,17 +286,20 @@ def main(argv=None):
     ap.add_argument("--on", action="store_true", help="switch checkpoints back on (counting resumes from the last review)")
     ap.add_argument("--global", dest="everywhere", action="store_true", help="with --on/--off: all projects")
     ap.add_argument("--reset", action="store_true", help="new baseline now; logged as NOT reviewed")
-    ap.add_argument("--hook", choices=["stop"], help="run as a Claude Code hook (reads the JSON payload on stdin)")
+    ap.add_argument("--hook", choices=["prompt", "stop"], help="run as a Claude Code hook (reads the JSON payload on "
+                    "stdin); 'stop' is silent, kept for sessions started with the old Stop hook")
     ap.add_argument("--demo", action="store_true", help="self-test in a throwaway repository")
     a = ap.parse_args(argv)
     if a.demo:
         return _demo()
+    if a.hook == "stop":                 # moved to the plan boundary (2026-11-04): it popped up over unread plans
+        return 0
     if a.hook:
         try:
             payload = json.loads(sys.stdin.read() or "{}")
         except ValueError:
             payload = {}
-        return hook_stop(payload)
+        return hook_prompt(payload)
     root = repo_root(a.repo)
     if (a.on or a.off) and a.everywhere:
         set_switch(root, a.on, everywhere=True)
@@ -333,8 +336,8 @@ def main(argv=None):
 
 def _demo():
     global GLOBAL_SWITCH
-    def hook(d, extra=None):
-        return subprocess.run([sys.executable, __file__, "--hook", "stop"], input=json.dumps({"cwd": d, **(extra or {})}),
+    def hook(d, event="prompt"):
+        return subprocess.run([sys.executable, __file__, "--hook", event], input=json.dumps({"cwd": d, "prompt": "go"}),
                               capture_output=True, text=True, env={**os.environ, "REVIEW_CHECKPOINTS_GLOBAL": GLOBAL_SWITCH}).stdout
     def sh(*args):
         subprocess.run(args, cwd=d, check=True, capture_output=True, env={**os.environ, **SNAPSHOT_ID})
@@ -352,10 +355,11 @@ def _demo():
         s = status(d); checks.append(("25 new lines (untracked) → due; results/ ignored", s["due"] and s["lines"] == 25))
         staged = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=d, capture_output=True, text=True).stdout
         checks.append(("snapshots leave the index untouched (nothing staged)", staged.strip() == ""))
-        checks.append(("Stop hook blocks when due", '"decision": "block"' in hook(d)))
-        checks.append(("Stop hook never blocks twice in a row", hook(d, {"stop_hook_active": True}).strip() == ""))
+        checks.append(("prompt hook: when due, hold it at the plan boundary",
+                       "accepts a plan" in json.loads(hook(d))["hookSpecificOutput"]["additionalContext"]))
+        checks.append(("old Stop hook stays silent even when due", hook(d, "stop").strip() == ""))
         set_switch(d, False); checks.append(("local --off silences the hook", hook(d).strip() == ""))
-        set_switch(d, True); checks.append(("--on: blocks again (unreviewed work still counts)", '"decision"' in hook(d)))
+        set_switch(d, True); checks.append(("--on: due again (unreviewed work still counts)", "additionalContext" in hook(d)))
         set_switch(d, False, everywhere=True); checks.append(("global --off silences the hook", hook(d).strip() == ""))
         set_switch(d, True, everywhere=True)
         defer(d); s = status(d); checks.append(("deferral doubles the threshold", not s["due"]))
