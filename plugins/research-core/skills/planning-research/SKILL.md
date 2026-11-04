@@ -13,7 +13,10 @@ after the fact. A plan written **before** running fixes all three.
 
 Read the project's overview doc, the current-thread log, and the live-status memory (paths in
 `.claude/project.yaml` / `CLAUDE.md`). State in two lines what is settled and what is open.
-Do not re-propose experiments that the logs already ran — search them first.
+Do not re-propose experiments that the logs already ran — search them first. For a question with a
+section in the conclusions doc (`project.yaml` → `conclusions_doc`), read that section first, then only
+the cards after its "as of" date (`concluding-research/scripts/collect_cards.py --since <date>`), not
+the whole verdict log.
 
 ## Step 1 — the pre-run card (every arm, even a quick "try X")
 

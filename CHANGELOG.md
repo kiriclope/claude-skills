@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-04 — research-core 0.25.0 (shorter cards, conclusions kept current)
+- **auditing-results §0**: a verdict card ≤ 40 lines with its pre-run card, detail in the linked table file; a
+  correction is a new card, the old one gets one "Superseded … by …" line; after each verdict, count the question's
+  cards since its conclusions section ("as of") and run concluding-research at 5 or more. **Why:** the verdict logs
+  reached 260–280 kB in 6–9 days (rnn 77 cards, dual 66), 19/77 and 33/66 cards over 40 lines, corrections appended in
+  full to old cards, and rnn had one conclusions section for 76 cards.
+- **concluding-research**: `collect_cards.py` flags `long` cards (> 40 lines; demo extended); the description names
+  the 5-card trigger.
+- **planning-research Step 0**: read the question's conclusions section first, then only the cards after its date.
+
 ## 2026-11-04 — research-core 0.24.0 (review checkpoints at the plan boundary, questions that stand alone)
 - **running-review-checkpoints**: the checkpoint is held when the user accepts a plan or a next step, or asks to
   commit or push, never at the end of a turn that shows a plan, a verdict or a figure. **Why:** the Stop hook set it

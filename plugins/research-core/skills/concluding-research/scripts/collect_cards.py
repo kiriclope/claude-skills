@@ -7,6 +7,7 @@ what limits pooling:
   after-data   the hypotheses or criterion were written after the data, or the card says exploratory
   open-card    a pre-run card still marked RUNNING (no verdict yet)
   corrected    the card mentions a correction, supersession or re-reading (of itself or another card): read it
+  long         the card runs over 40 lines (auditing-results §0: detail goes into the table file)
 Reading the cards themselves is still required: the table only says which ones to read.
 
 Usage:
@@ -21,6 +22,7 @@ import sys
 import tempfile
 
 FIELDS = ("Verdict", "Criterion", "Plan")
+MAX_LINES = 40
 FLAGS = {
     "after-data": r"after the data|set after the run|exploratory|none was written before",
     "open-card": r"—\s*RUNNING",
@@ -57,6 +59,8 @@ def collect(path, match, since="", body_too=False):
         if (since and date and date < since) or not (rx.search(head) or (body_too and rx.search(body))):
             continue
         flags = [k for k, r in FLAGS.items() if re.search(r, head + "\n" + body, re.I)]
+        if 1 + len(body.strip("\n").splitlines()) > MAX_LINES:
+            flags.append("long")
         out.append({"line": line, "date": date, "title": re.sub(r"^\d{4}-\d{2}-\d{2}\s*[—·-]\s*", "", head),
                     "flags": flags, **{f: field(body, f) for f in FIELDS}})
     return out
@@ -69,24 +73,28 @@ def report(cards):
         for f in FIELDS:
             print(f"        {f}: {c[f]}")
     print(f"SUMMARY: {len(cards)} card(s); after-data {sum('after-data' in c['flags'] for c in cards)}, "
-          f"open {sum('open-card' in c['flags'] for c in cards)}, corrected {sum('corrected' in c['flags'] for c in cards)}")
+          f"open {sum('open-card' in c['flags'] for c in cards)}, corrected {sum('corrected' in c['flags'] for c in cards)}, "
+          f"long {sum('long' in c['flags'] for c in cards)}")
 
 
 def _demo():
     log = ("# Verdicts\n\n## 2026-10-27 — lever A solves the task: SOLVED\n- **Criterion (set after the run):** P ≥ 0.95\n"
            "- **Verdict:** kept\n\n## 2026-10-28 · lever B on the task — RUNNING\nWHY x\n\n"
-           "## 2026-10-29 — unrelated card\n**Question:** about lever A again\n**Verdict:** open\n")
+           "## 2026-10-29 — unrelated card\n**Question:** about lever A again\n**Verdict:** open\n"
+           "## 2026-10-30 — lever C, a long card\n" + "detail\n" * 45)
     with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as f:
         f.write(log)
     cards = collect(f.name, r"lever")
-    checks = [("2 of 3 cards match 'lever'", len(cards) == 2),
+    checks = [("3 of 4 cards match 'lever'", len(cards) == 3),
               ("card 1: after-data flag, verdict and criterion read",
                cards[0]["flags"] == ["after-data"] and cards[0]["Verdict"] == "kept" and cards[0]["Criterion"] == "P ≥ 0.95"),
               ("card 2: open pre-run card", cards[1]["flags"] == ["open-card"] and cards[1]["date"] == "2026-10-28"),
-              ("--since drops the earlier card", len(collect(f.name, r"lever", since="2026-10-28")) == 1),
+              ("--since drops the earlier card", len(collect(f.name, r"lever", since="2026-10-28")) == 2),
               ("--body also finds the card that names the lever in its body, Plan from Question",
-               len(collect(f.name, r"lever", body_too=True)) == 3
-               and collect(f.name, r"lever", body_too=True)[2]["Plan"] == "about lever A again")]
+               len(collect(f.name, r"lever", body_too=True)) == 4
+               and collect(f.name, r"lever", body_too=True)[2]["Plan"] == "about lever A again"),
+              ("a card over 40 lines is flagged long, a short one is not",
+               cards[2]["flags"] == ["long"] and "long" not in cards[0]["flags"])]
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)

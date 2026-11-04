@@ -126,8 +126,11 @@ by content, not arm codes> · **Plan:** <the pre-run card above this entry, or a
   is, every symbol said once in words, only the numbers the argument needs (link the full table:
   `per-unit table: path`). Each test ends with what it means for its hypothesis. Take definitions
   from the project's docs, never invent.
-- **Short:** each test ≤ 6 lines, the Question/Data lines ≤ 4, the whole entry about one screen.
-  Define a term once, where it is first needed, not in a glossary up front.
+- **Short: the card ≤ 40 lines,** its pre-run card included; each test ≤ 6 lines, the Question/Data
+  lines ≤ 4. Detail beyond that (per-test numbers, extra checks) goes into the table file, linked.
+  `collect_cards.py` (concluding-research) flags a longer card `long`. Define a term once, where it is
+  first needed, not in a glossary up front. **Why:** the logs reached 260–280 kB in 6–9 days; 19 of 77
+  rnn cards and 33 of 66 dual cards ran over 40 lines, the longest 155 (2026-11-04).
 - **Count independent units only:** runs that share a stage (one DPA stage feeding three GNG
   versions) are one unit at that stage. **Why:** "18/18 stage ends" counted each shared DPA stage three
   times; the real count was 14/14 (2026-10-29).
@@ -139,6 +142,14 @@ by content, not arm codes> · **Plan:** <the pre-run card above this entry, or a
   cannot answer from its own evidence goes into "Not shown" or the Limits.
 - Put the figure and the entry in the reply and append the entry to the project's verdict log (`project.yaml` →
   `verdict_log`, default `docs/verdicts.md`): one history of what was tried and why it was dropped.
+- **A correction is a new card.** The old card gets one line, never the new evidence: `Superseded
+  <date> by "<new card's title>": <what changed>`. **Why:** corrections appended in full to old cards
+  (11 of 76 in rnn) left the current state spread over several cards.
+- **Then count the question's cards** since its section in the conclusions doc (`project.yaml` →
+  `conclusions_doc`, default `docs/conclusions.md`) was last written ("as of" date), or all of them
+  when it has no section: `collect_cards.py --log <log> --match "<question regex>" --since <as-of>`.
+  At 5 or more, run concluding-research on that question next, and say so with the verdict.
+  **Why:** rnn had one conclusions section for 76 cards, so every session rebuilt the state from the log.
 - If no figure can show the effect (a crash, a missing file), say so in the figure slot and give the
   log line instead. Never leave the slot out.
 
@@ -216,7 +227,7 @@ For each claim, label it:
 - **limitation** — the method cannot answer it (say what would).
 
 Say plainly when something did not work and why. If the result contradicts an earlier
-conclusion in the docs, mark the old one superseded there.
+conclusion in the docs, mark the old one superseded there (one line, §0).
 
 ## 7. Independent review before the verdict is reported
 
