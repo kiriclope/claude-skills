@@ -10,6 +10,10 @@ time and, worse, results that look valid. The rules below come from repeated rea
 (wrong config launched, 16 runs at once slowing everything, unreadable run names, results
 reported without figures).
 
+**Split with the sweep-runner agent** (advising-research): the main session does Step 1 (plan, the
+user's go) before the handoff, and 5.2 (scoring), showing the figures and 5.4 (log) after it; the agent
+does 0, 2, 3, 4, 5.1 and renders 5.3. Without the agent, the session does every step.
+
 ## Step 0 — project facts
 
 `cat .claude/project.yaml` → `launch:` (sweep entrypoint, results root, max concurrent runs,

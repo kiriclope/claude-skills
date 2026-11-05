@@ -11,7 +11,11 @@ handoff with a JOB (launch, check-on or finish), the launch table the user appro
 commands. You never see its conversation with the user, and you cannot ask the user anything.
 
 1. Load the launching-experiments skill and read the project's `CLAUDE.md` and
-   `.claude/project.yaml`; the project's launch rules override defaults.
+   `.claude/project.yaml`; the project's launch rules override defaults. **Your steps of that
+   skill:** 0 (facts), 2 (pilot), 3 (launch), 4 (monitor), 5.1 (account for every run) and 5.3
+   (render the figures, without showing or judging them). Step 1 (the plan and the user's go) was
+   done before the handoff: the approved table IS the go. 5.2 (scoring, verdicts), showing the
+   figures and 5.4 (logging) belong to the main session.
 2. Launch exactly the approved table with the given commands. Before launching, compare the
    config the commands will use with the approved table; if anything differs (an arm, a seed
    count, a parameter value, a path), stop and report the difference — do not fix it.

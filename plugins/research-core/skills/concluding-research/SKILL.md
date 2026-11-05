@@ -93,7 +93,8 @@ choosing-statistics skill: `choosing-statistics/scripts/stats_floor.py --counts 
 Not a verdict's figure (that one shows one result's effect, making-figures "Figures that explain a
 result"); a conclusion has one panel, the ledger:
 - one row per hypothesis (≤ 8; the rest stay in the table), labeled with it in plain words;
-- x = the cards in log order, labeled by short name and date (cards share dates, so not by date);
+- x = the cards oldest first (the log is newest first, so reverse it; older logs in mixed order: order
+  by date, then log position), labeled by short name and date;
 - one mark where a card bears on a hypothesis, its shape = **what that card says about it**:
   ● supports · ✖ against, beyond noise · ○ no effect · ◇ cannot decide; a card that is only a
   baseline gets no mark, its count goes in the label of the card it is compared with;
@@ -115,7 +116,7 @@ then planning-research and launching-experiments take over.
    the question; as the plan, the cards' own criteria and predictions (no plan of the conclusion
    exists); the card list, the run account, the ledger and the answer's claims — not your reasoning.
    It re-checks each status against the cards' evidence and the run account. Triage its objections.
-2. **Re-collect before writing**: run `collect_cards.py` again; other sessions append cards while you
+2. **Re-collect before writing**: run `collect_cards.py` again; other sessions add cards while you
    work. A new card is read and added, or listed as "after this conclusion".
 3. Write the question's section in the conclusions doc (`project.yaml` → `conclusions_doc`, default
    `docs/conclusions.md`). **Rewrite it in place**, dated "as of"; the old version stays in git. It is
