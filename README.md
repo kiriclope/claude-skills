@@ -160,16 +160,22 @@ lines. Each check is a past error that reached a figure or a conclusion.
 ### Personal
 
 [figure-gallery](plugins/personal/skills/figure-gallery/SKILL.md) publishes figures to the
-maintainer's local browser gallery. It is machine-specific; colleagues can ignore it. The plugin also holds the four
-agents the skills route to (`plugins/personal/agents/`, all at effort medium), each pinned to the maintainer's choice of
-model; colleagues copy them into `~/.claude/agents/` and set their own models:
+maintainer's local browser gallery. It is machine-specific; colleagues can ignore it. It also holds the
+maintainer's agent overrides (`plugins/personal/agents/`: research-planner and critical-reviewer on Fable; the other
+two are links to the shared agents).
 
-| Agent | Called by | Maintainer's model | Why that model |
+### Agents (research-core)
+
+The four agents the skills route to ship with research-core (`plugins/research-core/agents/`). To use another
+model, put a copy with the same name in `~/.claude/agents/` (user-level agents override plugin agents) and change
+only `model:`/`effort:`; `lint_skills.py` warns when such a copy drifts from the shared one.
+
+| Agent | Called by | Default model · effort | Why |
 |---|---|---|---|
-| research-planner | advising-research (plan) | Fable | planning gains most from the strongest reasoning |
-| sweep-runner | advising-research (launch, check-on, finish) | Sonnet | matched Opus 4.8 on a dry test of 4 tasks at a sixth of the cost (2026-10-14) |
-| result-checker | advising-research (check), auditing-results | Opus | a fresh context for the audit |
-| critical-reviewer | thinking-critically step 3 | Fable | the independent review of every claim |
+| research-planner | advising-research (plan) | Opus · medium | planning gains from strong reasoning |
+| sweep-runner | advising-research (launch, check-on, finish) | Sonnet · low | follows the approved table; matched Opus on a dry test of 4 tasks at a sixth of the cost (2026-10-14) |
+| result-checker | advising-research (check), auditing-results | Opus · high | a fresh context for the audit, the highest-stakes judgment |
+| critical-reviewer | thinking-critically step 3 | Opus · high | the independent review of every claim |
 
 Figures stay on the main session: Sonnet and Opus were tested blind on one evidence figure (2 runs each); Sonnet's
 worse figure had a wrong noise band, so the fixed criterion kept Opus (2026-10-29).

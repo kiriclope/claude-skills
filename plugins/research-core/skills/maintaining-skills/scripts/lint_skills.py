@@ -11,7 +11,8 @@ Checks per skill (SKILL.md):
   * scripts/*.py compile
   * every --flag the SKILL.md passes to one of its own scripts/*.py is defined in that script's argparse
 Checks per agent (plugins/*/agents/*.md): name = file name, description, tools, a model alias
-(haiku/sonnet/opus/fable/inherit or a full claude-* id), personal facts in a shareable plugin.
+(haiku/sonnet/opus/fable/inherit or a full claude-* id), personal facts in a shareable plugin; an agent
+redefined in another plugin (a personal override) may differ only in model/effort.
 Checks the marketplace: personal facts in its metadata and plugin descriptions; every plugin dir listed.
 Checks per project (--projects): skills that are real copies instead of symlinks into the repo
 (drift risk), copies that differ from the repo version, dangling symlinks; template keys missing from
@@ -176,6 +177,24 @@ def lint_agent(plugin, path, personal):
     return issues
 
 
+def _agent_core(path):
+    """An agent file without its model/effort lines: what an override must keep identical."""
+    return [l for l in open(path).read().splitlines() if not re.match(r"(model|effort):", l)]
+
+
+def lint_overrides(paths_by_name):
+    """An agent defined in two plugins (a personal override of a shared agent, e.g. another model)
+    must differ only in model/effort; anything else is drift from the shared version."""
+    issues = []
+    for name, paths in sorted(paths_by_name.items()):
+        real = sorted({os.path.realpath(p) for p in paths})
+        for other in real[1:]:
+            if _agent_core(real[0]) != _agent_core(other):
+                issues.append(("warn", f"agent '{name}': {os.path.relpath(other)} differs from "
+                               f"{os.path.relpath(real[0])} beyond model/effort — re-copy the override"))
+    return issues
+
+
 def lint_marketplace(repo, personal):
     p = os.path.join(repo, ".claude-plugin", "marketplace.json")
     if not os.path.exists(p):
@@ -258,13 +277,20 @@ def _demo():
         ag = os.path.join(d, "agent.md")
         open(ag, "w").write("---\nname: other\ndescription: A.\nmodel: gpt-4\n---\nbody\n")
         res["agent"] = lint_agent("research-core", ag, personal)
+        base = "---\nname: a\ndescription: A.\nmodel: opus\n---\nbody\n"
+        for f, t in (("o_ok.md", base.replace("opus", "fable")), ("o_bad.md", base + "extra\n"), ("o_base.md", base)):
+            open(os.path.join(d, f), "w").write(t)
+        res["ov_ok"] = lint_overrides({"a": [os.path.join(d, "o_base.md"), os.path.join(d, "o_ok.md")]})
+        res["ov_bad"] = lint_overrides({"a": [os.path.join(d, "o_base.md"), os.path.join(d, "o_bad.md")]})
     flag_msgs = [m for _, m in res["flags"]]
     checks = [("a valid skill passes", not [k for k, _ in res["good-skill"] if k in ("error", "warn")]),
               ("a name mismatch and missing description are errors", sum(k == "error" for k, _ in res["bad"]) >= 2),
               ("personal facts in a shared plugin are flagged", any("personal" in m for _, m in res["leaky"])),
               ("an undefined script flag is flagged (continuation line), a defined one and a comment are not",
                any("--gone" in m for m in flag_msgs) and not any("--n " in m or "--comment" in m for m in flag_msgs)),
-              ("an agent with a wrong name and unknown model is an error", sum(k == "error" for k, _ in res["agent"]) == 2)]
+              ("an agent with a wrong name and unknown model is an error", sum(k == "error" for k, _ in res["agent"]) == 2),
+              ("an override differing only in model passes; one with a changed body warns",
+               not res["ov_ok"] and len(res["ov_bad"]) == 1)]
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)
@@ -298,18 +324,25 @@ def main():
                 print(f"    [{k}] {m}")
             n_err += sum(k == "error" for k, _ in issues); n_warn += sum(k == "warn" for k, _ in issues)
 
-    n_agents = 0
+    n_agents, by_name = 0, {}
     for plugin in sorted(os.listdir(pdir)):
         adir = os.path.join(pdir, plugin, "agents")
         for a in sorted(os.listdir(adir)) if os.path.isdir(adir) else []:
             if not a.endswith(".md"):
                 continue
+            by_name.setdefault(a[:-3], []).append(os.path.join(adir, a))
+            if os.path.islink(os.path.join(adir, a)):
+                continue                                # a link to a shared agent, linted there
             n_agents += 1
             issues = lint_agent(plugin, os.path.join(adir, a), personal)
             print(f"{plugin}/agents/{a} {'' if any(k in ('error', 'warn') for k, _ in issues) else '✓'}")
             for k, m in issues:
                 print(f"    [{k}] {m}")
             n_err += sum(k == "error" for k, _ in issues); n_warn += sum(k == "warn" for k, _ in issues)
+
+    for k, m in lint_overrides(by_name):
+        print(f"    [{k}] {m}")
+        n_warn += k == "warn"
 
     print("marketplace:")
     for k, m in lint_marketplace(args.repo, personal):

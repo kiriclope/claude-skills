@@ -39,7 +39,7 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
   never red vs green, never hue alone; describe colors by name + shape when discussing a figure.
 - Ask before launching anything long-running or outward-facing; commit only when asked, push only on "push it".
 
-## Model routing (`advising-research`; agents in `~/.claude/agents/` → `plugins/personal/agents/`, all at effort medium)
+## Model routing (`advising-research`; agents ship in `plugins/research-core/agents/`; my overrides in `~/.claude/agents/` → `plugins/personal/agents/`: planner and critical-reviewer on Fable, the other two linked)
 
 | Phase | Who | Model |
 |---|---|---|

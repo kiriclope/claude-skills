@@ -54,7 +54,7 @@ with ONLY: the question, the plan and its pre-stated criterion, pointers to the 
 numbered claims with their tags. **Do not include your justification or your confidence.**
 
 For high-stakes conclusions — a claim going into a paper, a decision that commits days of
-compute — also send the same brief to a different model (`codex:codex-rescue`), whose errors are
+compute — also send the same brief to a different model (`codex:codex-rescue`, when it is installed), whose errors are
 less correlated with yours.
 
 `references/failure_modes.md` lists what the reviewer looks for (the brief points to it).
