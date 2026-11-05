@@ -35,7 +35,7 @@ import tempfile
 CLAUDE_ROOT = os.environ.get("CLAUDE_PROJECTS_ROOT", os.path.expanduser("~/.claude/projects"))
 REVIEW = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "running-review-checkpoints",
                       "scripts", "review_status.py")
-BOARD = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), *[".."] * 5, "hooks",
+BOARD = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), *[".."] * 3, "hooks",
                                       "session_board.py"))
 DEFAULTS = {"since_days": 3, "memory_cap_kb": 40}
 DATE = re.compile(r"\b(20\d\d)-(\d\d)-(\d\d)\b")

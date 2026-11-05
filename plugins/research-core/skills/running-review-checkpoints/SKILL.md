@@ -115,7 +115,8 @@ review_checkpoint:
   exclude: [results/, scratchpad/]
 ```
 The first `review_status.py` run sets a baseline: past work does not trigger a review. The prompt
-hook and the commit gate are installed once per user (`hooks/README.md` in the skills repo).
+hook and the commit gate are opt-in, once per user: the plugin option `hooks_enabled` (research-core
+`hooks/README.md`). Without them nothing is enforced: check `review_status.py` yourself before a commit.
 
 ## Never
 

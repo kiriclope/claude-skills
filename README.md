@@ -287,11 +287,13 @@ ln -s ~/claude-skills/profiles/<you>.md ~/.claude/CLAUDE.md
 Keep its **"Which skill when"** table: one row per kind of task and the skill to load before
 starting it. Without it, the convention skills (code, paper, results, figures) are mostly skipped.
 
-### Install the hooks (recommended)
+### Install the hooks (recommended, opt-in)
 
-Copy the `hooks` block from [hooks/README.md](hooks/README.md#install-user-level-all-projects--add-to-claudesettingsjson)
-into `~/.claude/settings.json`, merging with any `hooks` you already have. It installs the Bash guard,
-the review-checkpoint prompt hook and the session board; each part works without the others.
+The hooks ship with research-core but are **off until you turn them on**: set the plugin option
+`hooks_enabled` to true (asked when you enable the plugin). This installs the Bash guard, the
+review-checkpoint prompt hook and the session board. Working from a clone instead? Copy the manual block
+from [hooks/README.md](plugins/research-core/hooks/README.md#install) into `~/.claude/settings.json`; use
+one route, never both.
 
 Run `/hooks` in Claude Code to check that they loaded. They need `python3` with PyYAML.
 
@@ -383,7 +385,8 @@ python <skill>/scripts/review_status.py --reset            # fresh start; logged
 
 ## Hooks: the rules that are enforced
 
-Skills are advice; these rules are enforced by Claude Code whatever the session does.
+Skills are advice; these rules are enforced by Claude Code whatever the session does, once the hooks are
+installed (opt-in, see [Install the hooks](#install-the-hooks-recommended-opt-in)).
 
 | Hook | Situation | Decision |
 |---|---|---|

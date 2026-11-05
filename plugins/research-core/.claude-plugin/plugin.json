@@ -2,5 +2,15 @@
   "name": "research-core",
   "version": "0.27.0",
   "description": "Project-agnostic research workflow skills: planning, experiments, debugging, result audits, validation of pipelines, decoders and claims, derivations, figures, code, paper writing, numbers and citation audits, literature, reviewer responses, logging, skill maintenance.",
-  "author": { "name": "Leon" }
+  "author": {
+    "name": "Leon"
+  },
+  "userConfig": {
+    "hooks_enabled": {
+      "type": "boolean",
+      "title": "Enable research hooks",
+      "description": "Commit guard (asks before push, refuses commits without a Co-Authored-By trailer, foreground training launches, clear mess), session board, review-checkpoint prompt. Off by default.",
+      "default": false
+    }
+  }
 }
