@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-11-05 — research-core 0.28.0, personal 0.3.0 (agents and hooks ship with the plugin; card template moved)
+- **Agents** move from `personal` to `research-core/agents/`, so a colleague who installs research-core gets the
+  agents its skills call. Defaults: research-planner opus · medium, sweep-runner sonnet · low, result-checker and
+  critical-reviewer opus · high. The maintainer's picks stay as user-level overrides (`personal/agents/`: planner and
+  reviewer on Fable; the other two are links). `lint_skills.py` warns when an override differs beyond model/effort.
+- **Reviewers**: critical-reviewer's statuses match its brief (adds unverifiable); both reviewers treat CLAUDE.md and
+  docs as claims to check. thinking-critically sends to codex only when it is installed.
+- **Hooks** ship in `research-core/hooks/hooks.json`, **opt-in**: off unless the plugin option `hooks_enabled` is true
+  (`run_if_enabled.sh`). Scripts move to `research-core/hooks/` (a marketplace install copies only the plugin dir);
+  the repo-root `hooks/` entries are links, so the manual settings.json install still works. Use one route, not both.
+- **auditing-results**: the verdict-card template and its rules move to `references/verdict_card.md`; the body keeps a
+  short summary, so the audit checks (§1–§6) are no longer in the last third. The skill says what the result-checker
+  returns and what the main session does; launching-experiments and the sweep-runner say the same for sweeps.
+- **Verdict log newest first** everywhere (auditing-results appended to the bottom while planning-research opened cards
+  at the top); the concluding-research ledger reverses it. Older mixed logs are left as they are.
+
 ## 2026-11-05 — research-core 0.27.0, lowrank-rnn 0.4.2, personal 0.2.2 (review fixes: contradictions, linter)
 - **making-figures**: a second binary contrast in one panel is coded by line style or fill, never a second hue
   pair (now matches `cbstyle`; the skill said "the project's second pair"). Titles depend on where the figure goes:
