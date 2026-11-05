@@ -10,6 +10,21 @@ the code runs. Most figure rework in the past came from four things: ignoring th
 existing plotting code, a style that drifted from the main figures, panels that summarized
 instead of showing data, and reporting a figure nobody had looked at.
 
+## Who does which step (decide before delegating)
+
+| Step | Who | Why |
+|---|---|---|
+| run the plotting script on existing code (flags, run IDs) | a cheap dispatcher agent (`model: haiku`), or the session inline for one short run | mechanical; the GPU, not the model, is the cost |
+| catch layout faults (overlaps, clipping, fonts, colorblind) | `check_figure`, called inside the project's `save_fig` | a script check costs no tokens and does not depend on which model ran it |
+| report the check | the dispatcher relays `check_figure`'s warnings **verbatim** + the file paths; it never says a figure "looks fine" | a weak "fine" makes the session skip the look, and whoever made the output tends to confirm it |
+| write or change plotting code | the session, or a coding agent (`sonnet`); the session model if the change spans several files | coding, not dispatch |
+| look (Step 3.3) | the session that will report or conclude, on the 1–2 figures that back a claim | judging what a figure shows is where the strong model pays; `check_figure` covers the bulk of per-run figures |
+
+Delegate the run when it is long, noisy or repeated (picking run IDs, several sweeps, retries): the
+saving is keeping that output out of the session's context, more than the per-token price. A single
+short plot command is about as cheap inline as the hand-off itself. If the project's `save_fig` does
+not call `check_figure` yet, add it (Step 3.2) before routing runs to a cheap model.
+
 ## Step 0 — load the project's conventions (do not skip)
 
 ```bash
@@ -105,7 +120,8 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
 
 1. Save through the project's `save_fig` or as **PNG (review/gallery) + vector (SVG/PDF for
    submission)**, with editable text (`svg.fonttype none`, `pdf.fonttype 42`).
-2. Run the checker before saving:
+2. Run the checker before saving (in a project, put this call inside its `save_fig` so every
+   figure is checked, whoever runs the script):
    ```python
    sys.path.insert(0, "<this skill dir>/scripts"); from check_figure import check_figure
    check_figure(fig, print_width_mm=183)     # fonts < 5 or > 8 pt, stray bold, overlaps, clipping,
@@ -127,6 +143,7 @@ See `references/captions.md` (caption skeleton, panel inventory, shared vocabula
 - [ ] project conventions/helpers loaded and reused
 - [ ] content: real data, one named representative example, claim per panel
 - [ ] style file applied; same style as the main figures
-- [ ] `check_figure` clean; its NUMBERS ticked against the script output
+- [ ] `check_figure` clean (called from the project's `save_fig`); its NUMBERS ticked against the script output
+- [ ] a delegated run reported warnings verbatim, no "looks fine"; the session looked at the key figures itself
 - [ ] PNG opened and inspected; numbers match the script output
 - [ ] PNG + vector saved; figure shown/published

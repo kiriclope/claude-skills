@@ -46,6 +46,7 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | plan | `research-planner` | Fable (alias `fable`) |
 | code | main session | Opus 5.5 (the session model) |
 | sweep launch / check-on / finish | `sweep-runner` | Sonnet (alias `sonnet`): matched Opus 4.8 on a dry test, 2026-10-14 (`~/tmp/sweeprunner_trial/REPORT.md`); revert with `model: claude-opus-4-8` in the agent |
+| render figures from existing plotting code | project `plotting` agent, or inline for one short run | Haiku (alias `haiku`): relays `check_figure` warnings verbatim, never judges; the session looks at the key figures (`making-figures`, "Who does which step") |
 | check results; `auditing-results` | `result-checker` (fresh context) | Opus 5.5 (alias `opus`) |
 | fresh review of `thinking-critically` | `critical-reviewer` | Fable (alias `fable`) |
 

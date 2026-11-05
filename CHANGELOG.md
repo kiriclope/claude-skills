@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-05 — research-core 0.26.0 (figures: who does which step)
+- **making-figures**: new "Who does which step" table. A cheap dispatcher agent (`haiku`) runs the plotting script and
+  relays `check_figure` warnings verbatim, never "looks fine"; layout faults are caught by `check_figure` inside the
+  project's `save_fig`; plotting code is written by the session or a coding agent; the session looks at the 1–2
+  figures that back a claim. Delegate long, noisy or repeated runs; one short run is as cheap inline. Step 3.2 and the
+  checklist now name `save_fig` as the place for `check_figure`. **Why:** the rnn `plotting` agent only relayed
+  `Saved` lines and `save_fig` ran no check, so a layout fault reached the user unseen whichever model ran it.
+- **profile**: model-routing row for figure rendering.
+
 ## 2026-11-04 — research-core 0.25.0 (shorter cards, conclusions kept current)
 - **auditing-results §0**: a verdict card ≤ 40 lines with its pre-run card, detail in the linked table file; a
   correction is a new card, the old one gets one "Superseded … by …" line; after each verdict, count the question's
