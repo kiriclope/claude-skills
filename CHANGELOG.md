@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-05 — research-core 0.27.0, lowrank-rnn 0.4.2, personal 0.2.2 (review fixes: contradictions, linter)
+- **making-figures**: a second binary contrast in one panel is coded by line style or fill, never a second hue
+  pair (now matches `cbstyle`; the skill said "the project's second pair"). Titles depend on where the figure goes:
+  a verdict card or a result shown in session states the finding; a paper figure orients and the claim goes in the
+  caption (the skill said both). **Why:** a skills review found both pairs of lines contradicting each other.
+- **advising-research CHECK, result-checker agent**: verdict words are auditing-results' (supported / not supported
+  / refuted / open), not confirmed / refuted / inconclusive, so the checker's verdict drops into a card unchanged.
+- **debugging-training**: importing `freeze_check` from the skill folder is for throwaway debugging only; a check
+  that stays in project code is copied into the project (launching-experiments' rule; the two skills contradicted).
+- **bifurcation-probe**: dropped "always prefix with LD_PRELOAD" (the env prefix is per project); the `--xlim` gotcha
+  now points to flow-verdict trap 5 (softplus ±4.5, relu² ±2.0) — the old ±2.0–2.5 clipped softplus wells.
+- **lint_skills.py**: defaults to the repo it lives in (it crashed outside `~/claude-skills`); checks every `--flag`
+  a SKILL.md passes to its own scripts against their argparse; lints agents (name, tools, model alias); scans the
+  marketplace metadata for personal facts; with `--projects`, reports template keys a project lacks and
+  `verdict_scripts` not in the project. Demo extended (5 checks).
+- **marketplace.json**: metadata no longer names personal projects; the lowrank-rnn entry lists all five skills.
+
 ## 2026-11-05 — research-core 0.26.0 (figures: who does which step)
 - **making-figures**: new "Who does which step" table. A cheap dispatcher agent (`haiku`) runs the plotting script and
   relays `check_figure` warnings verbatim, never "looks fine"; layout faults are caught by `check_figure` inside the

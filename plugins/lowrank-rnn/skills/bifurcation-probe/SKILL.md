@@ -9,8 +9,7 @@ The recurring analysis for the ring→lower-plane thread: given a trained low-ra
 read off where each run sits on the **decision-mode pitchfork** and what the κ-plane wells
 look like. Three tools at the repo root, all pure-analytic (fast, exact for `LowRankModel`).
 
-**Always prefix with `LD_PRELOAD`** (torch + matplotlib):
-`$ENV_PREFIX python …` — `ENV_PREFIX` is `env_prefix` in `.claude/project.yaml` (e.g. an `LD_PRELOAD` libstdc++ shim when torch and matplotlib clash; empty if not needed)
+**Always prefix with the project's env prefix**: `$ENV_PREFIX python …` — `ENV_PREFIX` is `env_prefix` in `.claude/project.yaml` (e.g. an `LD_PRELOAD` libstdc++ shim when torch and matplotlib clash; empty if not needed)
 
 ## The physics (how to read the output)
 
@@ -71,9 +70,10 @@ Set `--N` to the sim `hidden_size` (512) to check finite-N robustness.
 
 ## Gotchas
 
-- **`--xlim`**: low-gain / deep-memory runs push memory wells past ±1.5 (to ~±1.5–2). Widen the
-  fixed-point search (`bifurcation_probe --xlim 2.5`) and the figure window (`bifurcation_flows --xlim 2.0`)
-  or wells get missed / clipped.
+- **`--xlim`**: use the box flow-verdict trap 5 gives for the run's `hinge_shape` (softplus ±4.5,
+  relu² ±2.0), for both the fixed-point search (`bifurcation_probe --xlim`) and the figure window
+  (`bifurcation_flows --xlim`). **Why:** the old ±2.0–2.5 defaults clipped softplus wells at
+  |κ₀| ≈ 2.6–3.3. Widen if an attractor sits within 15% of the box edge.
 - **Attention**: the tools auto-detect `attention_input` and turn the tonic last channel ON in the
   autonomous field (matches training; makes the origin a fixed point). Don't override.
 - **`LowRankModel` only**. eistp/ei models → use `ei_flow.py` (simulated field); these analytic

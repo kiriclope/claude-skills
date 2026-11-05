@@ -9,22 +9,42 @@ Checks per skill (SKILL.md):
     (patterns listed in <repo>/personal_patterns.txt — each contributor adds their own)
   * stale markers: hard-coded model names (Claude Fable/Opus/Sonnet N), "TODO", dates older than --stale_days
   * scripts/*.py compile
+  * every --flag the SKILL.md passes to one of its own scripts/*.py is defined in that script's argparse
+Checks per agent (plugins/*/agents/*.md): name = file name, description, tools, a model alias
+(haiku/sonnet/opus/fable/inherit or a full claude-* id), personal facts in a shareable plugin.
+Checks the marketplace: personal facts in its metadata and plugin descriptions; every plugin dir listed.
 Checks per project (--projects): skills that are real copies instead of symlinks into the repo
-(drift risk), copies that differ from the repo version, dangling symlinks.
+(drift risk), copies that differ from the repo version, dangling symlinks; template keys missing from
+the project's .claude/project.yaml (info); verdict_scripts that do not exist in the project.
 
 Usage:
-    python lint_skills.py                                  # repo only
+    python lint_skills.py                                  # repo only (default: the repo this script lives in)
     python lint_skills.py --projects ~/project_a ~/project_b
     python lint_skills.py --demo
 """
 import argparse
 import datetime as dt
+import json
 import os
 import py_compile
 import re
 import sys
 
-REPO = os.path.expanduser("~/claude-skills")
+
+def _find_repo():
+    """The repo this script lives in (has .claude-plugin/marketplace.json); else ~/claude-skills."""
+    d = os.path.dirname(os.path.abspath(__file__))
+    while d != os.path.dirname(d):
+        if os.path.exists(os.path.join(d, ".claude-plugin", "marketplace.json")):
+            return d
+        d = os.path.dirname(d)
+    return os.path.expanduser("~/claude-skills")
+
+
+REPO = _find_repo()
+MODEL_ALIASES = {"haiku", "sonnet", "opus", "fable", "inherit"}
+ARG_FLAG = re.compile(r"add_argument\(\s*[\"'](--[\w-]+)[\"']")
+CMD_FLAG = re.compile(r"(?<![\w-])(--[a-z][\w-]*)")
 SHAREABLE = {"research-core", "lowrank-rnn"}          # must stay colleague-safe
 PATTERNS_FILE = "personal_patterns.txt"     # repo root: one regex per line (names, home paths, machine facts)
 MODEL_NAME = re.compile(r"Claude (Fable|Opus|Sonnet|Haiku) \d")
@@ -111,6 +131,87 @@ def lint_skill(plugin, skill_dir, stale_days, personal):
                 py_compile.compile(fp, doraise=True)
             except py_compile.PyCompileError as e:
                 issues.append(("error", f"{rel}: does not compile: {e.msg.splitlines()[0]}"))
+    issues += check_script_flags(skill_dir, text)
+    return issues
+
+
+def script_flags(py_path):
+    """--flags a script defines with argparse (read from source: no import, so no torch needed)."""
+    return set(ARG_FLAG.findall(open(py_path).read())) | {"--help"}
+
+
+def check_script_flags(skill_dir, text):
+    """Every --flag written on a command line that runs one of this skill's scripts must exist there."""
+    sd = os.path.join(skill_dir, "scripts")
+    if not os.path.isdir(sd):
+        return []
+    known = {f: script_flags(os.path.join(sd, f)) for f in os.listdir(sd) if f.endswith(".py")}
+    issues, lines = [], text.splitlines()
+    for i, line in enumerate(lines):
+        cmd = line
+        while cmd.rstrip().endswith("\\") and i + 1 < len(lines):      # shell continuation lines
+            i += 1; cmd = cmd.rstrip()[:-1] + " " + lines[i]
+        for script in re.findall(r"([\w-]+\.py)\b", cmd):
+            if script not in known or len(known[script]) == 1:      # not ours, or no argparse
+                continue
+            tail = cmd.split(script, 1)[1].split("#", 1)[0]         # flags after the script name, not comments
+            for f in sorted(set(CMD_FLAG.findall(tail)) - known[script]):
+                issues.append(("warn", f"SKILL.md passes {f} to scripts/{script}, which does not define it"))
+    return sorted(set(issues))
+
+
+def lint_agent(plugin, path, personal):
+    issues = []
+    fm, _ = frontmatter(open(path).read())
+    stem = os.path.splitext(os.path.basename(path))[0]
+    if fm.get("name") != stem: issues.append(("error", f"name '{fm.get('name', '')}' ≠ file name '{stem}'"))
+    if not fm.get("description"): issues.append(("error", "missing description"))
+    if not fm.get("tools"): issues.append(("warn", "no tools list — the agent inherits every tool"))
+    m = fm.get("model", "")
+    if m and m not in MODEL_ALIASES and not m.startswith("claude-"):
+        issues.append(("error", f"model '{m}' is neither an alias ({'/'.join(sorted(MODEL_ALIASES))}) nor a claude-* id"))
+    if plugin in SHAREABLE and personal is not None:
+        for hit in sorted(set(personal.findall(open(path).read()))):
+            issues.append(("warn", f"personal/machine fact '{hit}' in a shareable plugin"))
+    return issues
+
+
+def lint_marketplace(repo, personal):
+    p = os.path.join(repo, ".claude-plugin", "marketplace.json")
+    if not os.path.exists(p):
+        return [("error", "no .claude-plugin/marketplace.json")]
+    mk, issues = json.load(open(p)), []
+    texts = [json.dumps(mk.get("metadata", {}))] + [pl.get("description", "") for pl in mk.get("plugins", [])
+                                                     if pl.get("name") in SHAREABLE]
+    if personal is not None:                                    # the owner field may name the owner
+        for hit in sorted({h for t in texts for h in personal.findall(t)}):
+            issues.append(("warn", f"personal/machine fact '{hit}' in marketplace metadata or a shareable plugin's description"))
+    listed = {pl.get("name") for pl in mk.get("plugins", [])}
+    for d in sorted(os.listdir(os.path.join(repo, "plugins"))):
+        if d not in listed:
+            issues.append(("info", f"plugins/{d} is not listed in marketplace.json (fine only if it is install-by-hand)"))
+    return issues
+
+
+def top_keys(yaml_path):
+    return set(re.findall(r"^([A-Za-z_][\w-]*):", open(yaml_path).read(), re.M))
+
+
+def lint_project_config(proj, repo):
+    """Template keys the project lacks (info) and verdict_scripts missing from the project (warn)."""
+    proj = os.path.expanduser(proj)
+    py, tpl = os.path.join(proj, ".claude", "project.yaml"), os.path.join(repo, "templates", "project.yaml")
+    if not os.path.exists(py):
+        return [("warn", f"{proj}: no .claude/project.yaml — copy templates/project.yaml and fill it in")]
+    issues = []
+    if os.path.exists(tpl):
+        missing = sorted(top_keys(tpl) - top_keys(py))
+        if missing:
+            issues.append(("info", f"{proj}: project.yaml lacks template keys (skills fall back to defaults): {', '.join(missing)}"))
+    m = re.search(r"^verdict_scripts:\s*\[([^\]]*)\]", open(py).read(), re.M)
+    for s in [x.strip().strip("'\"") for x in m.group(1).split(",")] if m else []:
+        if s and not os.path.exists(os.path.join(proj, s)):
+            issues.append(("warn", f"{proj}: verdict_scripts names {s}, which is not in the project"))
     return issues
 
 
@@ -148,9 +249,22 @@ def _demo():
         personal = load_personal(d)
         sk = os.path.join(d, "plugins", "research-core", "skills")
         res = {n: lint_skill("research-core", os.path.join(sk, n), 90, personal) for n in ("good-skill", "bad", "leaky")}
+        # a skill whose SKILL.md passes a flag its script does not define
+        fl = os.path.join(sk, "flags"); os.makedirs(os.path.join(fl, "scripts"))
+        open(os.path.join(fl, "scripts", "tool.py"), "w").write("import argparse\nap=argparse.ArgumentParser()\nap.add_argument('--n')\n")
+        open(os.path.join(fl, "SKILL.md"), "w").write("---\nname: flags\ndescription: Z. Use when Z.\n---\n"
+                                                       "python scripts/tool.py --n 3 \\\n    --gone 1   # --comment\n")
+        res["flags"] = lint_skill("research-core", fl, 90, personal)
+        ag = os.path.join(d, "agent.md")
+        open(ag, "w").write("---\nname: other\ndescription: A.\nmodel: gpt-4\n---\nbody\n")
+        res["agent"] = lint_agent("research-core", ag, personal)
+    flag_msgs = [m for _, m in res["flags"]]
     checks = [("a valid skill passes", not [k for k, _ in res["good-skill"] if k in ("error", "warn")]),
               ("a name mismatch and missing description are errors", sum(k == "error" for k, _ in res["bad"]) >= 2),
-              ("personal facts in a shared plugin are flagged", any("personal" in m for _, m in res["leaky"]))]
+              ("personal facts in a shared plugin are flagged", any("personal" in m for _, m in res["leaky"])),
+              ("an undefined script flag is flagged (continuation line), a defined one and a comment are not",
+               any("--gone" in m for m in flag_msgs) and not any("--n " in m or "--comment" in m for m in flag_msgs)),
+              ("an agent with a wrong name and unknown model is an error", sum(k == "error" for k, _ in res["agent"]) == 2)]
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)
@@ -184,12 +298,33 @@ def main():
                 print(f"    [{k}] {m}")
             n_err += sum(k == "error" for k, _ in issues); n_warn += sum(k == "warn" for k, _ in issues)
 
+    n_agents = 0
+    for plugin in sorted(os.listdir(pdir)):
+        adir = os.path.join(pdir, plugin, "agents")
+        for a in sorted(os.listdir(adir)) if os.path.isdir(adir) else []:
+            if not a.endswith(".md"):
+                continue
+            n_agents += 1
+            issues = lint_agent(plugin, os.path.join(adir, a), personal)
+            print(f"{plugin}/agents/{a} {'' if any(k in ('error', 'warn') for k, _ in issues) else '✓'}")
+            for k, m in issues:
+                print(f"    [{k}] {m}")
+            n_err += sum(k == "error" for k, _ in issues); n_warn += sum(k == "warn" for k, _ in issues)
+
+    print("marketplace:")
+    for k, m in lint_marketplace(args.repo, personal):
+        print(f"    [{k}] {m}")
+        n_err += k == "error"; n_warn += k == "warn"
+
     if args.projects:
         print("projects:")
-        for k, m in lint_projects(args.projects, repo_skills):
+        proj_issues = lint_projects(args.projects, repo_skills)
+        for p in args.projects:
+            proj_issues += lint_project_config(p, args.repo)
+        for k, m in proj_issues:
             print(f"    [{k}] {m}")
             n_err += k == "error"; n_warn += k == "warn"
-    print(f"SUMMARY: {len(repo_skills)} skills, {n_err} error(s), {n_warn} warning(s)")
+    print(f"SUMMARY: {len(repo_skills)} skills, {n_agents} agents, {n_err} error(s), {n_warn} warning(s)")
     sys.exit(1 if n_err else 0)
 
 

@@ -60,8 +60,10 @@ claude plugin validate ~/claude-skills
 ```
 The linter flags: frontmatter rules, missing "when to use", length, missing referenced files,
 nested references, personal facts in shareable plugins, hard-coded model names, old dated
-facts to re-verify, scripts that do not compile, **project copies that should be symlinks**
-(and copies that have drifted).
+facts to re-verify, scripts that do not compile, **`--flags` a skill passes to its own scripts
+that the script does not define**, agents (name, tools, model alias), personal facts in the
+marketplace metadata, **project copies that should be symlinks** (and copies that have drifted),
+template keys a project's `project.yaml` lacks, and `verdict_scripts` missing from the project.
 
 Then read each flagged skill and judge what a linter cannot:
 - Does every instruction still match the code it drives (flags, script names, defaults)?

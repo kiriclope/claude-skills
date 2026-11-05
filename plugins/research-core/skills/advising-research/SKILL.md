@@ -75,7 +75,8 @@ CHECK
 PLAN          QUESTION, CRITERION, FALSIFIER, as approved before the run
 EVIDENCE      run directories, result files, figure paths; the project's scoring and validation
               tools (e.g. validating-networks, the verdict scripts)
-RETURN        per-unit table; verdict vs the CRITERION: confirmed / refuted / inconclusive (why);
+RETURN        per-unit table; verdict vs the CRITERION: supported / not supported / refuted / open
+              (auditing-results words) and why;
               objections ranked, each with the evidence that would settle it
 ```
 

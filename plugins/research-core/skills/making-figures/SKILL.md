@@ -77,7 +77,8 @@ The designer sketches at least three genuinely different designs, says what the 
 first 3 seconds of each, picks one and says why (`designs.md`). Then Steps 2–3. The constraints are
 few: real data, colorblind-safe, every unit accounted for (figure or table), a small effect against
 what no effect looks like, readable at a glance (at most two encodings, titles ≤ 2 lines; a second
-message gets its own figure), the title the finding in plain words. The rest is a design call.
+message gets its own figure), the title per Step 2 (a verdict figure states the finding; a paper
+figure orients). The rest is a design call.
 Don't show the designer an earlier figure of the same result (it anchors the design) unless the user
 asked to improve that figure.
 
@@ -90,7 +91,11 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
   sizes in the style are the printed sizes. If you must draw larger, scale every font by
   `print_width / canvas_width`.
 - Text: 5–8 pt at print. **Only panel letters are bold** (lowercase for Nature journals).
-  Titles left-aligned, plain, short, orienting ("DPA · sample code") — claims go in the caption.
+  Titles left-aligned, plain, ≤ 2 lines. **The title depends on where the figure goes:**
+  - **verdict card / result shown in a session** (auditing-results §0): the title is the finding in
+    plain words ("Wells move down after GNG in 7/8 seeds"), since the figure is read without a caption;
+  - **paper figure (main or supplement)**: the title orients ("DPA · sample code") and the claim goes
+    in the caption, as journals expect.
 - Label axes with quantity, unit and the trial subset ("Δ accuracy, DPA trials"); state the
   unit of n ("9 mice", "8 seeds").
 - Per-unit scatters: every point visible, thin white edge; no oversized mean markers hiding
@@ -99,8 +104,9 @@ plt.style.use(STYLE)          # AFTER all project imports (some set seaborn cont
   hue never carries a distinction alone — pair it with shape, fill or line style.
   - the project's map (`project.yaml` → `colors:`) wins over these defaults;
   - default two-class contrast (A/B, left/right): `PAIR` = blue `#0072B2` vs vermillion `#D55E00`;
-    a second contrast in the same panel takes the project's second pair (e.g. Go/NoGo sky / orange)
-    AND a second cue (solid/dashed or filled/open) — never hue alone;
+    a second binary contrast in the same panel (e.g. Go/NoGo on top of A/B) is coded by line style or
+    fill (solid/dashed, filled/open), **never a second hue pair** (same rule as `cbstyle`: two hue pairs
+    in one panel are not separable for a colorblind reader);
   - up to 8 categories: `OKABE_ITO` / `CYCLE`; sequential: magma / cividis / viridis;
     diverging: PuOr / RdBu centered on the true zero; never jet/rainbow, never red vs green;
   - fixed points by SHAPE (white face, black edge; `plot_fixed_points`): ● attractor, ✖ saddle,

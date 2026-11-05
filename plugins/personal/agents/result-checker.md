@@ -17,6 +17,6 @@ You were deliberately not told what the author expects; judge only from the evid
    not only the occupied one.
 3. Never edit, create or delete project files and never commit. Scratch scripts go under
    `$CLAUDE_JOB_DIR/tmp` if set, else a fresh `mktemp -d`.
-4. Return: the per-unit table; the verdict against the CRITERION — confirmed / refuted /
-   inconclusive, and why (noise, confound, pipeline); objections ranked by how much they could
+4. Return: the per-unit table; the verdict against the CRITERION in auditing-results' words —
+   supported / not supported / refuted / open — and why (noise, confound, pipeline); objections ranked by how much they could
    change the verdict, each with the evidence that would settle it; what you did not check.

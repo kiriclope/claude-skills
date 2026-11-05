@@ -31,9 +31,13 @@ one fact at a time, and verify each hypothesis with a measurement before changin
 1. **Data and targets**: plot one batch — inputs, targets and the loss mask over time for each
    condition. Most "training" bugs are here (shifted windows, wrong sign, mask covering the
    wrong epoch).
-2. **Gradients**: after `backward()`, per-parameter gradient norms:
+2. **Gradients**: after `backward()`, per-parameter gradient norms. In a throwaway debug script or
+   session, import from the skill folder; if the check is to **stay in the project's training code**,
+   copy `scripts/freeze_check.py` into the project first (one file, torch only) — never commit a
+   skill-folder path to project code: plugin paths change with every version (same rule as
+   launching-experiments).
    ```python
-   sys.path.insert(0, "<this skill dir>/scripts")
+   sys.path.insert(0, "<this skill dir>/scripts")      # throwaway use only
    from freeze_check import snapshot, diff_report, grad_norm_table
    grad_norm_table(model)        # None = disconnected, 0 = masked, NON-FINITE = NaN source
    ```
@@ -46,7 +50,7 @@ one fact at a time, and verify each hypothesis with a measurement before changin
    ```
    Zeroing gradients does **not** freeze a parameter under AdamW (decoupled weight decay and
    Adam moments still move it). Restore the frozen values after each step or exclude them
-   from the optimizer. `python scripts/freeze_check.py --demo` shows the failure and the fix.
+   from the optimizer. `python <this skill dir>/scripts/freeze_check.py --demo` shows the failure and the fix.
 5. **Optimizer state**: actual lr per param group at the step (schedulers, warmup), weight
    decay per group, gradient clipping threshold vs typical grad norm, optimizer re-created
    (or not) between stages.

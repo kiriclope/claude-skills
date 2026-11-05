@@ -427,7 +427,7 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 | `decoder_check.py` | validating-decoders | a decoder on shuffled labels, noise, imbalanced noise, nuisance-matched trials, fewer trials, held-out groups |
 | `net_check.py` | validating-networks | trained low-rank RNN runs: learned, hidden damage, reproduction, frozen drift, noise and delay tuning, field vs trials, slow sets (in the project root: it imports the project's model) |
 | `claims_ledger.py` | validating-claims | every claim against its required controls; claim sentences in the draft with no ledger entry |
-| `lint_skills.py` | maintaining-skills | the skills themselves: format, length, personal facts in shared skills, drifted copies |
+| `lint_skills.py` | maintaining-skills | the skills themselves: format, length, personal facts in shared skills, script flags the skill names but the script lacks, agents, marketplace metadata, drifted copies, project config gaps |
 | `guard_bash.py` | (hook) | the enforced rules above |
 | `session_board.py` | (hook) | which sessions are live and which files each changed; `--list`, `--who <file>` |
 

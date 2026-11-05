@@ -1,7 +1,7 @@
 {
   "name": "leon-skills",
   "owner": { "name": "Leon" },
-  "metadata": { "description": "Research skills shared across Leon's projects (rnn, rnn_symmetry, dual, neuron_symmetry)." },
+  "metadata": { "description": "Research skills for Claude Code: a project-agnostic research workflow (research-core) and low-rank RNN κ-plane analysis (lowrank-rnn)." },
   "plugins": [
     {
       "name": "research-core",
@@ -11,7 +11,7 @@
     {
       "name": "lowrank-rnn",
       "source": "./plugins/lowrank-rnn",
-      "description": "Low-rank RNN κ-plane analysis: flow verdict, trajectory verdict, bifurcation probe."
+      "description": "Low-rank RNN κ-plane analysis: flow verdict, trajectory verdict, bifurcation probe, run card, network validation."
     }
   ]
 }
