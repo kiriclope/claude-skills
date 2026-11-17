@@ -37,6 +37,37 @@ paths or machine facts** — read them from `project.yaml` / the profile instead
 5. Bump `version` in that plugin's `.claude-plugin/plugin.json` and add a line to `CHANGELOG.md`.
 6. Lint (below). Then check the projects still using it.
 
+## Writing the text (every skill, the profile, CLAUDE.md)
+
+From Pocock's `writing-for-agents` (2026-11-17); the linter checks the first rule.
+- **The positive target, not the ban.** "Never X" puts X in mind and can read as an invitation;
+  write what to do ("one-line comments"). Keep a prohibition only as a hard guardrail, and pair it
+  with its positive target. `lint_skills.py` reports skills with many negations (info).
+- **Cut no-ops.** A sentence the model would obey anyway costs tokens and changes nothing. The test
+  is behavior with and without it; delete the whole sentence, not words of it.
+- **Sediment.** Rules pile up because adding feels safe and deleting risky. Each update also
+  deletes what the new line makes stale; dated "Why" lines stay only while they still steer.
+- **One source of truth.** A rule lives in one skill; others point to it. A fact the environment
+  holds (a `--help`, a config, the layout) is looked up, not copied.
+- **Leading words.** One well-known word ("tight", "red-capable", "one-way door") anchors more
+  behavior than a sentence that spells it out.
+- **The description is a pointer, loaded every turn** (36 descriptions ≈ 6,000 tokens a turn,
+  2026-11-17): what it is plus one trigger per distinct case, no synonyms. A skill only the user
+  calls by name takes `disable-model-invocation: true` and costs nothing until called.
+
+## Retro on a session (when the user says "retro" or names a session that went wrong)
+
+Read the session's transcript (`~/.claude/projects/<project>/<session>.jsonl`, or the current
+one) and list improvements to the **environment**, not the code, most severe first:
+- **Mechanical mistakes → a check** (a script, a hook, a linter rule), never a new prose rule.
+- **Judgment mistakes → a rule** in the one skill that owns it, with its why.
+- **Slow finding** (many reads to locate a file or fact) → a pointer in the project's CLAUDE.md
+  or doc map.
+- **Expensive calls** (large outputs, repeated reads) → a script or a narrower command.
+- **Missing information** (a log, a result the agent could not see) → make it reachable.
+- **No-ops and stale lines** in the profile, CLAUDE.md or the skills that were loaded → delete.
+Show the list; change nothing until the user picks.
+
 ## Create a new skill
 
 1. **Collect 3 real failure cases first** (memory `feedback_*.md` files, past corrections). These

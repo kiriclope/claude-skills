@@ -66,11 +66,15 @@ def lint_skill(plugin, skill_dir, stale_days, personal):
     d = fm.get("description", "")
     if not d: issues.append(("error", "missing description"))
     elif len(d) > 1024: issues.append(("error", f"description {len(d)} chars > 1024"))
-    elif not re.search(r"\b(Use (when|whenever|for|BEFORE|before)|use when)\b", d):
+    elif str(fm.get("disable-model-invocation", "")).lower() != "true" and \
+            not re.search(r"\b(Use (when|whenever|for|BEFORE|before)|use when)\b", d):   # user-only: human-facing
         issues.append(("warn", "description does not say when to use the skill ('Use when …')"))
 
     n_lines = body.count("\n")
     if n_lines > 500: issues.append(("warn", f"body {n_lines} lines > 500 — move detail to references/"))
+    n_neg = len(re.findall(r"\b(never|do not|don't)\b", body, re.I))
+    if n_neg >= max(6, n_lines * 0.08):          # ~8 per 100 lines: the bans outweigh the targets
+        issues.append(("info", f"{n_neg} negations in {n_lines} lines: state the positive target (maintaining-skills)"))
 
     # links and referenced bundled files
     for ref in set(re.findall(r"\(((?:references|scripts)/[^)\s#]+)\)|`((?:references|scripts)/[^`\s]+)`", body)):
@@ -139,7 +143,7 @@ def _demo():
     import tempfile
     good = "---\nname: good-skill\ndescription: Does X. Use when the user asks for X.\n---\n# Good\n"
     bad = "---\nname: wrong-name\n---\n# Bad\n"
-    leaky = "---\nname: leaky\ndescription: Does Y. Use when Y.\n---\nAsk Alice, see /home/alice.\n"
+    leaky = "---\nname: leaky\ndescription: Does Y. Use when Y.\n---\nAsk Alice, see /home/alice.\n" + "Never do Z.\n" * 6
     with tempfile.TemporaryDirectory() as d:
         for name, text in (("good-skill", good), ("bad", bad), ("leaky", leaky)):
             os.makedirs(os.path.join(d, "plugins", "research-core", "skills", name))
@@ -150,7 +154,9 @@ def _demo():
         res = {n: lint_skill("research-core", os.path.join(sk, n), 90, personal) for n in ("good-skill", "bad", "leaky")}
     checks = [("a valid skill passes", not [k for k, _ in res["good-skill"] if k in ("error", "warn")]),
               ("a name mismatch and missing description are errors", sum(k == "error" for k, _ in res["bad"]) >= 2),
-              ("personal facts in a shared plugin are flagged", any("personal" in m for _, m in res["leaky"]))]
+              ("personal facts in a shared plugin are flagged", any("personal" in m for _, m in res["leaky"])),
+              ("a skill made of bans gets the negation note", any("negations" in m for _, m in res["leaky"])
+               and not any("negations" in m for _, m in res["good-skill"]))]
     for name, ok in checks:
         print(f"  {'✓' if ok else '✗'} {name}")
     ok = all(c for _, c in checks)

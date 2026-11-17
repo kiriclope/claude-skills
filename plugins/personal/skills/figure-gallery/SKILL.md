@@ -15,10 +15,11 @@ once a PNG lands under `~/dual/`, it appears on a browser refresh. **No restart,
 does that cleanly (PDF→PNG conversion, a gitignored staging area, and a server-liveness check) so it
 works identically whether the figures come from `~/rnn`, `~/dual`, or anywhere else.
 
-## Facts (verified 2026-07-20)
+## Facts (verified 2026-11-16)
 
 - Gallery script: `~/dual/serve_figures.py`, default port **8000**, binds `127.0.0.1` only.
-- Runs under the dual env: **`/home/leon/mambaforge/envs/dual/bin/python`**.
+- Standard library only: runs under uv's own Python, **`uv run --no-project --managed-python python`**
+  (`--no-project`: not the env of the folder you are in; `--managed-python`: not mamba's `python3` on the PATH).
 - **PNG only** — SVGs/PDFs are ignored by the gallery. Convert first.
 - `~/dual/.gitignore` ignores `*.pdf *.svg *.pyc *.pkl *.pth` but **NOT `*.png`** → raw PNGs dropped
   into the dual repo would show up in its git status. Stage under a **top-level folder named after the
@@ -47,8 +48,8 @@ mkdir -p ~/dual/<project>
 
 ## Step 2 — convert to PNG + stage
 
-The plot scripts already emit PNGs (plot_sweep.py / rank3_flow.py save PNG+SVG via `save_fig`). Copy the
-tree into per-sweep/per-type subfolders, encoding the seed into the filename:
+The plot scripts already emit PNGs (`~/rnn`: `analysis/*.py` → `results/figures/<sweep>/[<run_id>/]`). Copy the
+tree into per-sweep/per-type subfolders, encoding the seed (the run) into the filename:
 ```bash
 cd <source-root>            # e.g. ~/rnn/results/figures
 classify() { case "$1" in
@@ -60,7 +61,10 @@ classify() { case "$1" in
 for sweep in <sweep-dirs>; do
   find "$sweep" -name '*.png' | while read -r f; do
     rel="${f#$sweep/}"; name=$(basename "$f")
-    [[ "$rel" == individual/* ]] && seed=$(echo "$rel" | cut -d/ -f2) || seed=summary
+    case "$rel" in
+      individual/*) seed=$(echo "$rel" | cut -d/ -f2);;   # old dual layout: individual/<seed>/
+      */*)          seed=${rel%%/*};;                     # ~/rnn: <run_id>/summary_*.png, same names in every run
+      *)            seed=summary;; esac
     dest=~/dual/<project>/$sweep/$(classify "$name"); mkdir -p "$dest"
     cp "$f" "$dest/${seed}_${name}"
   done
@@ -74,8 +78,9 @@ for dense multi-panel), then classify/copy as above.
 ## Step 3 — ensure the gallery is running
 
 ```bash
-pgrep -f serve_figures.py >/dev/null && echo "gallery already up" || \
-  ( nohup /home/leon/mambaforge/envs/dual/bin/python ~/dual/serve_figures.py --port 8000 \
+# probe the port: `pgrep -f serve_figures.py` matches this very command line and always says "up"
+curl -s -o /dev/null --max-time 2 http://127.0.0.1:8000/ && echo "gallery already up" || \
+  ( nohup uv run --no-project --managed-python python ~/dual/serve_figures.py --port 8000 \
         >~/dual/.gallery.log 2>&1 & echo "started gallery on :8000" )
 ```
 If it was already up, do nothing — it re-scans per request, so the new folder is live on refresh.

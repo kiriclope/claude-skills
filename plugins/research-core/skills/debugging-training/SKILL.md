@@ -8,7 +8,12 @@ description: Systematic diagnosis of neural-network training problems — loss n
 Guessing hyperparameters on a broken pipeline wastes days. Reduce the problem to one seed and
 one fact at a time, and verify each hypothesis with a measurement before changing anything.
 
-## Step 1 — reproduce small
+## Step 1 — reproduce small: one command that goes red
+
+**No theory before the loop.** Step 1 is done when one command, already run once, shows *this*
+symptom (the user's, not a nearby one): red now, green once fixed, the same verdict every run,
+seconds to minutes. Reading code to build a theory before that command exists is the failure this
+step prevents (Pocock's `diagnosing-bugs`).
 
 - One seed, the smallest config that shows the problem, fixed data seed, deterministic flags
   if needed. Record the exact command. If it does not reproduce on one seed, the problem is
@@ -26,7 +31,12 @@ one fact at a time, and verify each hypothesis with a measurement before changin
 | good, then later stage forgets | freezing not effective, regularizer missing, lr too high in the later stage |
 | changed after a code edit | regression: diff the configs/defaults, `git bisect` between last good and current |
 
-## Step 3 — measure, don't assume
+## Step 3 — rank hypotheses, then measure
+
+Write **3–5 ranked hypotheses** before testing any, each with its prediction ("if the frozen
+columns drift, `diff_report` shows nonzero change in m[:, 0]"). Show the list to the user: they
+often know which one was ruled out last week. A hypothesis without a prediction is dropped. Tag
+every debug print with one prefix (`[DBG-a4f2]`) so one grep removes them all at the end.
 
 1. **Data and targets**: plot one batch — inputs, targets and the loss mask over time for each
    condition. Most "training" bugs are here (shifted windows, wrong sign, mask covering the

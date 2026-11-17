@@ -1,6 +1,6 @@
 ---
 name: validating-networks
-description: Validate trained low-rank RNNs before their accuracies, flows, wells or trajectories are interpreted — with net_check.py at the project root, per run: did it learn DPA, does dual_dpa hide damage that after_gng/dpa shows, do the logged accuracies reproduce from the checkpoints with the run's own config, did frozen parameters stay frozen, does the net work only at its trained input noise or delay, do the trials end on the wells of the field the verdict scores, and is there a slow or continuous set where isolated-well verdicts fail. Use when a sweep has finished, before flow-verdict, traj-verdict or any figure; before pooling seeds; before any claim about noise, delays, retention or wells; when the user asks "do these nets really work", "is this run trustworthy", "can I compare these arms". Not for scoring the wells against the goal → flow-verdict; for κ(t) behavior → traj-verdict.
+description: Validate trained low-rank RNNs before their performance, flows, wells or trajectories are interpreted — with net_check.py at the project root, per run: do the logged P reproduce from the checkpoints with the run's own config, did frozen parameters stay frozen, did each task get learned and stay learned through the later stages, does the net work only at its trained input noise or delay, do the trials end on the wells of the field the flows draw, and is there a slow or continuous set where isolated-well verdicts fail. Use when a sweep has finished, before any flow, trajectory, well count or figure; before pooling seeds; before any claim about noise, delays, retention or wells; when the user asks "do these nets really work", "is this run trustworthy", "can I compare these arms". Not for the numbers a claim quotes → the project's state table (~/rnn: analysis/state_table.py, docs/claims.md).
 ---
 
 # Validating networks
@@ -12,53 +12,50 @@ trained. Each check below is a past error that reached a figure or a conclusion.
 ## Run it first
 
 ```bash
-$ENV_PREFIX python net_check.py --sweep_dir results/dual/<sweep> [--run_ids …] [--device cuda:0] [--quick]
-$ENV_PREFIX python net_check.py --demo    # self-test: analytic slow sets; MISMATCH, FROZEN DRIFT on a perturbed copy
+$ENV_PREFIX $PYTHON net_check.py --sweep_dir results/runs/<sweep> [--run_ids …] [--device cuda:0] [--quick]
 ```
-`$ENV_PREFIX` = `env_prefix` from `.claude/project.yaml` (an `LD_PRELOAD` libstdc++ shim on some machines;
-empty otherwise).
-About 40 s per run on a free GPU (`--quick` skips the noise ×2, delay and slow-set probes). Ask
-before running it on a whole large sweep while training jobs share the GPUs.
+`$PYTHON`, `$ENV_PREFIX` = `python`, `env_prefix` in `.claude/project.yaml` (`uv run python` in `~/rnn`).
+`--quick` skips the noise, delay and slow-set probes; exit 1 on any FAIL. Each line's exact rule and its
+thresholds (TOL, DROP, FAR, SLOW_DRIFT, …) are in `net_check.py`'s docstring and constants: quote them from
+there. Ask before running it on a whole large sweep while training jobs share the GPUs.
 
 ## What each line means and what to do
 
 | Line | Kind | Past failure | What it changes |
 |---|---|---|---|
-| MISMATCH | FAIL | figures drawn with a 0.5 s cue for a run trained with 1 s; accuracy read at the last step | fix the config or the analysis code until the logged accuracies reproduce; nothing else is read until then |
-| FROZEN DRIFT | FAIL | Dual "inputs frozen" left `wi.bias` training (2026-09-21; every sweep before the `_bfix` reruns) | conclusions about the Dual stage of such runs include the drifting bias; rerun or say so |
-| NOT LEARNED | FLAG | two seeds that never learned DPA, pooled into Fig. 5, made "the trained wells sit at the optimum" | analyze learners only (after-DPA DPA ≥ 0.95); report the others apart, with their count |
-| HIDDEN DAMAGE | FLAG | arms ranked best on dual_dpa ≈ 1 were the worst on after_gng/dpa: Dual retrains rank 0 | lead with after_gng/dpa; dual_dpa never stands alone for retention |
-| NOISE-TUNED | FLAG | nets at ×0 or ×1.5 of the trained noise fail DPA (2026-10-01; untied ring8 nets 2026-10-08) | a claim at another noise level needs nets retrained there; measure geometry at the trained noise |
+| MISMATCH | FAIL | figures drawn with a 0.5 s cue for a run trained with 1 s; accuracy read at the last step | fix the config or the analysis code until the logged P reproduce; nothing else is read until then |
+| FROZEN DRIFT | FAIL | Dual "inputs frozen" left the input bias training (2026-09-21) | conclusions about that stage include the drifting parameter; rerun or say so |
+| NOT LEARNED | FLAG | two seeds that never learned DPA, pooled into Fig. 5, made "the trained wells sit at the optimum" | analyze learners only; report the others apart, with their count. Dual is judged on its lowest part (DPA or go/no-go) |
+| FORGOTTEN | FLAG | Dual's DPA part ≈ 1 hid a DPA the GNG stage had lost (Dual retrained the SAMPLE rank) | name the stage that lost it; a final P never stands alone for retention |
+| NOISE-TUNED | FLAG | nets failed DPA away from their trained noise (2026-10-01; untied ring8 nets 2026-10-08) | a claim at another noise needs nets retrained there; measure geometry at the trained noise |
 | DELAY-TUNED | FLAG | — (generalization claim) | "holds a memory" means at the trained delay only |
-| FIELD≠TRIALS | FLAG | the deterministic and the noise-averaged fields disagree on "all down" (5/8 vs 8/8); wells exist but trials do not sit there | read the wells as the landscape; occupancy comes from trials (traj-verdict) |
-| UNCHECKED | FLAG | — | no logged accuracy in `results.jsonl`: MISMATCH, NOT LEARNED and HIDDEN DAMAGE were not checked; find the run's log line before reading anything else |
-| SLOW SET | FLAG | flow_verdict scored 0/4 on an arm holding \|κ₀\| = 1.05 for 5 s: a continuous attractor has no isolated wells | map the slow set, report τ_slow against the delay; isolated-well verdicts do not apply |
+| FIELD≠TRIALS | FLAG | the deterministic and the noise-averaged fields disagreed on "all down" (5/8 vs 8/8); wells existed but the trials did not sit there | read the wells as the landscape; where the trials sit comes from the trials |
+| SLOW SET | FLAG | an arm holding \|κ₀\| = 1.05 for 5 s scored 0/4 on isolated wells: a continuous attractor has none; after GNG, rank-3 SAMPLE wells survive as saddles that hold the sample for seconds | map the slow set, report τ_slow against the delay; no well ≠ no memory |
+| UNRECORDED | FLAG | — | no ok record in `results.jsonl`: MISMATCH was not checked; find the run's record before reading anything else |
+| UNFINISHED | FLAG | — | a stage has no checkpoint yet: only the stages before it were checked |
 
-A run that loaded `gng_ckpt` without `dpa_ckpt` trained neither DPA nor GNG: its after-DPA accuracy
-(an untrained net) and its GNG freezes are not judged, and whether it learned is read on the source run.
-
-Each `·` line gives the numbers behind the verdicts: accuracy at each noise multiple, the delay
-probe, the distance of each sample class's end-of-delay state to the nearest well (in trial
-s.d.) for the averaged and the deterministic fields, and the length of the slowest region.
+Above its FAIL and FLAG lines each run prints the numbers behind them: P of every task after each
+stage (with the logged value), P at each noise multiple and at the longer delay, each trial class's
+distance to the nearest attractor (in trial s.d.), and the length of the slowest region.
 
 ## Rules
 
-- **net_check before flow-verdict and traj-verdict**: a FAIL makes their output meaningless; a
-  FLAG limits what their output can claim.
-- **Seed by seed.** The SUMMARY gives k/N per verdict; never an arm mean that hides a seed.
+- **net_check before any flow, trajectory, well count or figure**: a FAIL makes them meaningless; a
+  FLAG limits what they can claim.
+- **Seed by seed.** The last line counts the runs with a FAIL; count each FLAG over the runs yourself
+  (k/N); never an arm mean that hides a seed.
 - **Evaluation-time changes are counterfactuals.** Changing the noise, the delay or a
   parameter of a trained net shows how that net breaks, not what training under those
   conditions would give. Say which one a claim is about.
-- **The accuracy calls mirror `sweep.run_single`.** When its `_eval` or `_dual_accuracy` changes,
-  update `net_check.py` with it; MISMATCH on a run that used to pass is the signal. What each stage
-  froze is read from the run's `train.log` (the config only when the log lacks the stage); a
-  `DISAGREE` line means the config rules in `net_check.py` no longer match what training did.
+- **The rescoring is the training's own** (`src.run.score_tasks`, the same trials; each stage's
+  freezing from `config.json`). A MISMATCH on a run that used to pass means the scoring or the task
+  code changed: find that change before reading anything else.
 - Record the verdicts as controls in the claims ledger (validating-claims): NOISE-TUNED and
-  DELAY-TUNED are `held-out` controls; HIDDEN DAMAGE is a `metric` control.
+  DELAY-TUNED are `held-out` controls; FORGOTTEN is a `metric` control.
 
 ## Checklist (in the reply: "✓ checklist" or the items that failed)
 - [ ] net_check run on every run the claim uses; no FAIL
 - [ ] learners only (or the non-learners reported apart)
-- [ ] after_gng/dpa next to every dual_dpa
+- [ ] retention read stage by stage (FORGOTTEN), not from the final P alone
 - [ ] noise and delay claims limited to the trained values, or nets retrained there
 - [ ] wells read as landscape unless the trials sit on them; slow sets checked before any well count

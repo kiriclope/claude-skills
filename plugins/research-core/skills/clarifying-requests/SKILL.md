@@ -26,15 +26,27 @@ One or two sentences: "Here is what I think you are after: … The open point is
 request hides a bigger question, name it: "It sounds like the real question is whether X —
 is that right?". This is the reflection the user asked for; often it resolves half the vagueness.
 
-## Step 2 — ask (at most 4 questions per round)
+## Step 2 — ask, one round at a time
 
-Use the AskUserQuestion tool (it adds an "Other" free-text answer to every question). Each
-question:
-- is **concrete** — "Which figure: 5 (flows) or 6 (depth vs accuracy)?", never "Can you clarify?";
-- offers **2–4 options that span the plausible readings**, the one you would choose first,
-  marked "(Recommended)" when you have a reason; use `preview` to show alternative layouts,
-  plans or code side by side;
-- is **ordered by impact**: the question whose answer changes the most comes first.
+Ask in **rounds**, written in the reply as numbered text the user reads at their own pace:
+
+```
+**Q1 · <decision, a few words>.** <the question with its options, as much context as it needs>
+➡️ Recommended: <your answer, and why in one line>
+```
+
+- Word each question so that **"yes" accepts the recommendation**; the user answers "yes",
+  "yes except Q2: …", or per question.
+- A round holds the **frontier**: every question whose prerequisites are settled. A question that
+  depends on an answer still open waits for the next round.
+- **Facts are your job, decisions the user's.** A question the code, docs or a quick search can
+  answer is not asked: look it up (a subagent for anything long) and ask only the decisions.
+- Each question is **concrete** ("Which figure: 5 (flows) or 6 (depth vs accuracy)?") and the
+  rounds go **by impact**, the question that changes the most first.
+- The AskUserQuestion pop-up only for one or two quick choices, or to compare layouts side by
+  side with `preview`. **Why:** the pop-up covers the text above it; questions in it were hard to
+  follow without their context (2026-11-04), and a numbered round with recommendations is read and
+  answered in one line (Pocock's `grilling`, 2026-11-17).
 
 Pick the questions from the dimensions in `references/question_bank.md` (goal, deliverable,
 scope, success criterion, constraints, audience, prior knowledge, interpretation, trade-off).
@@ -68,6 +80,6 @@ reason the user would agree with.
 
 - Ask what the context answers, or what the user already answered in this session.
 - Ask a question whose answer would not change the work ("which color?" for a throwaway plot).
-- Ask more than four at once, or open-ended "anything else?" questions.
+- Ask open-ended "anything else?" questions, or a question whose answer is a fact you can look up.
 - Interrogate a precise request — this skill is for vague ones.
 - Ask, then ignore the answer: the spec must show where each answer went.

@@ -18,6 +18,8 @@ each condition removes the difference you measure, and pooled trials make every 
 - **Shape the synthetic data like the real data**: the same number of units, trials, sessions and
   time bins; the same noise level and the same nuisance structure (licks, sessions, drift), taken
   from the data. Plant the effect where the hypothesis puts it, and nowhere else.
+- **The planted truth comes from outside the pipeline**: a size you set, never one recomputed the
+  way the pipeline computes it (that check passes by construction; Pocock's `tdd`).
 - **Always include effect 0.** The null run checks the zero (OFFSET) and the false-positive rate.
 - **A FAIL is fixed in the pipeline, or the claim is restricted**: say which. Never tune the
   synthetic data until the pipeline passes.

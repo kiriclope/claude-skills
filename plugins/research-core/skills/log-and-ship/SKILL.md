@@ -26,9 +26,6 @@ It gives `docs_map` (which doc for which work), `memory_dir`, `memory_state_file
 - **Commit trailer = the one in this session's attribution system-reminder.** Never copy a
   trailer from an old commit, a doc, or this skill — model names change and stale trailers
   have shipped before. If no reminder gives one, ask.
-- **Check delegation tools before trusting them.** If `CLAUDE.md` says to route doc writing
-  through an external CLI, run it once; if it fails, write the `.md` yourself and tell the user
-  the instruction is stale.
 - **Verify git state before asserting "everything is committed"** — run `git status`/`git log`.
 - **Don't commit others' in-flight edits blind.** If a file has changes you didn't make, or an
   artifact looks corrupted, flag it and ask before staging. `session_board.py --who <file>` (skills

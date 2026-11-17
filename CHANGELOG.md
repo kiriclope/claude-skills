@@ -1,5 +1,51 @@
 # Changelog
 
+## 2026-11-17 — research-core 0.26.0 (lessons from Matt Pocock's skills)
+All 39 of github.com/mattpocock/skills (5863806) read; what fits a research workflow taken over.
+- **clarifying-requests, running-review-checkpoints**: questions come as numbered text in rounds, each with its
+  recommendation, worded so "yes" accepts it; a round holds every question whose prerequisites are settled; facts are
+  looked up, only decisions asked; the pop-up only for one or two quick choices (it hides the text). Checkpoint
+  decisions say one-way / two-way door. (`grilling`, `pr`)
+- **debugging-training**: no theory before one command that goes red on this symptom; 3–5 ranked hypotheses with
+  predictions, shown to the user before testing; tagged debug prints. (`diagnosing-bugs`)
+- **maintaining-skills**: "Writing the text" (positive targets over bans, no-ops, sediment, one source of truth,
+  leading words, the description as an always-loaded pointer, user-only skills) and "Retro on a session" (mechanical
+  mistakes → checks, judgment → one rule, slow finding → pointers). `lint_skills.py` notes skills with ≥ 8 negations
+  per 100 lines (info; demo extended). (`writing-for-agents`, `retro`)
+- **reviewing-code-readability Step 3**: a second fresh agent checks the diff against the plan (missing, unasked,
+  wrong), reported apart from the bug hunt. (`code-review`)
+- **validating-pipelines**: the planted truth comes from outside the pipeline, never recomputed its way. (`tdd`)
+- **wait-what** (new, user-only, no context cost): re-pitch the last message — where we are, the point in plain words
+  with no codes, the one question. (`wait-what`)
+
+## 2026-11-16 — personal 0.3.1, research-core 0.25.1, lowrank-rnn 0.5.0 (prompt-audit fixes; ~/rnn is the home, uv only)
+- **validating-networks** rewritten for `~/rnn`'s `net_check.py` (Leon: "we are now using ~/rnn and not the
+  ~/rnn_dual part"): its ten lines (FORGOTTEN, UNRECORDED, UNFINISHED replace HIDDEN DAMAGE, UNCHECKED, DISAGREE),
+  no `--demo`, `results/runs`, `$PYTHON` from `project.yaml`; points at the state table, not flow-/traj-verdict.
+  In `~/rnn_dual` it now describes main's checker, not that branch's.
+- **run-card** unlinked from `~/rnn`: its script parses `run_single` / `RunConfig` in `sweep.py` and fails on main
+  ("no RunConfig dataclass in sweep.py", measured); there each run's `config.json` lists its stages.
+- **figure-gallery**: the server runs under uv's Python (`uv run --no-project --managed-python`; HTTP 200 on a test
+  port, measured), not the mamba dual env; the seed rule takes `<run_id>/` (`~/rnn`'s layout), where 16 runs'
+  `summary_gng.png` overwrote each other as one `summary_summary_gng.png`.
+- **launching-experiments**: the per-seed screen runs `<env_prefix> <python>`, the project's `python` key (was a bare
+  `python`, which skipped a `uv run python` setting).
+- **profiles/leon.md**: flow-verdict / traj-verdict / bifurcation-probe marked as the old `~/rnn_dual` tools
+  (Leon: not used in `~/rnn`); run-card's row says it is not in `~/rnn`.
+- **figure-gallery Step 3**: the liveness check probes port 8000 with `curl`. **Why:** `pgrep -f serve_figures.py`
+  matched its own command line (measured), so it always said "gallery already up" and never started the server.
+- **showing-figures**: a session without the `SendUserFile` tool starts at route 2 (`show`).
+- **log-and-ship**: removed "check delegation tools before trusting them" (the doc-writing CLIs it guarded are gone;
+  the profile forbids delegating doc writing to one).
+- **profiles/leon.md**: sweep-runner's revert names the `opus` alias, not `claude-opus-4-8`; the cheap-worker-CLI rule
+  without the removed tools' names.
+
+## 2026-11-10 — personal 0.3.0 (showing-figures)
+- **showing-figures** (new): how a figure reaches the user — SendUserFile by default (any device), `show` for full
+  size on an ssh -X display, the gallery for many. `scripts/show` (was `~/.local/bin/show`, now a link to it) checks the
+  display answers (`xset q`) and exits 1 saying so. **Why:** Read shows the image to Claude only, and a background
+  session kept a dead `DISPLAY`, where the old `show` failed silently.
+
 ## 2026-11-04 — research-core 0.25.0 (shorter cards, conclusions kept current)
 - **auditing-results §0**: a verdict card ≤ 40 lines with its pre-run card, detail in the linked table file; a
   correction is a new card, the old one gets one "Superseded … by …" line; after each verdict, count the question's

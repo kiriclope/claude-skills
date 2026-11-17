@@ -45,7 +45,7 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 |---|---|---|
 | plan | `research-planner` | Fable (alias `fable`) |
 | code | main session | Opus 5.5 (the session model) |
-| sweep launch / check-on / finish | `sweep-runner` | Sonnet (alias `sonnet`): matched Opus 4.8 on a dry test, 2026-10-14 (`~/tmp/sweeprunner_trial/REPORT.md`); revert with `model: claude-opus-4-8` in the agent |
+| sweep launch / check-on / finish | `sweep-runner` | Sonnet (alias `sonnet`): matched Opus on a dry test, 2026-10-14 (`~/tmp/sweeprunner_trial/REPORT.md`); to move it back, set `model: opus` in the agent |
 | check results; `auditing-results` | `result-checker` (fresh context) | Opus 5.5 (alias `opus`) |
 | fresh review of `thinking-critically` | `critical-reviewer` | Fable (alias `fable`) |
 
@@ -57,7 +57,7 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | starting a session, "where were we" | `resuming-work` |
 | planning an experiment, "what next" | `planning-research` |
 | a phase boundary: a plan is needed, a sweep launches or finishes, results come in | `advising-research` (routes it) |
-| launching or monitoring a sweep / long job; "what did we train" | `launching-experiments`; `run-card` |
+| launching or monitoring a sweep / long job; "what did we train" | `launching-experiments`; `run-card` (not in `~/rnn`: there the run's `config.json` lists its stages) |
 | training misbehaves | `debugging-training` |
 | numbers just came out, before any conclusion | `auditing-results` |
 | several verdicts on one question; "what do we know about X", "conclude" | `concluding-research` |
@@ -68,8 +68,9 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | a result becomes a claim in a draft; "what would falsify this" | `validating-claims` |
 | a conclusion that matters, "think critically" | `thinking-critically` |
 | deriving or checking math | `checking-derivations` |
-| low-rank RNN flows, trajectories, g·λ | `flow-verdict`, `traj-verdict`, `bifurcation-probe` |
+| low-rank RNN flows, wells, trajectories | `validating-networks`, then the project's state table (`~/rnn`: `analysis/state_table.py`); `flow-verdict`, `traj-verdict`, `bifurcation-probe` are the old `~/rnn_dual` tools, not used in `~/rnn` |
 | **any** figure or plotting code (never `dataviz`) | `making-figures` |
+| showing a figure to me ("show me", a verdict's figure) | `showing-figures` |
 | writing code; before committing it | `writing-research-code`; `reviewing-code-readability` |
 | paper text; its numbers; its references | `writing-paper`; `auditing-paper-numbers`; `verifying-citations` |
 | related work, novelty | `reviewing-literature` |
@@ -81,6 +82,8 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | "log", "commit" | `log-and-ship` |
 | memory too long or contradicting the docs; "trim / archive the memory" | `maintaining-memory` |
 | changing the skills themselves | `maintaining-skills` |
+| your last message did not land (I type `/wait-what`) | `wait-what` (user-only) |
+| a session went wrong, "retro" | `maintaining-skills` → Retro |
 
 ## Compact instructions
 Long sessions compact, often several times, so the summary must carry what a fresh reader needs.
@@ -96,6 +99,5 @@ Drop: tool outputs and file contents that can be re-read, images, superseded att
 ## Machine facts
 - **Pages archive:** `~/claude-artefacts` (private git, laid out like claude-memory): `publishing-drafts`
   copies every published page there and commits.
-- `ask-kimi` / `extract-chat` / `kimi-write` were removed (2026-10-02; they never worked):
-  do not delegate doc writing or reading to a cheap-worker CLI.
+- Do not delegate doc writing or reading to a cheap-worker CLI: the ones tried did not work.
 - Figures are viewed through the gallery at localhost:8000 (`figure-gallery` skill).

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Usage: show <image|pdf> [more...]
+# Opens each file full size in an X window on the forwarded display (needs ssh -X; closes with q).
+# Exits 1, saying why, when no display answers — a background session often keeps a dead DISPLAY.
+
+if [ $# -eq 0 ]; then
+  echo "Usage: show <image|pdf> [more...]" >&2
+  exit 1
+fi
+if [ -z "$DISPLAY" ] || ! timeout 3 xset q >/dev/null 2>&1; then
+  echo "show: no X display answers (DISPLAY=${DISPLAY:-unset}); reconnect with ssh -X, or send the file instead" >&2
+  exit 1
+fi
+for f in "$@"; do
+  [ -f "$f" ] || { echo "show: no such file: $f" >&2; exit 1; }
+done
+for f in "$@"; do
+  nohup display -resize '90%x90%>' "$f" >/dev/null 2>&1 &
+done
+echo "show: opened $# window(s) on $DISPLAY"

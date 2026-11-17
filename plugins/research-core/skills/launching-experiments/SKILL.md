@@ -49,7 +49,7 @@ Check: loss decreases, checkpoint written, provenance written, analysis script r
 - **One screen per seed/run**, named `<prefix>_<run_id>`, round-robin over GPUs; each tees to its
   **own** `<run_dir>/train.log` with an **absolute** path (inner commands may `cd`):
   ```bash
-  screen -dmS sweep_<run_id> bash -c "cd <repo> && <env_prefix> python <entry> <args> \
+  screen -dmS sweep_<run_id> bash -c "cd <repo> && <env_prefix> <python> <entry> <args> \
       2>&1 | tee /abs/path/<run_dir>/train.log"
   ```
 - **Cap concurrency** (`launch.max_concurrent`; small models are often launch-bound and gain

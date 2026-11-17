@@ -74,10 +74,13 @@ Docs / memory in sync: <yes, or which doc is now stale>
 - Choose the hunks after reading the diff: the ones that change a number, a criterion, a default
   or an interface, and the ones whose effect is least obvious.
 
-## Step 3 — the user decides (AskUserQuestion)
+## Step 3 — the user decides
 
-The pop-up hides the digest, so each question must be understood alone, by a reader who sees only
-it. **Why:** questions like "The models.py speedup (last-digit changes in wi's gradient)?" and options
+Ask the decisions as **numbered text under the digest** (clarifying-requests Step 2): each
+question with its recommendation, worded so that "yes" accepts it, so the user reads the digest and
+answers "yes", "yes except Q2: …" at their own pace. Use the AskUserQuestion pop-up only for a
+checkpoint of one or two quick decisions; it hides the digest. Either way each question must be
+understood alone, by a reader who sees only it. **Why:** questions like "The models.py speedup (last-digit changes in wi's gradient)?" and options
 like "My config choices" could not be answered without asking back (2026-11-04).
 
 - One question per consequential decision, at most four per round (a second round if more). The
@@ -88,7 +91,9 @@ like "My config choices" could not be answered without asking back (2026-11-04).
 - The options are the concrete choices, each description saying what happens next: **Approve**
   (what stays), the alternative by name ("Use 0.05 instead: config.py:41 changes, 3 figures
   rebuild"), **Explain first** (you walk the user through it before they decide).
-- The hunk (≤ 25 lines) goes in the Approve option's `preview`, so the code sits beside the question.
+- The hunk (≤ 25 lines) sits right under its question (in a pop-up, in the Approve option's `preview`).
+- Say whether the decision is a **one-way door** (hard to undo: data deleted, runs relaunched, a
+  pushed commit) or a two-way door (an edit to revert); one-way doors first.
 - Minor decisions may share one multiSelect question. Each option there still says what it is and
   what approving it means: no catch-all options ("my config choices").
 - Ask "Still the right direction?" only when the Drift list is not empty, naming the drift. At a plan
