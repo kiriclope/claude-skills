@@ -53,5 +53,5 @@ A `spec:<name>` label is created when its spec is published (`docs/agents/resear
 
 ## 7. Report
 
-The tracker chosen and why, the files written (paths), what was left as it was, and the next step: `/to-spec` at the
-end of a planning conversation.
+The tracker chosen and why, the files written (paths), what was left as it was, and the next step: `/grill-research`
+on a destination, then `/to-spec` and `/to-tickets` in the same session.

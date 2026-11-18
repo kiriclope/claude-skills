@@ -84,14 +84,14 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Forty-five skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+Fifty skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds maintainer-only skills. As in
 [Matt Pocock's skills](https://github.com/mattpocock/skills), they come in two kinds: **user-invoked**
 commands you type, which run a flow, and **model-invoked** skills Claude loads when the moment matches.
 
 ### User-invoked (you type them)
 
-The spec → tickets flow is Pocock's (`to-spec` and `to-tickets` copied unchanged, MIT); the others are research
+The grill → spec → tickets flow is Pocock's (`grilling`, `grill-me`, `grill-with-docs`, `domain-modeling`, `to-spec` and `to-tickets` copied unchanged, MIT); the others are research
 versions of his skills. Each has a page in [docs/commands/](docs/commands/). Per project, run
 `/setup-research-skills` once: it writes `docs/agents/` (tracker, labels, what his terms mean in research) and a
 `GLOSSARY.md`.
@@ -99,6 +99,8 @@ versions of his skills. Each has a page in [docs/commands/](docs/commands/). Per
 | Command | What it does |
 |---|---|
 | [/ask](plugins/research-core/skills/ask/SKILL.md) | Routes you to the flow that fits (from Pocock's `ask-matt`). |
+| [/grill-research](plugins/research-core/skills/grill-research/SKILL.md) | Pocock's grilling and domain-modeling with the research rules: conclusions cited with their strength, every recommendation with its evidence, falsifier, rivals, reviewer objection and imposed-or-found as branches of every claim, plain standalone questions, and a closing list of what is assumed rather than found. Comes before `/to-spec`. |
+| [/grill-with-docs](plugins/research-core/skills/grill-with-docs/SKILL.md) · [/grill-me](plugins/research-core/skills/grill-me/SKILL.md) | Pocock's: a relentless interview on a plan, round by round, each question with its recommended answer, until no decision is left assumed; `grill-with-docs` also updates `GLOSSARY.md` (and an ADR when a decision is hard to undo) through `domain-modeling`. For plans that are not research. |
 | [/to-spec](plugins/research-core/skills/to-spec/SKILL.md) | Pocock's: the planning conversation becomes a spec (problem, destination, reader stories, decisions, the measures that decide, out of scope), posted as the parent issue. |
 | [/to-tickets](plugins/research-core/skills/to-tickets/SKILL.md) | Pocock's: the spec becomes tracer-bullet tickets with blocking edges; you approve the breakdown before anything is posted. |
 | [/run-ticket](plugins/research-core/skills/run-ticket/SKILL.md) | One ticket end to end in one session: claim, pre-run card, your OK, run, audit, verdict card, close with the card (refuted too). From `implement`. |
@@ -208,7 +210,7 @@ flowchart LR
     A[vague request] --> B[clarifying-requests]
     B --> C[planning-research]
     C --> D[launching-experiments]
-    C -. spans sessions .-> P["/to-spec → /to-tickets<br/>→ /run-ticket per ticket"]
+    C -. spans sessions .-> P["/grill-research → /to-spec → /to-tickets<br/>→ /run-ticket per ticket"]
     P --> D
     D --> V[validating-networks<br/>-pipelines, -decoders]
     V --> E[auditing-results]

@@ -138,7 +138,7 @@ Rules:
 One experiment gets the card or the plan above. An effort that needs several experiments over several sessions gets a
 **spec** (`/to-spec`), then **tickets** (`/to-tickets`), worked one per session with `/run-ticket`. The project's
 `docs/agents/research.md` says what their terms mean here (reader stories, the measures that decide, a ticket that
-closes with its verdict). Suggest `/to-spec` when a planning conversation has settled a destination; the user types it.
+closes with its verdict). When a destination emerges, suggest `/grill-research` then `/to-spec`; the user types them.
 
 **Why:** the goal drifted across sessions (levers that named no panel, discarded levers proposed again), and the one
 paper plan written by hand (2026-11-09) held what a spec holds. Pocock's flow (2026-11-18) adds the tickets, their

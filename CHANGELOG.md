@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-11-18 — research-core 0.29.0 (grilling before the spec)
+- **grilling, grill-me, grill-with-docs, domain-modeling** (new): Pocock's, copied unchanged (5863806, MIT, LICENSE +
+  SOURCE.md). His flow grills before `/to-spec` ("no interview, just synthesis" because the grilling already happened);
+  0.28.0 had skipped that step, so a spec would have written down decisions the user never confirmed.
+- **ask**, README, profile, planning-research, setup-research-skills: the flow is grill → spec → tickets, in one
+  session; for a project underway, read its state first. `templates/agents/research.md`: what the design tree holds in
+  research, facts looked up, ADRs only for hard-to-undo conventions (never a result). `docs/commands/grill-with-docs.md`.
+- **grill-research** (new, ours): calls his grilling and domain-modeling, reads research.md, the glossary and the
+  conclusions first, and adds five rules — a card's conclusion cited with its strength (weak ones asked, not used);
+  every recommendation with its evidence; falsifier, rivals, reviewer objection and imposed-or-found as branches of
+  every claim; standalone plain questions, at most four a round; one-way doors first. Ends with decided / assumed, not
+  found / out of scope. The flow is now grill-research → to-spec → to-tickets; his grill-with-docs and grill-me stay
+  for plans that are not research.
+- clarifying-requests stays for vague requests (one or two rounds, then act).
+
 ## 2026-11-18 — research-core 0.28.0 (Pocock's spec → tickets flow, carried into research)
 Spec: `.scratch/pocock-flow/spec.md` (local, not in git). Replaces 0.27.0's own spec template, never committed.
 - **Two kinds of skills, as Pocock's**: user-invoked commands (`disable-model-invocation`, no context cost) run a flow;

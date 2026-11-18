@@ -3,6 +3,15 @@
 `/to-spec` and `/to-tickets` are Matt Pocock's, unchanged, written for software. In this research project their terms
 mean the following. Where this file and the skill disagree, this file wins.
 
+## The grilling (`/grill-research`)
+
+- The **design tree** is the destination's decisions: the claim and its wording, which result carries it, the
+  measures that decide, the figures, what is out of scope. Facts (what a card measured, what a run used) are looked
+  up in the verdict log, the conclusions doc and the code, never asked.
+- Run it before `/to-spec`, in the same context window; for a project already underway, after reading its state.
+- **ADRs** (`docs/adr/`) only for a decision that is hard to undo, surprising without context and a real trade-off
+  (a scoring rule, an optimizer, a convention every run depends on); a result is never an ADR, it is a verdict card.
+
 ## The spec (`/to-spec`)
 
 - **Problem Statement**: the research question, and why it matters now.
