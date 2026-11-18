@@ -79,8 +79,8 @@ skip it for small edits to reviewed code.
   file:line · the input or situation · the wrong result it gives · the smallest fix.
   No finding without a concrete failing case; no style comments.
   ```
-- **A second axis, separately: does the code do what was asked?** When a plan, pre-run card or
-  request exists, a second fresh agent gets the diff and that text only and reports what is
+- **A second axis, separately: does the code do what was asked?** When a spec, plan, pre-run card
+  or request exists, a second fresh agent gets the diff and that text only and reports what is
   missing, what was added unasked, and what looks implemented but wrong, each quoting the plan
   line. Report the two axes apart: code can be clean and do the wrong thing (Pocock's two-axis
   `code-review`).

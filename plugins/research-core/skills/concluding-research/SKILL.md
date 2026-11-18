@@ -83,6 +83,9 @@ choosing-statistics skill: `choosing-statistics/scripts/stats_floor.py --counts 
 - **Discarded, and how decisively**: every lever dropped, with the card, the reason and whether the
   test could have shown the opposite. **Why:** a wrong discard is invisible unless it is listed; the
   delay pin was first logged as refuted on a 4/6 vs 5/6 count that no outcome could have reversed.
+- **Against the spec** (`/to-spec`; the parent issue, or `.scratch/<spec>/spec.md`), when the question has one: each
+  user story answered / open / failed, with its card; the Solution's destination met or not; the open stories become
+  the next tickets (`/to-tickets`), proposed, not posted.
 - **Contradictions**: two cards that disagree are both shown, with which one is right and why, or
   the question is left open — never averaged.
 - **Corrections found**: card statements the evidence does not support (cards and memory notes).

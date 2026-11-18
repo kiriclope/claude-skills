@@ -18,6 +18,11 @@ section in the conclusions doc (`project.yaml` → `conclusions_doc`), read that
 the cards after its "as of" date (`concluding-research/scripts/collect_cards.py --since <date>`), not
 the whole verdict log.
 
+If the project has a tracker (`docs/agents/issue-tracker.md`), read the frontier of the spec in force first: its open
+tickets with no open blocker, no assignee and no `paused` label. Start from one of them, claim it (assign it) before
+any write, and name it in the pre-run card; a new idea that fits no ticket is said as such (drift, or a new ticket
+for the user to approve).
+
 ## Step 1 — the pre-run card (every arm, even a quick "try X")
 
 Most arms start from a one-line request mid-session, and the full plan below never gets written: none
@@ -127,6 +132,17 @@ Rules:
    the question has several verdict cards, conclude it first (concluding-research): its ranked
    next steps are draft cards for this step.
 6. Log it (log-and-ship): plan, result, verdict, next step, with dates.
+
+## A spec for an effort that spans sessions (a paper result, a figure to replace)
+
+One experiment gets the card or the plan above. An effort that needs several experiments over several sessions gets a
+**spec** (`/to-spec`), then **tickets** (`/to-tickets`), worked one per session with `/run-ticket`. The project's
+`docs/agents/research.md` says what their terms mean here (reader stories, the measures that decide, a ticket that
+closes with its verdict). Suggest `/to-spec` when a planning conversation has settled a destination; the user types it.
+
+**Why:** the goal drifted across sessions (levers that named no panel, discarded levers proposed again), and the one
+paper plan written by hand (2026-11-09) held what a spec holds. Pocock's flow (2026-11-18) adds the tickets, their
+blocking edges and the frontier, so the next step is read, not re-derived.
 
 ## Planning a paper or figure set
 

@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-11-18 — research-core 0.28.0 (Pocock's spec → tickets flow, carried into research)
+Spec: `.scratch/pocock-flow/spec.md` (local, not in git). Replaces 0.27.0's own spec template, never committed.
+- **Two kinds of skills, as Pocock's**: user-invoked commands (`disable-model-invocation`, no context cost) run a flow;
+  model-invoked skills keep their gerund names. README grouped so; a four-section page per command in `docs/commands/`.
+- **to-spec, to-tickets** (new): Pocock's, copied unchanged from mattpocock/skills at 5863806 with his MIT LICENSE and
+  a SOURCE.md. Their research meanings live in each project's `docs/agents/research.md`, never in his files.
+- **templates/agents/** (new): issue-tracker (GitHub via `gh` ≥ 2.94: `--parent`, `--blocked-by`, claim by assignment;
+  or local `.scratch/`), triage-labels (his + `spec:<name>`, `paused`), research.md (reader stories, the measures that
+  decide, a ticket closes with its verdict refuted or not, a failed ticket pauses its dependents, no ready-for-agent on
+  the spec), domain.md and GLOSSARY-FORMAT.md (his), the CLAUDE.md "Agent skills" block.
+- **setup-research-skills** (new, from `setup-matt-pocock-skills`): tracker, docs/agents, a GLOSSARY.md drafted from the
+  project's vocabulary rules, CLAUDE.md block, project.yaml, links, labels (asked first).
+- **run-ticket** (new, from `implement`): one ticket per session — claim, pre-run card, the user's OK, run with the
+  skills of its kind, audit, verdict card, close with the card; a long sweep resumes at the audit.
+- **toy-model** (new, from `prototype`): a throwaway minimal simulation before any sweep; a short `toy` card.
+- **conclude, retro** (new entries) to concluding-research and maintaining-skills → Retro; **ask** (new, from
+  `ask-matt`): a router over the flows.
+- **planning-research**: Step 0 reads the spec's frontier and claims a ticket; the spec section points to /to-spec;
+  `references/research_spec.md` removed. **auditing-results**: the verdict closes its ticket, dependents whose premise
+  changed are paused. **concluding-research**: user stories read from the spec issue; open ones proposed as tickets.
+  **reviewing-code-readability**: the plan axis also reads a spec or ticket.
+- Not ported yet: `implement-spec` (as /run-spec, after /run-ticket has run once), wayfinder, triage, to-questionnaire,
+  handoff, improve-codebase-architecture. `.scratch/` is gitignored here (public repo).
+
 ## 2026-11-17 — research-core 0.26.0 (lessons from Matt Pocock's skills)
 All 39 of github.com/mattpocock/skills (5863806) read; what fits a research workflow taken over.
 - **clarifying-requests, running-review-checkpoints**: questions come as numbered text in rounds, each with its

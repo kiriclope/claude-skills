@@ -150,6 +150,10 @@ by content, not arm codes> · **Plan:** <the pre-run card above this entry, or a
   when it has no section: `collect_cards.py --log <log> --match "<question regex>" --since <as-of>`.
   At 5 or more, run concluding-research on that question next, and say so with the verdict.
   **Why:** rnn had one conclusions section for 76 cards, so every session rebuilt the state from the log.
+- **When the card answers a ticket** (its pre-run card names one; `docs/agents/issue-tracker.md`): close the ticket
+  with a comment linking the card, refuted or not; a refuted ticket is a result, never reopened. If the result changes
+  the premise of a ticket that waits on it, label that ticket `paused`, comment which premise changed, and bring it to
+  the user. The ticket holds where the work stands; the card holds what was found.
 - If no figure can show the effect (a crash, a missing file), say so in the figure slot and give the
   log line instead. Never leave the slot out.
 

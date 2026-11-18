@@ -55,12 +55,15 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 |---|---|
 | my request is vague | `clarifying-requests` |
 | starting a session, "where were we" | `resuming-work` |
-| planning an experiment, "what next" | `planning-research` |
+| planning an experiment, "what next" | `planning-research` (with a spec: its frontier first) |
+| an effort over several sessions (a paper, a figure to replace) | I type `/to-spec`, then `/to-tickets`; each session `/run-ticket` |
+| "does this mechanism work at all" | `/toy-model` (I type it; suggest it) |
+| I don't know which skill fits | `/ask` |
 | a phase boundary: a plan is needed, a sweep launches or finishes, results come in | `advising-research` (routes it) |
 | launching or monitoring a sweep / long job; "what did we train" | `launching-experiments`; `run-card` (not in `~/rnn`: there the run's `config.json` lists its stages) |
 | training misbehaves | `debugging-training` |
 | numbers just came out, before any conclusion | `auditing-results` |
-| several verdicts on one question; "what do we know about X", "conclude" | `concluding-research` |
+| several verdicts on one question; "what do we know about X", "conclude" | `concluding-research` (`/conclude`) |
 | choosing a test, a p-value, a star | `choosing-statistics` |
 | a new measure or pipeline, its first result; "did the numbers change" | `validating-pipelines` |
 | a decoder / CCGP / axis result; "is it above chance", "is it just licks" | `validating-decoders` |
@@ -83,7 +86,7 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | memory too long or contradicting the docs; "trim / archive the memory" | `maintaining-memory` |
 | changing the skills themselves | `maintaining-skills` |
 | your last message did not land (I type `/wait-what`) | `wait-what` (user-only) |
-| a session went wrong, "retro" | `maintaining-skills` → Retro |
+| a session went wrong, "retro" | `/retro` (maintaining-skills → Retro) |
 
 ## Compact instructions
 Long sessions compact, often several times, so the summary must carry what a fresh reader needs.

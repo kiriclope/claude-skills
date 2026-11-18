@@ -84,8 +84,31 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Thirty-four skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
-is specific to the low-rank RNN code base; `personal` holds one maintainer-only skill.
+Forty-five skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+is specific to the low-rank RNN code base; `personal` holds maintainer-only skills. As in
+[Matt Pocock's skills](https://github.com/mattpocock/skills), they come in two kinds: **user-invoked**
+commands you type, which run a flow, and **model-invoked** skills Claude loads when the moment matches.
+
+### User-invoked (you type them)
+
+The spec → tickets flow is Pocock's (`to-spec` and `to-tickets` copied unchanged, MIT); the others are research
+versions of his skills. Each has a page in [docs/commands/](docs/commands/). Per project, run
+`/setup-research-skills` once: it writes `docs/agents/` (tracker, labels, what his terms mean in research) and a
+`GLOSSARY.md`.
+
+| Command | What it does |
+|---|---|
+| [/ask](plugins/research-core/skills/ask/SKILL.md) | Routes you to the flow that fits (from Pocock's `ask-matt`). |
+| [/to-spec](plugins/research-core/skills/to-spec/SKILL.md) | Pocock's: the planning conversation becomes a spec (problem, destination, reader stories, decisions, the measures that decide, out of scope), posted as the parent issue. |
+| [/to-tickets](plugins/research-core/skills/to-tickets/SKILL.md) | Pocock's: the spec becomes tracer-bullet tickets with blocking edges; you approve the breakdown before anything is posted. |
+| [/run-ticket](plugins/research-core/skills/run-ticket/SKILL.md) | One ticket end to end in one session: claim, pre-run card, your OK, run, audit, verdict card, close with the card (refuted too). From `implement`. |
+| [/toy-model](plugins/research-core/skills/toy-model/SKILL.md) | A throwaway minimal simulation: does the mechanism work at all, before any sweep. From `prototype`. |
+| [/conclude](plugins/research-core/skills/conclude/SKILL.md) | concluding-research on one question, with the spec's stories answered or open. |
+| [/retro](plugins/research-core/skills/retro/SKILL.md) | A look back over a session; changes to the skills and hooks, not the code. |
+| [/setup-research-skills](plugins/research-core/skills/setup-research-skills/SKILL.md) | Configures a project once for the flow (from `setup-matt-pocock-skills`). |
+| [/wait-what](plugins/research-core/skills/wait-what/SKILL.md) | Re-pitches the last message that did not land. |
+
+The model-invoked skills follow, by phase.
 
 ### Think and plan
 
@@ -185,6 +208,8 @@ flowchart LR
     A[vague request] --> B[clarifying-requests]
     B --> C[planning-research]
     C --> D[launching-experiments]
+    C -. spans sessions .-> P["/to-spec → /to-tickets<br/>→ /run-ticket per ticket"]
+    P --> D
     D --> V[validating-networks<br/>-pipelines, -decoders]
     V --> E[auditing-results]
     E --> T[choosing-statistics]
