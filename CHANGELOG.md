@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-18 — research-core 0.30.0 (/run-spec: agents work the board)
+- **run-spec** (new, from Pocock's `implement-spec`): the orchestrator reads the ticket graph, gets every experiment's
+  parameters approved once (recorded on the ticket), works the frontier with one fresh background agent per ticket
+  (following run-ticket; experiments via the profile's sweep-runner and a fresh checker; at most 2 experiments, 4
+  agents), merges each onto `spec/<spec>` with the tests green, pauses dependents of a failed or refuted ticket and
+  notifies the user, sends an interpretation that changes the next ticket to a fresh critical-reviewer, and ends with
+  a code review and a **QA plan** (closed tickets by consequence: verdict, figure, the one check, door; paused ones;
+  sections for reviewing-manuscript; the merge left to the user). Never launches unapproved, merges into the project
+  branch, pushes or closes the spec. `/ask`, README, profile, `docs/commands/run-spec.md`. Not yet run live.
+
 ## 2026-11-18 — research-core 0.29.0 (grilling before the spec)
 - **grilling, grill-me, grill-with-docs, domain-modeling** (new): Pocock's, copied unchanged (5863806, MIT, LICENSE +
   SOURCE.md). His flow grills before `/to-spec` ("no interview, just synthesis" because the grilling already happened);

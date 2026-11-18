@@ -56,7 +56,7 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | my request is vague | `clarifying-requests` |
 | starting a session, "where were we" | `resuming-work` |
 | planning an experiment, "what next" | `planning-research` (with a spec: its frontier first) |
-| an effort over several sessions (a paper, a figure to replace) | I type `/grill-research`, `/to-spec`, then `/to-tickets` (one session); then `/run-ticket` per session |
+| an effort over several sessions (a paper, a figure to replace) | I type `/grill-research`, `/to-spec`, then `/to-tickets` (one session); then `/run-spec` (agents work the board; I approve the experiments once and check the QA plan), or `/run-ticket` per session |
 | "does this mechanism work at all" | `/toy-model` (I type it; suggest it) |
 | I don't know which skill fits | `/ask` |
 | a phase boundary: a plan is needed, a sweep launches or finishes, results come in | `advising-research` (routes it) |

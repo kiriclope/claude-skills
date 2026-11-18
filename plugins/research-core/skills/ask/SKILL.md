@@ -19,8 +19,8 @@ situation is ambiguous.
    - **No** (a paper, a figure to replace, a mechanism question over weeks) → **`/grill-research`** on the
      destination (Pocock's relentless interview with the research rules: conclusions cited with their strength,
      falsifiers, rivals and reviewer objections; `GLOSSARY.md` updated as terms settle), then **`/to-spec`** (synthesis, no new interview), then **`/to-tickets`** (the breakdown is
-     approved before anything is posted), then one **`/run-ticket`** per session from the frontier; **`/run-spec`**
-     runs the frontier in parallel once built. For a project already underway, read its state first (conclusions doc,
+     approved before anything is posted), then **`/run-spec`**: agents work the whole board (one approval of the experiments up front, a stop at every
+     failed ticket, a QA plan for you at the end); or one **`/run-ticket`** per session to drive it by hand. For a project already underway, read its state first (conclusions doc,
      plans, latest verdict cards), then grill.
    - **Not sure the mechanism works at all** → **`/toy-model`** first; its answer decides whether to plan.
 3. **After several verdicts on one question** → **`/conclude`** (status per hypothesis, the spec's stories answered or

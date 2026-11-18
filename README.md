@@ -84,7 +84,7 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Fifty skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+Fifty-one skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds maintainer-only skills. As in
 [Matt Pocock's skills](https://github.com/mattpocock/skills), they come in two kinds: **user-invoked**
 commands you type, which run a flow, and **model-invoked** skills Claude loads when the moment matches.
@@ -104,6 +104,7 @@ versions of his skills. Each has a page in [docs/commands/](docs/commands/). Per
 | [/to-spec](plugins/research-core/skills/to-spec/SKILL.md) | Pocock's: the planning conversation becomes a spec (problem, destination, reader stories, decisions, the measures that decide, out of scope), posted as the parent issue. |
 | [/to-tickets](plugins/research-core/skills/to-tickets/SKILL.md) | Pocock's: the spec becomes tracer-bullet tickets with blocking edges; you approve the breakdown before anything is posted. |
 | [/run-ticket](plugins/research-core/skills/run-ticket/SKILL.md) | One ticket end to end in one session: claim, pre-run card, your OK, run, audit, verdict card, close with the card (refuted too). From `implement`. |
+| [/run-spec](plugins/research-core/skills/run-spec/SKILL.md) | Agents work the spec's board in a loop: every unblocked ticket in a fresh agent, experiments launched only as approved, merged onto one integration branch, a stop at every failed or refuted ticket, and a QA plan for you at the end. From `implement-spec`. |
 | [/toy-model](plugins/research-core/skills/toy-model/SKILL.md) | A throwaway minimal simulation: does the mechanism work at all, before any sweep. From `prototype`. |
 | [/conclude](plugins/research-core/skills/conclude/SKILL.md) | concluding-research on one question, with the spec's stories answered or open. |
 | [/retro](plugins/research-core/skills/retro/SKILL.md) | A look back over a session; changes to the skills and hooks, not the code. |
@@ -210,7 +211,7 @@ flowchart LR
     A[vague request] --> B[clarifying-requests]
     B --> C[planning-research]
     C --> D[launching-experiments]
-    C -. spans sessions .-> P["/grill-research → /to-spec → /to-tickets<br/>→ /run-ticket per ticket"]
+    C -. spans sessions .-> P["/grill-research → /to-spec → /to-tickets<br/>→ /run-spec (or /run-ticket)"]
     P --> D
     D --> V[validating-networks<br/>-pipelines, -decoders]
     V --> E[auditing-results]
