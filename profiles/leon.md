@@ -77,7 +77,7 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | writing code; before committing it | `writing-research-code`; `reviewing-code-readability` |
 | paper text; its numbers; its references | `writing-paper`; `auditing-paper-numbers`; `verifying-citations` |
 | related work, novelty | `reviewing-literature` |
-| "act as a reviewer", before submitting | `reviewing-manuscript` |
+| "act as a reviewer", before submitting | `reviewing-manuscript`: `/review-internal` → `/review-editor` → `/review-referee` |
 | referee reports arrived | `responding-to-reviewers` |
 | publishing a page, artifact comments | `publishing-drafts` |
 | tidying the repo, lost or duplicated files | `organizing-projects` |

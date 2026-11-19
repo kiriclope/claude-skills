@@ -1,9 +1,9 @@
 ---
 name: reviewing-manuscript
-description: Run a mock referee review of a manuscript, a section or a figure set before it is shared or submitted — one fresh independent agent per lens (claims vs evidence, statistics and methods, novelty, clarity, reproducibility), each given only the text, the rendered figures and the numbers log, never the authors' reasoning; findings sorted into must-fix / should-fix / judgment call, each checked before it is applied. Use when the user says "act as a reviewer", "review the paper / draft / figures", "what would a reviewer ask", "is it ready to submit". Not for answering real reviews → use responding-to-reviewers.
+description: Run a mock review of a manuscript, a section or a figure set before it is shared or submitted, in one of three styles — the journal's editor (desk decision, fit, format against the fetched guide, the referees to invite), external referees (the submission package only, one fresh agent per referee persona, a journal-form report with a recommendation), or an internal reviewer (text, figures, code, numbers log and pre-checks; one fresh agent per lens) — never given the authors' reasoning; findings sorted into must-fix / should-fix / judgment call, each checked before it is applied. Use when the user says "act as a reviewer / editor / referee", "review the paper / draft / figures", "would the editor send it out", "what would a reviewer ask", "is it ready to submit", or types /review-editor, /review-referee, /review-internal. Not for answering real reviews → use responding-to-reviewers.
 ---
 
-# Reviewing a manuscript (mock referee)
+# Reviewing a manuscript (mock editor, referee or internal review)
 
 Authors — and the agent that helped write — read what they meant; a referee reads what is there.
 Past internal reviews of real papers found, among others: a significance star drawn from a variant
@@ -13,33 +13,57 @@ floor that turned noise into the headline points; a "transfer" claim clearing a 
 drawn for one group with another group's points; a Methods sentence ("one decoder across figures")
 that no script implemented. Each was invisible from inside the writing.
 
+## The three styles (each sees what its real counterpart sees)
+
+| Style (command) | Sees (`materials.py --style …`) | Decides | Agents and brief |
+|---|---|---|---|
+| **editor** (`/review-editor`) | main text, main figures, cover letter; supplementary skimmed | send out or desk-reject (with a probability); fit and significance for the journal; novelty; format against the journal's guide, fetched; the 3 referees to invite | 1 fresh agent, `references/editor_brief.md`; a second on another model for a submission |
+| **referee** (`/review-referee`) | the submission package: main and supplementary text and figures, references; no cover letter, code, numbers log or pre-checks (`--share-code` when the journal sends code) | a journal-form report: summary, significance, major concerns with what resolves each, minor points, requested analyses, recommendation, confidential comments | 1 fresh agent per referee persona, `references/referee_brief.md`; a second model per referee for a submission |
+| **internal** (`/review-internal`) | everything: text, all figures and their variants, figure code, numbers log, pre-check outputs | errors: Methods vs code, numbers vs the log, statistics, stale figures, claims stronger than their cards | 1 fresh agent per lens, `references/lens_briefs.md` |
+
+For a submission, run them in this order: **internal** (fix your own errors first) → **editor** (its referee table
+becomes the referee personas) → **referees**. Without a style named, ask which, with that order as the recommendation.
+
 ## Step 0 — scope and materials
 
 ```
 QUESTION     what the review must decide (submission-ready? one section? one figure?)
 CRITERION    e.g. "no open must-fix; every claim has a panel that shows it"
 ```
-Build the materials list — the only things reviewers see:
+Build the materials list for the style — the only things its reviewers see:
 ```bash
-python <this skill>/scripts/materials.py                       # from project.yaml (paper_dir, figure_code, numbers_*)
-python <this skill>/scripts/materials.py --paper <draft> --figures '<glob of the CANONICAL rendered figures>'
+python <this skill>/scripts/materials.py --style editor|referee|internal   # from project.yaml
+python <this skill>/scripts/materials.py --style … --paper <draft> --figures '<glob of the CANONICAL rendered figures>'
 ```
+The reader-facing text comes from `project.yaml` → `review_texts` (globs: main, supplementary, cover letter). A
+`[notes]` flag means author notes sit in `paper_dir` and would reach the reviewers: set `review_texts` first. **Why:**
+`paper_dir` mixes the draft with its README, method notes and style guide; the 2026-11-13 editor read had them
+stripped by hand.
 Give the canonical build as the figures (not `_old`, `_all` or preview renders). List each figure's
 variant renders (`_pca20`, `_robust`, …) separately as VARIANTS, for lens 2 only: a star that flips
 between variants is visible only there (2026-10-30 trial: the knob-dependent Fig. 3 star was in the
 `_pca20` render, which a canonical-only list hid). Fix what it flags
 first: a missing figure, a figure older than its script (re-render), an absent numbers log.
 
-**Pre-checks before the lenses.** Run the PRE-CHECKS `materials.py` prints (numbers vs the numbers log,
+**Pre-checks before the lenses (internal only).** Run the PRE-CHECKS `materials.py` prints (numbers vs the numbers log,
 the claims ledger, every `.bib`) and add their outputs to the materials. **Why:** what a script can
 decide should not cost a reviewer's attention, and an agent misreads a number a script would not (a
 reviewer agent once drew a ±0.021 band from a mismatched pair; the true value was ±0.011, 2026-10-29).
 A figure script that calls `check_figure` gets its report added the same way.
 
-## Step 1 — the lens reviewers, in parallel
+## Step 1 — the reviewers (fresh agents; never a fork: a fork inherits the authors' reasoning)
 
-One **fresh general-purpose agent per lens** (Agent tool, never a fork: a fork inherits the authors'
-reasoning). Prompts: `references/lens_briefs.md` — the common header plus one lens:
+**Editor.** One fresh general-purpose agent with `references/editor_brief.md`, filled with the journal, the field,
+the editor materials and `project.yaml` → `referees`. For a submission, a second agent on another model with the same
+brief, blind to the first (as on 2026-11-13).
+
+**Referees.** The personas: the REFEREES table of the latest editor review in the reviews folder, plus
+`project.yaml` → `referees`; with neither, run the editor first, or ask the user for the three. One fresh agent per
+referee, in parallel, with `references/referee_brief.md`; for a submission each persona also on a second model. Then
+merge as an editor would: concerns raised by two or more referees first, disagreements between referees shown, the
+recommendations side by side.
+
+**Internal.** One fresh general-purpose agent per lens, with `references/lens_briefs.md` — the common header plus one lens:
 
 1. **Claims ↔ evidence** — does each claim follow from the panel it cites?
 2. **Statistics and methods** — design, units, nesting, floors, nulls, stars (choosing-statistics,
@@ -66,7 +90,7 @@ holds an earlier review, read it now — never before, and never give it to a le
 findings **fixed**, **back** (found again: it was not fixed, or the fix did not hold) or **not checked**
 (out of this scope). A must-fix that is back stays must-fix.
 
-## Step 2b — claim status (after the lenses; the lenses stay blind)
+## Step 2b — claim status (after the reviewers, every style; the reviewers stay blind)
 
 Map each claim in the Abstract and the Results to its evidence record: the verdict card
 (`project.yaml` → `verdict_log`, with `concluding-research/scripts/collect_cards.py --match`) or the
@@ -81,6 +105,8 @@ one-seed series or on a card's title that its own numbers contradict (2026-10-29
 
 ## Step 3 — report
 
+Editor: the DECISION with its probability, the letter, the findings, the referee table. Referees: each referee's
+recommendation, then the merged concerns. Internal, and the common part of all three:
 ```
 VERDICT: ready / needs fixes / blocked by <must-fix>
 | severity | where (figure:panel, section:line) | finding | evidence | fix | verified |
@@ -88,9 +114,11 @@ REFEREE QUESTIONS TO EXPECT: the 5–10 most likely, each with where the answer 
 PLAN: ordered actions — analyses → planning-research · text → writing-paper · figures → making-figures
       (a "needs data" finding goes to planning-research as a draft pre-run card; advising-research routes it to the planner)
 ```
-When real reviews arrive, the plan feeds **responding-to-reviewers**.
+A revision larger than a few direct fixes goes through the flow: `/grill-research` on the findings (accept, reject,
+rephrase the claim), then `/to-spec` (the accepted objections as user stories, the declined ones in Out of Scope
+with why) and `/to-tickets`. When real reviews arrive, the plan feeds **responding-to-reviewers**.
 
-Write the report to `<reviews_dir>/<date>_<scope>.md` (default `docs/reviews/`), the findings numbered
+Write the report to `<reviews_dir>/<date>_<style>_<scope>.md` (default `docs/reviews/`), the findings numbered
 F1, F2, … with their triage mark, and a line for each finding of the previous review (fixed / back /
 not checked). It is the one place the next review's triage starts from.
 
@@ -101,12 +129,15 @@ applied finding in the review file (fixed in <commit>), and commit it with the f
 
 ## Never
 
-- Give a lens reviewer the chat, the authors' notes, an earlier verdict, the verdict log or a previous
-  review — it anchors the review. The pre-check outputs are evidence and may go in.
+- Give a reviewer the chat, the authors' notes, an earlier verdict, the verdict log or a previous review — it
+  anchors the review. The pre-check outputs are evidence for the internal lenses only.
+- Give an editor or a referee more than its style's materials (code, numbers log, pre-checks, another referee's
+  report): the review is only worth what its real counterpart would see.
 - Apply a finding unchecked, or downgrade a verified must-fix to finish sooner.
 - Pad a lens: a clean lens is one line, "no findings".
 
-Checklist (report as one line: "✓ review" or the failed items): materials list from the canonical
-build · pre-checks run, outputs in the materials · one fresh agent per lens · every finding verified or
+Checklist (report as one line: "✓ review" or the failed items): style chosen · materials list for that style from
+the canonical build, no author notes · internal: pre-checks run, outputs in the materials · one fresh agent per lens
+or persona · every finding verified or
 rejected · previous review's findings marked · claim status checked against the verdict cards ·
 referee questions listed · plan routed to the right skills · review file written.

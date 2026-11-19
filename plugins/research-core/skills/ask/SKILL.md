@@ -46,9 +46,16 @@ auditing-results (every number), validating-networks / validating-pipelines / va
 believed), choosing-statistics (before a p-value), thinking-critically (a conclusion that matters), checking-derivations
 (math), validating-claims (a result becomes a claim).
 
+## Reviewing a draft
+
+Before a submission, in this order: **`/review-internal`** (a colleague with the code: errors first), then
+**`/review-editor`** (desk decision, and the referees it would invite), then **`/review-referee`** (one report per
+referee, from the package the journal sends). A revision of more than a few fixes goes `/grill-research` →
+`/to-spec` → `/to-tickets` → `/run-spec`. Real reports arrived → responding-to-reviewers.
+
 ## Writing and shipping
 
-writing-paper, auditing-paper-numbers, verifying-citations, reviewing-literature, reviewing-manuscript,
+writing-paper, auditing-paper-numbers, verifying-citations, reviewing-literature,
 making-figures → showing-figures / figure-gallery, publishing-drafts, log-and-ship (commit).
 
 ## Upkeep

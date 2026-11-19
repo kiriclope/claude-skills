@@ -75,9 +75,11 @@ code_check:                           # readability_check.py settings
 #   exclude: [results/, scratchpad/]
 
 # reviewing-manuscript
+review_texts: []                      # globs of the reader-facing text (main, supplementary, cover letter); never author notes
 review_figures: []                    # patterns of the canonical rendered figures given to the reviewers
 journal: null                         # e.g. Nature Neuroscience — fills the reviewers' brief
 field: null                           # e.g. systems neuroscience
+referees: []                          # referee personas always included, e.g. ['a theorist of low-rank RNNs']; the editor picks the rest
 reviews_dir: docs/reviews             # one file per mock review: numbered findings, each marked fixed / back next time
 
 # choosing-statistics: declared before looking at any result

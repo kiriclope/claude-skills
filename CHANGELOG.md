@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-18 — research-core 0.31.0 (three review styles)
+- **reviewing-manuscript**: three styles, each seeing what its real counterpart sees — **editor** (main text, main
+  figures, cover letter; desk decision with a probability, fit, novelty, format against the journal's guide fetched at
+  review time, the 3 referees to invite; `references/editor_brief.md`), **referee** (the submission package without
+  cover letter, code or numbers log unless the journal sends code; one fresh agent per persona from the editor's table
+  or project.yaml `referees`; a journal-form report with a recommendation and confidential comments; merged as an
+  editor would; `references/referee_brief.md`), **internal** (the five lenses with code, numbers log and pre-checks, as
+  before). Order for a submission: internal → editor → referees. A second model per reviewer for a submission. Review
+  files `<date>_<style>_<scope>.md`; a large revision goes /grill-research → /to-spec → /to-tickets.
+- `materials.py --style editor|referee|internal [--share-code]`; `review_texts` in project.yaml (globs of the
+  reader-facing text) and a `[notes]` flag for author notes in paper_dir (the dual paper's README, method notes and
+  style guide would have reached the reviewers); ED_Fig / edfig names count as supplementary; figures given by glob
+  (review_figures) get the stale check too (it ran only on figures linked from the text: the dual paper's 2026-10-05
+  Fig. 5 passed unflagged); demo extended (6 checks).
+- **review-editor, review-referee, review-internal** (new commands); `/ask` "Reviewing a draft"; template keys
+  `review_texts`, `referees`; README, profile.
+
 ## 2026-11-18 — research-core 0.30.0 (/run-spec: agents work the board)
 - **run-spec** (new, from Pocock's `implement-spec`): the orchestrator reads the ticket graph, gets every experiment's
   parameters approved once (recorded on the ticket), works the frontier with one fresh background agent per ticket

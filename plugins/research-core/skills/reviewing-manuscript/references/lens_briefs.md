@@ -1,4 +1,4 @@
-# Lens briefs (one fresh general-purpose agent per lens)
+# Internal review: lens briefs (one fresh general-purpose agent per lens)
 
 Contents: common header · 1 claims ↔ evidence · 2 statistics and methods · 3 novelty and positioning ·
 4 clarity and presentation · 5 reproducibility

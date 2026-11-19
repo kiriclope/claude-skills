@@ -84,7 +84,7 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Fifty-one skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+Fifty-four skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds maintainer-only skills. As in
 [Matt Pocock's skills](https://github.com/mattpocock/skills), they come in two kinds: **user-invoked**
 commands you type, which run a flow, and **model-invoked** skills Claude loads when the moment matches.
@@ -105,6 +105,7 @@ versions of his skills. Each has a page in [docs/commands/](docs/commands/). Per
 | [/to-tickets](plugins/research-core/skills/to-tickets/SKILL.md) | Pocock's: the spec becomes tracer-bullet tickets with blocking edges; you approve the breakdown before anything is posted. |
 | [/run-ticket](plugins/research-core/skills/run-ticket/SKILL.md) | One ticket end to end in one session: claim, pre-run card, your OK, run, audit, verdict card, close with the card (refuted too). From `implement`. |
 | [/run-spec](plugins/research-core/skills/run-spec/SKILL.md) | Agents work the spec's board in a loop: every unblocked ticket in a fresh agent, experiments launched only as approved, merged onto one integration branch, a stop at every failed or refuted ticket, and a QA plan for you at the end. From `implement-spec`. |
+| [/review-editor](plugins/research-core/skills/review-editor/SKILL.md) · [/review-referee](plugins/research-core/skills/review-referee/SKILL.md) · [/review-internal](plugins/research-core/skills/review-internal/SKILL.md) | reviewing-manuscript in three styles, each seeing what its real counterpart sees: the journal's editor (desk decision, format against the fetched guide, the referees to invite), external referees (the submission package, a journal-form report each), an internal colleague (text, figures, code, numbers log). For a submission: internal → editor → referees. |
 | [/toy-model](plugins/research-core/skills/toy-model/SKILL.md) | A throwaway minimal simulation: does the mechanism work at all, before any sweep. From `prototype`. |
 | [/conclude](plugins/research-core/skills/conclude/SKILL.md) | concluding-research on one question, with the spec's stories answered or open. |
 | [/retro](plugins/research-core/skills/retro/SKILL.md) | A look back over a session; changes to the skills and hooks, not the code. |
@@ -168,7 +169,7 @@ lines. Each check is a past error that reached a figure or a conclusion.
 | [auditing-paper-numbers](plugins/research-core/skills/auditing-paper-numbers/SKILL.md) | Every number in the draft matched to the current output of the numbers script: matched, mismatched, or unsourced. | Before sharing or submitting a draft. |
 | [verifying-citations](plugins/research-core/skills/verifying-citations/SKILL.md) | Every reference checked against Crossref and OpenAlex (exists, title, first author, year, venue, DOI); each cited claim pinned to a quoted passage. | Adding or reviewing references. |
 | [reviewing-literature](plugins/research-core/skills/reviewing-literature/SKILL.md) | A search protocol across Semantic Scholar, OpenAlex, PubMed, arXiv and bioRxiv; a "they show X, we add Y" comparison matrix; notes checkpointed to `docs/lit/`. | Related work, positioning, novelty. |
-| [reviewing-manuscript](plugins/research-core/skills/reviewing-manuscript/SKILL.md) | A mock referee review: one fresh agent per lens (claims vs evidence, statistics and methods, novelty, clarity, reproducibility), each seeing only the text, the figures and the numbers; findings as must-fix / should-fix / judgment call, each checked before it is applied; mechanical pre-checks first, each claim checked against its verdict card, a numbered review file the next review starts from. | *"Act as a reviewer"*, before sharing or submitting. |
+| [reviewing-manuscript](plugins/research-core/skills/reviewing-manuscript/SKILL.md) | A mock review in three styles (editor, external referees, internal; `/review-editor`, `/review-referee`, `/review-internal`). The internal one: one fresh agent per lens (claims vs evidence, statistics and methods, novelty, clarity, reproducibility), each seeing only the text, the figures and the numbers; findings as must-fix / should-fix / judgment call, each checked before it is applied; mechanical pre-checks first, each claim checked against its verdict card, a numbered review file the next review starts from. | *"Act as a reviewer"*, before sharing or submitting. |
 | [publishing-drafts](plugins/research-core/skills/publishing-drafts/SKILL.md) | Publishes drafts, figure pages and notes as claude.ai pages with their source and builder in the repo; reads the live page before republishing, keeps the same URL, and answers every reader comment. | Publishing or updating a page; at session start on a project with pages. |
 | [responding-to-reviewers](plugins/research-core/skills/responding-to-reviewers/SKILL.md) | Point-by-point responses with full coverage, no fabricated results, no promises the revision does not keep. | Reviews or a decision letter arrive. |
 
