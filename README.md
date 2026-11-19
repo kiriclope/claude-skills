@@ -84,33 +84,30 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Fifty-four skills in three plugins. `research-core` is for any research project; `lowrank-rnn`
+Forty-one skills in three plugins here, plus Pocock's from the fork. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds maintainer-only skills. As in
 [Matt Pocock's skills](https://github.com/mattpocock/skills), they come in two kinds: **user-invoked**
 commands you type, which run a flow, and **model-invoked** skills Claude loads when the moment matches.
 
 ### User-invoked (you type them)
 
-The grill → spec → tickets flow is Pocock's (`grilling`, `grill-me`, `grill-with-docs`, `domain-modeling`, `to-spec` and `to-tickets` copied unchanged, MIT); the others are research
-versions of his skills. Each has a page in [docs/commands/](docs/commands/). Per project, run
-`/setup-research-skills` once: it writes `docs/agents/` (tracker, labels, what his terms mean in research) and a
-`GLOSSARY.md`.
+The research flow runs on **Matt Pocock's skills**, installed from our fork
+[kiriclope/skills](https://github.com/kiriclope/skills), which follows his repo and adds one plugin, `research-flow`:
+
+```bash
+claude plugin marketplace add kiriclope/skills
+claude plugin install mattpocock-skills@mattpocock     # his skills, unchanged: grilling, to-spec, to-tickets, retro, wait-what, research, …
+claude plugin install research-flow@mattpocock         # /grill-research, /run-ticket, /run-spec, /toy-model, /setup-research-skills
+```
+The flow: `/setup-research-skills` once per project, then `/grill-research` → `/to-spec` → `/to-tickets` in one
+session, then `/run-spec` (agents work the board, a QA plan at the end) or `/run-ticket` per session. The tickets call
+the model-invoked skills below. This repo adds three commands of its own:
 
 | Command | What it does |
 |---|---|
-| [/ask](plugins/research-core/skills/ask/SKILL.md) | Routes you to the flow that fits (from Pocock's `ask-matt`). |
-| [/grill-research](plugins/research-core/skills/grill-research/SKILL.md) | Pocock's grilling and domain-modeling with the research rules: conclusions cited with their strength, every recommendation with its evidence, falsifier, rivals, reviewer objection and imposed-or-found as branches of every claim, plain standalone questions, and a closing list of what is assumed rather than found. Comes before `/to-spec`. |
-| [/grill-with-docs](plugins/research-core/skills/grill-with-docs/SKILL.md) · [/grill-me](plugins/research-core/skills/grill-me/SKILL.md) | Pocock's: a relentless interview on a plan, round by round, each question with its recommended answer, until no decision is left assumed; `grill-with-docs` also updates `GLOSSARY.md` (and an ADR when a decision is hard to undo) through `domain-modeling`. For plans that are not research. |
-| [/to-spec](plugins/research-core/skills/to-spec/SKILL.md) | Pocock's: the planning conversation becomes a spec (problem, destination, reader stories, decisions, the measures that decide, out of scope), posted as the parent issue. |
-| [/to-tickets](plugins/research-core/skills/to-tickets/SKILL.md) | Pocock's: the spec becomes tracer-bullet tickets with blocking edges; you approve the breakdown before anything is posted. |
-| [/run-ticket](plugins/research-core/skills/run-ticket/SKILL.md) | One ticket end to end in one session: claim, pre-run card, your OK, run, audit, verdict card, close with the card (refuted too). From `implement`. |
-| [/run-spec](plugins/research-core/skills/run-spec/SKILL.md) | Agents work the spec's board in a loop: every unblocked ticket in a fresh agent, experiments launched only as approved, merged onto one integration branch, a stop at every failed or refuted ticket, and a QA plan for you at the end. From `implement-spec`. |
+| [/ask](plugins/research-core/skills/ask/SKILL.md) | Routes you to the flow that fits, across both repos (from Pocock's `ask-matt`). |
 | [/review-editor](plugins/research-core/skills/review-editor/SKILL.md) · [/review-referee](plugins/research-core/skills/review-referee/SKILL.md) · [/review-internal](plugins/research-core/skills/review-internal/SKILL.md) | reviewing-manuscript in three styles, each seeing what its real counterpart sees: the journal's editor (desk decision, format against the fetched guide, the referees to invite), external referees (the submission package, a journal-form report each), an internal colleague (text, figures, code, numbers log). For a submission: internal → editor → referees. |
-| [/toy-model](plugins/research-core/skills/toy-model/SKILL.md) | A throwaway minimal simulation: does the mechanism work at all, before any sweep. From `prototype`. |
 | [/conclude](plugins/research-core/skills/conclude/SKILL.md) | concluding-research on one question, with the spec's stories answered or open. |
-| [/retro](plugins/research-core/skills/retro/SKILL.md) | A look back over a session; changes to the skills and hooks, not the code. |
-| [/setup-research-skills](plugins/research-core/skills/setup-research-skills/SKILL.md) | Configures a project once for the flow (from `setup-matt-pocock-skills`). |
-| [/wait-what](plugins/research-core/skills/wait-what/SKILL.md) | Re-pitches the last message that did not land. |
 
 The model-invoked skills follow, by phase.
 

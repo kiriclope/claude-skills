@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-11-19 — research-core 0.32.0 (Pocock's skills from a fork)
+- Leon: adopt Matt Pocock's original skills, to follow his updates and his workflow. **Fork kiriclope/skills**
+  (`~/pocock-skills`, `upstream` = mattpocock/skills at 5863806), installed as plugins from the local clone:
+  `mattpocock-skills` (his, unchanged) and **`research-flow`** (added, `research/`): grill-research, run-ticket,
+  run-spec, toy-model, setup-research-skills, the `docs/agents` templates and their docs pages. Rule (FORK.md): add,
+  never edit his files; the one edit is the marketplace entry.
+- **Removed from research-core**: the vendored to-spec, to-tickets, grilling, grill-me, grill-with-docs,
+  domain-modeling; our retro and wait-what (his originals now); the five flow skills and `templates/agents/` (moved to
+  the fork). Plugin commands resolve without their prefix (`/wait-what` ran his version in a fresh session).
+- `/ask`, README (user-invoked section points to the fork), profile. research-core keeps the research methods, the
+  review styles, `/ask` and `/conclude`.
+
 ## 2026-11-18 — research-core 0.31.0 (three review styles)
 - **reviewing-manuscript**: three styles, each seeing what its real counterpart sees — **editor** (main text, main
   figures, cover letter; desk decision with a probability, fit, novelty, format against the journal's guide fetched at

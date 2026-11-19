@@ -6,7 +6,8 @@ disable-model-invocation: true
 
 # Ask
 
-Before saying what a skill does or recommending a step be skipped, read that skill's SKILL.md: the lines here orient,
+The flow commands come from Pocock's skills and the `research-flow` plugin (fork kiriclope/skills); the rest is
+research-core. Before saying what a skill does or recommending a step be skipped, read that skill's SKILL.md: the lines here orient,
 they do not replace it. Answer with the one flow that fits and its first command; name the alternative only when the
 situation is ambiguous.
 
@@ -25,7 +26,8 @@ situation is ambiguous.
    - **Not sure the mechanism works at all** → **`/toy-model`** first; its answer decides whether to plan.
 3. **After several verdicts on one question** → **`/conclude`** (status per hypothesis, the spec's stories answered or
    not, the next tickets).
-4. **A session went wrong** → **`/retro`** before clearing it.
+4. **A session went wrong** → **`/retro`** (Pocock's) before clearing it; changes to the skills themselves →
+   maintaining-skills.
 
 Keep the grilling, the spec and the tickets in one context window until `/to-tickets` has run, so the spec and tickets build on the same thinking;
 each `/run-ticket` then starts fresh from its ticket.
@@ -37,7 +39,9 @@ each `/run-ticket` then starts fresh from its ticket.
 - **Starting a session, "where were we"** → resuming-work.
 - **A review is due, "catch me up"** → running-review-checkpoints.
 
-`/grill-with-docs` and `/grill-me` are Pocock's originals, for a plan that is not research (code, tooling). The grilling skill also loads on its own
+`/grill-with-docs` and `/grill-me` are Pocock's originals, for a plan that is not research (code, tooling). His
+`/research` caches a technical exploration (docs, APIs, source code) in a markdown file before tickets need it;
+literature is reviewing-literature. The grilling skill also loads on its own
 when you say "grill me"; clarifying-requests stays for a vague request (one or two rounds, then act).
 
 ## Checks that run under the flow
