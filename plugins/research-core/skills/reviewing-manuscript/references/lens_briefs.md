@@ -65,7 +65,9 @@ What does the literature already show? Search (Semantic Scholar, OpenAlex, PubMe
 for the paper's main claims and name the papers a referee would cite against them. For each "we show
 X for the first time" or "unlike previous work": is it true? Verify every citation you mention (it
 exists, it says that — quote it). List the comparisons the paper is missing and the foils it should
-address.
+address. Flag sequential "laundry-list" literature paragraphs (A showed X, B showed Y) that summarize
+papers one by one instead of grouping by mechanism and tradeoff, and check that Introduction (macro
+framing) and Discussion (micro comparisons) do not recycle the same citations.
 ```
 
 ## Lens 4 — clarity and presentation
@@ -85,5 +87,7 @@ Do the Methods describe what the code does? Compare windows, bins, filters, para
 and model settings in the text with the code that makes each figure (figure code in MATERIALS). Do
 the numbers in the text match the numbers log? Could someone rerun each figure from the repository:
 one command per figure, data and code availability statements, seeds, versions? Flag every place where
-the text, a code comment and the code disagree.
+the text, a code comment and the code disagree, and every uncited methodological dependency in Methods
+(software package, sorting pipeline, model architecture, optimizer, dataset, statistical estimator,
+standard task paradigm).
 ```

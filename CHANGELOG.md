@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-24 — research-core 0.33.1 (literature limitation queries & dependency citations, from PaperOrchestra)
+- **reviewing-literature**: query for foil failure modes (formulate a limitation hypothesis per competing cluster and
+  search for papers that document or measure where it breaks down); separate Introduction macro-framing citations from
+  Discussion micro-comparison citations.
+- **writing-paper**: cite the primary paper for every methodological dependency in Methods (software package, sorting
+  pipeline, model architecture, optimizer, dataset, statistical estimator, task paradigm).
+- **reviewing-manuscript** (`references/lens_briefs.md`): Lens 3 flags sequential paper-by-paper "laundry-list"
+  paragraphs vs. mechanistic synthesis and recycled Intro/Discussion citations; Lens 5 flags uncited methodological
+  dependencies in Methods.
+
 ## 2026-11-19 — research-core 0.33.0 (the flow carries the review and the state)
 - Leon: **review checkpoints removed** — review happens in the flow (the spec, tickets and experiments approved up
   front; each verdict card; `/run-spec`'s QA plan). Deleted running-review-checkpoints, the commit gate in

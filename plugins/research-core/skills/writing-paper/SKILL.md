@@ -49,7 +49,9 @@ most a few per paper; never "Critically", "Surprisingly", "clearly show", "prove
 - **Vocabulary:** one term per concept from `vocabulary`; define coined terms once, at first
   use, then never vary them. Do not let working jargon (variable names, lab shorthand) into
   the manuscript.
-- **Citations:** only verified references (**verifying-citations**).
+- **Citations:** only verified references (**verifying-citations**). In Methods, cite the
+  primary paper for every methodological dependency (software package, spike-sorting pipeline,
+  model architecture, optimizer, dataset, statistical estimator, task paradigm).
 
 ## Step 3b — independent claim review (before the draft is shared)
 

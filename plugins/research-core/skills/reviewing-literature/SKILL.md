@@ -24,8 +24,13 @@ output is real (verified) and every claim about it is something the paper says.
   arXiv and bioRxiv (recent and modeling), then Google Scholar-style WebSearch for gaps.
   APIs: `https://api.semanticscholar.org/graph/v1/paper/search?query=…`,
   `https://api.openalex.org/works?search=…` (WebFetch).
-- Query by **mechanism and by method**, not only by topic; use the field's synonyms (the same
-  idea often has 3 names across subfields).
+- Query by **mechanism, method, and foil failure mode**, not only by topic; use the field's
+  synonyms (the same idea often has 3 names across subfields). For each competing mechanism or
+  method cluster, formulate a limitation hypothesis (where it breaks down) and search for papers
+  that document or measure that failure mode.
+- Separate **Introduction** context (macro-level: foundational work, urgency, reviews) from
+  **Discussion** comparisons (micro-level: competing mechanisms and method clusters), so the
+  same citations do not do both jobs.
 - From the 3–5 most relevant hits, go **backward** (their references) and **forward** (who
   cites them, last 3 years). Stop when new searches return papers already logged.
 - Log each search: date, source, query, number of hits screened, papers kept.
