@@ -16,9 +16,8 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 - **When my request is vague** (no clear goal, deliverable, scope or success criterion, or several
   readings), use the `clarifying-requests` skill before acting: look in the context first, then ask
   me a few sharp questions with concrete options — be my reflection, not an interrogation.
-- **Review checkpoints** are on in my projects (`running-review-checkpoints`): when one is due, hold it
-  when I accept a plan or a next step, or ask to commit or push (never pop it up over a plan I have not
-  read), each question understood on its own; never record a review I did not approve.
+- **Review happens in the flow**, not on a line count: I approve the spec, the tickets and the experiments, then check
+  each verdict card and `/run-spec`'s QA plan (review checkpoints removed 2026-11-19).
 - **Every claim carries its measurement, chat included** (`auditing-results`, 2026-11-03 review of seven wrong reports):
   run and stage, trials, window, metric, k/N; numbers computed this session, never by eye or from a summary; a finder,
   a loss or a log field is a proxy; "gone / lost" only after the direct test; when I read a figure differently,
@@ -49,44 +48,21 @@ env (`/home/leon/mambaforge`) until it gets one; never conda.
 | check results; `auditing-results` | `result-checker` (fresh context) | Opus 5.5 (alias `opus`) |
 | fresh review of `thinking-critically` | `critical-reviewer` | Fable (alias `fable`) |
 
-## Which skill when (load it before starting — these never trigger on their own often enough)
+## Which skill when
 
-| When | Skill |
+Skills load from their descriptions; this table holds only what the descriptions cannot say. Lost? `/ask`.
+
+| When | Do |
 |---|---|
-| my request is vague | `clarifying-requests` |
-| starting a session, "where were we" | `resuming-work` |
-| planning an experiment, "what next" | `planning-research` (with a spec: its frontier first) |
-| an effort over several sessions (a paper, a figure to replace) | Pocock's skills + `research-flow` (fork `~/pocock-skills`, plugins): I type `/grill-research`, `/to-spec`, then `/to-tickets` (one session); then `/run-spec` (agents work the board; I approve the experiments once and check the QA plan), or `/run-ticket` per session |
-| "does this mechanism work at all" | `/toy-model` (I type it; suggest it) |
-| I don't know which skill fits | `/ask` |
-| a phase boundary: a plan is needed, a sweep launches or finishes, results come in | `advising-research` (routes it) |
-| launching or monitoring a sweep / long job; "what did we train" | `launching-experiments`; `run-card` (not in `~/rnn`: there the run's `config.json` lists its stages) |
-| training misbehaves | `debugging-training` |
-| numbers just came out, before any conclusion | `auditing-results` |
-| several verdicts on one question; "what do we know about X", "conclude" | `concluding-research` (`/conclude`) |
-| choosing a test, a p-value, a star | `choosing-statistics` |
-| a new measure or pipeline, its first result; "did the numbers change" | `validating-pipelines` |
-| a decoder / CCGP / axis result; "is it above chance", "is it just licks" | `validating-decoders` |
-| a finished sweep, before any flow, trajectory or figure; "do these nets really work" | `validating-networks` |
-| a result becomes a claim in a draft; "what would falsify this" | `validating-claims` |
-| a conclusion that matters, "think critically" | `thinking-critically` |
-| deriving or checking math | `checking-derivations` |
-| low-rank RNN flows, wells, trajectories | `validating-networks`, then the project's state table (`~/rnn`: `analysis/state_table.py`); `flow-verdict`, `traj-verdict`, `bifurcation-probe` are the old `~/rnn_dual` tools, not used in `~/rnn` |
-| **any** figure or plotting code (never `dataviz`) | `making-figures` |
-| showing a figure to me ("show me", a verdict's figure) | `showing-figures` |
-| writing code; before committing it | `writing-research-code`; `reviewing-code-readability` |
-| paper text; its numbers; its references | `writing-paper`; `auditing-paper-numbers`; `verifying-citations` |
-| related work, novelty | `reviewing-literature` |
-| "act as a reviewer", before submitting | `reviewing-manuscript`: `/review-internal` → `/review-editor` → `/review-referee` |
-| referee reports arrived | `responding-to-reviewers` |
-| publishing a page, artifact comments | `publishing-drafts` |
-| tidying the repo, lost or duplicated files | `organizing-projects` |
-| a review checkpoint is due, "catch me up" | `running-review-checkpoints` |
-| "log", "commit" | `log-and-ship` |
-| memory too long or contradicting the docs; "trim / archive the memory" | `maintaining-memory` |
-| changing the skills themselves | `maintaining-skills` |
-| your last message did not land (I type `/wait-what`) | `wait-what` (user-only) |
-| a session went wrong, "retro" | `/retro` (Pocock's; changes to the skills → `maintaining-skills`) |
+| an effort over several sessions (a paper, a figure to replace) | Pocock's skills + `research-flow` (fork `~/pocock-skills`): I type `/grill-research`, `/to-spec`, `/to-tickets` (one session), then `/run-spec` (I approve the experiments once and check the QA plan) or `/run-ticket` |
+| **one ticket, one session** | each ticket starts fresh from the board; past two compactions or ~150k tokens, finish or pause the ticket, write its state on it, propose `/clear` |
+| where things stand | the board (the spec's tickets) and the conclusions doc; memory only for what is in neither (`resuming-work`) |
+| "does this mechanism work at all" | suggest `/toy-model` |
+| a phase boundary (plan, sweep, results) | `advising-research` routes it to the agents above |
+| a p-value or star; a decoder / axis result; a result becomes a claim; training misbehaves | `choosing-statistics`; `validating-decoders`; `validating-claims`; `debugging-training` (none loaded on its own in the 30 days to 2026-11-19: load them) |
+| low-rank RNN flows, wells, trajectories | `validating-networks`, then `~/rnn`'s `analysis/state_table.py`; `flow-verdict`, `traj-verdict`, `bifurcation-probe` are old `~/rnn_dual` tools; `run-card` not in `~/rnn` (the run's `config.json`) |
+| **any** figure | `making-figures`, never `dataviz` |
+| before a submission | `/review-internal` → `/review-editor` → `/review-referee`; literature and real referee reports are commands I type (`/reviewing-literature`, `/responding-to-reviewers`) |
 
 ## Compact instructions
 Long sessions compact, often several times, so the summary must carry what a fresh reader needs.

@@ -7,7 +7,6 @@ Skills are advice; hooks are enforced by the harness. `guard_bash.py` (PreToolUs
 | `git push` | **ask** the user every time |
 | `git commit -m …` without a `Co-Authored-By:` trailer | **deny** |
 | the project's training launcher in the foreground (not in `screen -dmS`, `tmux -d`, `sbatch`/`qsub`, `nohup … &`, or `--per_run_screen`) | **deny** |
-| `git commit` while a review checkpoint is due (projects with `review_checkpoint:`) | **deny** until the checkpoint |
 | `git commit` that would commit clear mess (projects with `.claude/project.yaml`): a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a `_v2` / `_old` copy of code | **deny**: unstage or fix; `TIDY_OK=1` prefix only for files the user named |
 | `git commit` that includes a file another Claude Code session changed in the last hour and has not committed (the session board, below) | **ask** the user, naming that session |
 
@@ -20,18 +19,11 @@ earlier in the same command and `git commit -a` by replaying them on a throwaway
 blocks only the clear-mess items, and leaves its proposals (README lines, unindexed docs, scratch
 files) to log-and-ship. Off per project with `organize: {commit_check: false}`.
 
-## Review checkpoints (prompt hook)
+## Review checkpoints (removed 2026-11-19)
 
-`plugins/research-core/skills/running-review-checkpoints/scripts/review_status.py --hook prompt` runs
-on each message of the user. When a human review is due in the session's project (≥ `max_lines`
-changed lines or ≥ `max_commits` commits since the last review, set per project under
-`review_checkpoint:` in `.claude/project.yaml`), it tells Claude to hold the checkpoint at the plan
-boundary: when this message accepts a plan or a next step, or asks to commit or push; never at the
-end of a turn that shows a plan or a result the user has not read. It stays silent in projects that
-have not opted in, and the user can say "not now" (`--defer`). Switch it off per project
-(`review_status.py --off`, local) or everywhere (`--off --global`); `--on` resumes. Its entry is in
-the install block below. (Until 2026-11-04 it was a Stop hook that popped up at the end of any turn,
-over plans not yet read; `--hook stop` is now silent.)
+The line-count review checkpoints (a prompt hook and a commit gate) were removed: the review now happens in the flow,
+at each ticket's verdict and in `/run-spec`'s QA plan. Remove their hook entry from `~/.claude/settings.json` if it is
+still there (`review_status.py --hook prompt`).
 
 ## Session board (parallel sessions)
 
@@ -63,9 +55,7 @@ Self-test of the guard: `python guard_bash.py --demo` (32 cases, including the f
 {
   "hooks": {
     "SessionStart":     [ { "hooks": [ { "type": "command", "timeout": 10, "command": "python3 ~/claude-skills/hooks/session_board.py" } ] } ],
-    "UserPromptSubmit": [ { "hooks": [ { "type": "command", "timeout": 10, "command": "python3 ~/claude-skills/hooks/session_board.py" },
-                                       { "type": "command", "timeout": 30,
-          "command": "python3 ~/claude-skills/plugins/research-core/skills/running-review-checkpoints/scripts/review_status.py --hook prompt" } ] } ],
+    "UserPromptSubmit": [ { "hooks": [ { "type": "command", "timeout": 10, "command": "python3 ~/claude-skills/hooks/session_board.py" } ] } ],
     "PreToolUse": [
       { "matcher": "Bash",
         "hooks": [ { "type": "command", "timeout": 10, "command": "python3 ~/claude-skills/hooks/guard_bash.py" },

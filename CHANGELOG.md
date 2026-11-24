@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-11-19 — research-core 0.33.0 (the flow carries the review and the state)
+- Leon: **review checkpoints removed** — review happens in the flow (the spec, tickets and experiments approved up
+  front; each verdict card; `/run-spec`'s QA plan). Deleted running-review-checkpoints, the commit gate in
+  guard_bash.py (32/32 demo cases), the prompt hook (also from `~/.claude/settings.json`), the template block and every
+  mention (log-and-ship, organizing-projects, /ask, README, hooks README, profile).
+- **One ticket, one session** (Pocock): resuming-work and the profile — past two compactions or ~150k tokens, finish
+  or pause the ticket, write its state on it, propose `/clear`.
+- **The board is the state**: resume_brief.py's REVIEW section becomes BOARD (each open spec's claimed, paused,
+  blocked and frontier tickets, from GitHub via gh or `.scratch/`; demo 12/12; reads rnn_symmetry's live spec);
+  log-and-ship comments on the ticket before the state note; maintaining-memory: memory holds what the repo cannot,
+  a decision found only in memory → propose GLOSSARY.md or an ADR.
+- **Lighter context**: responding-to-reviewers and reviewing-literature become user-only (0 model loads in 92 sessions
+  over 30 days; nothing calls them); the checks other skills call stay model-invocable even at 0 loads
+  (choosing-statistics, validating-claims, validating-decoders, debugging-training, auditing-paper-numbers). The
+  profile's skill table shrinks from 35 rows to 9: only what the descriptions cannot say.
+
 ## 2026-11-19 — research-core 0.32.0 (Pocock's skills from a fork)
 - Leon: adopt Matt Pocock's original skills, to follow his updates and his workflow. **Fork kiriclope/skills**
   (`~/pocock-skills`, `upstream` = mattpocock/skills at 5863806), installed as plugins from the local clone:

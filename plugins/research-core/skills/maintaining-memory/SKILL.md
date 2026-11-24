@@ -44,6 +44,11 @@ python $S snapshot --work $W <note> [<note> ...]
    and list the doc conflicts with file:line.
 
 ## Keeping notes trim (whenever you write memory)
+- **Memory holds what the repo cannot.** Where the work stands is on the board (the spec's tickets), what is known is
+  in the conclusions doc and the verdict log, and a project decision (a loss, a scoring rule, a naming rule) belongs in
+  the project's `GLOSSARY.md` or an ADR (`docs/adr/`, Pocock's domain-modeling), where every worktree and colleague
+  sees it. Memory keeps the user (preferences, machine), pointers to those places, and the state not yet on the board.
+  A decision found only in memory → propose moving it.
 - A state note holds the current state, not a diary: when you add a dated entry, rewrite or delete the
   entries it supersedes in the same edit. History belongs in the project docs (log-and-ship writes it
   there anyway); the note points to it.

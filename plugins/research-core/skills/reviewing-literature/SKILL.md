@@ -1,6 +1,7 @@
 ---
 name: reviewing-literature
 description: Search, read and position a project against the literature — a search protocol across Semantic Scholar, OpenAlex, PubMed, arXiv and bioRxiv, source tiers, a "they show X, we add Y" comparison matrix with named foils, the method gaps a reviewer will press, and notes checkpointed to docs/lit/ so they survive long sessions. Use when the user asks for a literature review, related work, "what is known about X", "has anyone done Y", positioning or novelty, a Discussion skeleton, or which papers a reviewer will cite against us. Not for checking one reference → verifying-citations; for a mock review → reviewing-manuscript.
+disable-model-invocation: true
 ---
 
 # Reviewing literature

@@ -64,7 +64,6 @@ The target layout, what git tracks vs ignores, and naming rules: `references/lay
 - **Clearing** a file git never had: commit it once, then `git rm` it in the next commit, so it stays
   recoverable by hash; repoint its citations (docs, code, memory) to that commit. A file over
   `large_file_mb` is moved outside the repository instead (ask first). A tracked file needs only `git rm`.
-- Large deletions trigger the review checkpoint again: prepare the next commits, then one checkpoint.
 - Never rewrite git history (large files already committed stay; only new ones are kept out).
 - One commit per group (log-and-ship), so each is easy to revert.
 - Re-run the audit and show the before/after counts.

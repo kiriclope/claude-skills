@@ -42,6 +42,10 @@ Pick the doc from `docs_map` (first match). Rules for the entry:
 
 ## Step 2 — update the cross-session memory
 
+With a board (`docs/agents/issue-tracker.md`): the ticket is the state — comment on it with what was done and where it
+is, close it with its verdict card. The state note below gets only what is not on the board. A decision made in the
+work goes into `GLOSSARY.md` or an ADR, not only into memory.
+
 In `memory_dir`:
 - **`memory_state_file`** (live status: current runs, what's built, open issues, latest result) —
   refresh the relevant section, keep it compact, point to the long-form doc, and rewrite or delete
@@ -60,9 +64,6 @@ Skip this step only for a trivial mechanical commit (typo, comment) that changes
 
 Stage **named paths only** — source + the docs you edited. Never `git add -A` / `git add .`.
 Never stage anything under `never_stage` unless the user names it. Memory files live outside the repo.
-If the commit is refused because a **review checkpoint is due**, run the running-review-checkpoints
-skill first (or `review_status.py --defer` if the user says not now); after a checkpoint, stage
-`.claude/review_log.md` with the work.
 
 ```bash
 git add <source files> <docs you edited>
@@ -89,7 +90,7 @@ git log --oneline -1
   a dated name, a missing README): list it under "Tidy" in the report with its one-line fix; act only
   on the user's yes.
 
-Push (`git push`) only after an explicit "push it" — and run a review checkpoint first if one is due.
+Push (`git push`) only after an explicit "push it".
 
 ## Step 4 — report
 

@@ -3,7 +3,8 @@
 Prints, for the git project around --repo:
   * git: branch, ahead/behind, uncommitted files, commits since --since
   * running work: detached screens, this user's python processes inside the project, recent queue files
-  * review checkpoint: due / not due (running-review-checkpoints), when the project has a baseline
+  * the board: each open spec's claimed, paused and startable tickets (the frontier), from the tracker that
+    docs/agents/issue-tracker.md names (GitHub issues via gh, or .scratch/ markdown) — the state of planned work
   * other Claude Code sessions live on this machine and the files they changed and have not committed
     (the session board, hooks/session_board.py in the skills repo, when its hooks are installed)
   * memory: the newest dated entries of the state file (project.yaml memory_dir + memory_state_file)
@@ -33,8 +34,6 @@ import sys
 import tempfile
 
 CLAUDE_ROOT = os.environ.get("CLAUDE_PROJECTS_ROOT", os.path.expanduser("~/.claude/projects"))
-REVIEW = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "running-review-checkpoints",
-                      "scripts", "review_status.py")
 BOARD = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), *[".."] * 5, "hooks",
                                       "session_board.py"))
 DEFAULTS = {"since_days": 3, "memory_cap_kb": 40}
@@ -47,8 +46,11 @@ ORPHAN_HOURS = 7 * 24
 
 # ── helpers ─────────────────────────────────────────────────────────────────────────────────────
 
-def sh(args, cwd=None):
-    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+def sh(args, cwd=None, timeout=None):
+    try:
+        r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return ""
     return r.stdout.strip() if r.returncode == 0 else ""
 
 
@@ -204,19 +206,77 @@ def running_section(root, cfg, since):
     return out, {"screens": len(names), "processes": len(procs), "groups": len(groups), "queues": len(queues)}
 
 
-def checkpoint_section(root, cfg):
-    if not os.path.exists(REVIEW):
-        return ["review checkpoint: skill not installed"], {}
-    if "review_checkpoint" not in cfg:
-        return ["review checkpoint: off (no review_checkpoint: in project.yaml)"], {"state": "off"}
-    if not sh(["git", "-C", root, "rev-parse", "--verify", "-q", "refs/worktree/review/last"]):
-        return ["review checkpoint: no baseline yet (review_status.py sets one)"], {"state": "no baseline"}
-    lines = sh([sys.executable, REVIEW, "--repo", root]).splitlines()   # writes only loose git objects
-    off = [l for l in lines if l.startswith("review checkpoints are")]
-    size = next((l for l in lines if "changed lines in" in l), "")
-    summary = next((l for l in lines if l.startswith("SUMMARY")), "SUMMARY: ?")
-    return [f"review checkpoint: {summary[9:]}" + (f" · {size}" if size else "")] + off, \
-           {"state": "due" if "DUE" in summary else "not due"}
+def _field(text, name):
+    m = re.search(rf"^{name}:\s*(.*)$", text, re.M | re.I)
+    return m.group(1).strip() if m else ""
+
+
+def _local_board(root):
+    """{spec: [(num, title, status, blockers)]} from .scratch/<spec>/issues/NN-*.md."""
+    specs = {}
+    for f in sorted(glob.glob(os.path.join(root, ".scratch", "*", "issues", "*.md"))):
+        text = open(f, errors="ignore").read()
+        num = os.path.basename(f).split("-")[0]
+        title = next((l.lstrip("# ").strip() for l in text.splitlines() if l.startswith("#")), os.path.basename(f))
+        blockers = re.findall(r"\d+", _field(text, "Blocked by"))
+        specs.setdefault(os.path.basename(os.path.dirname(os.path.dirname(f))), []).append(
+            (num, title, _field(text, "Status").lower() or "open", blockers))
+    out = {}
+    for spec, tickets in specs.items():
+        closed = {n.lstrip("0") for n, _, st, _ in tickets if st == "closed"}
+        out[spec] = [(n, t, st if st in ("claimed", "paused", "closed") else
+                      ("ready" if all(b.lstrip("0") in closed for b in bl) else "blocked")) for n, t, st, bl in tickets]
+    return out
+
+
+def _github_board(root):
+    """{spec: [(num, title, state)]} from the open issues labeled spec:<name>; None when gh fails."""
+    raw = sh(["gh", "issue", "list", "--state", "open", "--limit", "200", "--json", "number,title,labels,assignees"],
+             cwd=root, timeout=20)
+    try:
+        issues = json.loads(raw)
+    except ValueError:
+        return None
+    out = {}
+    for it in issues:
+        labels = {l["name"] for l in it["labels"]}
+        spec = next((l[5:] for l in labels if l.startswith("spec:")), None)
+        if spec is None:
+            continue
+        state = "paused" if "paused" in labels else "claimed" if it["assignees"] else \
+            "ready" if labels & {"ready-for-agent", "ready-for-human"} else "open"
+        out.setdefault(spec, []).append((str(it["number"]), it["title"], state))
+    for tickets in out.values():          # a ready ticket with an open blocker is blocked (one gh call each)
+        for k, (n, t, st) in enumerate(tickets):
+            if st == "ready":
+                left = sh(["gh", "issue", "view", n, "--json", "blockedBy", "--jq",
+                           '[.blockedBy.nodes[] | select(.state == "OPEN")] | length'], cwd=root, timeout=10)
+                if left.strip() not in ("", "0"):
+                    tickets[k] = (n, t, "blocked")
+    return out
+
+
+def board_section(root):
+    """The open specs and their tickets: what is claimed, paused, and startable (the frontier)."""
+    tracker = os.path.join(root, "docs", "agents", "issue-tracker.md")
+    if not os.path.exists(tracker):
+        return ["board: no tracker (run /setup-research-skills to plan work as a spec and tickets)"], {"specs": None}
+    kind = "github" if "GitHub" in open(tracker, errors="ignore").read(200) else "local"
+    board = _github_board(root) if kind == "github" else _local_board(root)
+    if board is None:
+        return ["board: GitHub tracker, but `gh issue list` failed (offline or not logged in)"], {"specs": None}
+    out = []
+    for spec, tickets in sorted(board.items()):
+        live = [t for t in tickets if t[-1] != "closed"]
+        if not live:
+            continue
+        counts = {s: sum(t[-1] == s for t in live) for s in ("claimed", "paused", "ready", "blocked", "open")}
+        out.append(f"spec {spec} ({kind}): {len(live)} open · " +
+                   ", ".join(f"{v} {k}" for k, v in counts.items() if v))
+        for n, title, st, *_ in [t for t in live if t[-1] in ("claimed", "paused")] + \
+                [t for t in live if t[-1] == "ready"][:3]:
+            out.append(f"  #{n} [{'frontier' if st == 'ready' else st}] {_clip(title, 70)}")
+    return out or [f"board ({kind}): no open spec"], {"specs": {s: len(t) for s, t in board.items()}}
 
 
 def sessions_section(root):
@@ -407,7 +467,7 @@ def brief(root, args, claude_root):
     dirs = project_dirs(root, claude_root)
     mem = memory_dir(cfg, dirs)
     sections = [("GIT", git_section(root, since)), ("RUNNING", running_section(root, cfg, since)),
-                ("REVIEW", checkpoint_section(root, cfg)), ("SESSIONS", sessions_section(root)),
+                ("BOARD", board_section(root)), ("SESSIONS", sessions_section(root)),
                 ("MEMORY", memory_section(cfg, mem, since)),
                 ("DOCS", docs_section(root, cfg, mem, since)), ("HYGIENE", hygiene_section(root, cfg, claude_root))]
     print(f"RESUME BRIEF · {os.path.basename(root)} · since {since}")
@@ -508,7 +568,7 @@ def _demo():
         checks.append(("memory: newest dated entry first", data["MEMORY"] and data["MEMORY"][0][0] == "2026-10-05"))
         checks.append(("docs: changed doc listed", "docs/log.md" in data["DOCS"]["changed"]))
         checks.append(("open items: TODO and NEXT found", data["DOCS"]["open"] >= 2))
-        checks.append(("review: off without review_checkpoint", data["REVIEW"].get("state") == "off"))
+        checks.append(("board: no tracker said so", data["BOARD"]["specs"] is None))
         h = data["HYGIENE"]
         checks.append(("hygiene: oversized state file flagged", "project_state.md" in h["oversized"]))
         checks.append(("hygiene: duplicate memory folders flagged", len(h["duplicate_dirs"]) == 2))

@@ -12,8 +12,8 @@ They exist to fix three recurring problems:
   does not say what it is cited for, a number in the draft that no script produced. Here they are
   checked by scripts and by an independent reviewer before they reach you.
 - **Losing ownership of the project** — code generated faster than anyone reads it, and decisions
-  drifting from the goal one reasonable step at a time. Here regular human review checkpoints keep
-  you in the loop, and vague requests are turned into precise ones before work starts.
+  drifting from the goal one reasonable step at a time. Here the flow keeps
+  you in the loop (you approve the spec and the experiments, then check each verdict and the QA plan), and vague requests are turned into precise ones before work starts.
 
 ## Contents
 
@@ -84,7 +84,7 @@ enforced by Claude Code itself ([details](#hooks-the-rules-that-are-enforced)).
 
 ## The skills
 
-Forty-one skills in three plugins here, plus Pocock's from the fork. `research-core` is for any research project; `lowrank-rnn`
+Forty skills in three plugins here, plus Pocock's from the fork. `research-core` is for any research project; `lowrank-rnn`
 is specific to the low-rank RNN code base; `personal` holds maintainer-only skills. As in
 [Matt Pocock's skills](https://github.com/mattpocock/skills), they come in two kinds: **user-invoked**
 commands you type, which run a flow, and **model-invoked** skills Claude loads when the moment matches.
@@ -176,7 +176,6 @@ lines. Each check is a past error that reached a figure or a conclusion.
 |---|---|---|
 | [resuming-work](plugins/research-core/skills/resuming-work/SKILL.md) | Picks a project back up: what changed since a date, what is running, whether a review is due, the newest state in memory, open items; finds the past session that worked on something; flags bloated or duplicated memory. | Session start, *"where were we?"*, *"which session had X?"*. |
 | [organizing-projects](plugins/research-core/skills/organizing-projects/SKILL.md) | Keeps the repository organized: every source in git (including hand-made vector art and builders), outputs out of it, no `_v2` / `_old` copies, scratch promoted or deleted, docs indexed, a lean CLAUDE.md, a README that is current. Proposes a tidy plan; nothing moves until you approve. Then checks every commit: clear mess is refused, README and index lines are proposed. | *"Organize"*, *"tidy up"*, lost or duplicated files, a stale README; every commit. |
-| [running-review-checkpoints](plugins/research-core/skills/running-review-checkpoints/SKILL.md) | Regular **human review**: after ~300 changed lines or 3 commits since your last review, a one-screen digest — intent, what changed and why, the decisions taken for you (approve or change each), drift, the hunks most worth reading. Enforced by hooks in projects that opt in; recorded only after you approve. | Automatic when due; also *"where are we?"*, *"catch me up"*. |
 | [log-and-ship](plugins/research-core/skills/log-and-ship/SKILL.md) | Updates the right docs and the cross-session memory, runs the tidy check on what it staged (README and index lines go in with the work), then commits (and pushes only when asked). | *"Log and commit."* |
 | [maintaining-memory](plugins/research-core/skills/maintaining-memory/SKILL.md) | Keeps the cross-session memory short and current: trims oversized notes to their current state and lasting rules, archives the full original (never deletes), and keeps notes from growing back into logs. | *"Trim the memory"*, a note flagged as oversized. |
 | [maintaining-skills](plugins/research-core/skills/maintaining-skills/SKILL.md) | Creates, updates, reviews and lints the skills themselves. | Adding or fixing a skill; a correction that should become a rule. |
@@ -223,7 +222,6 @@ flowchart LR
     Q --> I[auditing-paper-numbers<br/>verifying-citations]
     I --> M[reviewing-manuscript]
     M --> J[log-and-ship]
-    R[running-review-checkpoints] -. every ~300 lines or 3 commits .-> J
     J -. a memory note grew too long .-> K[maintaining-memory]
     Z -. flags oversized memory .-> K
 ```
@@ -235,7 +233,7 @@ launch), an independent agent tries to break the conclusion, and the verdict com
 figure with the argument below it. Once several verdicts bear on one question, concluding-research
 pulls them together — what is established, refuted or still open — and proposes the next runs as
 draft pre-run cards. In a draft, each claim is tied to the controls that could falsify it, and the
-result is logged and committed — with a human checkpoint along the way if a lot of code changed.
+result is logged and committed.
 
 ## Context, tokens and memory
 
@@ -310,8 +308,8 @@ starting it. Without it, the convention skills (code, paper, results, figures) a
 ### Install the hooks (recommended)
 
 Copy the `hooks` block from [hooks/README.md](hooks/README.md#install-user-level-all-projects--add-to-claudesettingsjson)
-into `~/.claude/settings.json`, merging with any `hooks` you already have. It installs the Bash guard,
-the review-checkpoint prompt hook and the session board; each part works without the others.
+into `~/.claude/settings.json`, merging with any `hooks` you already have. It installs the Bash guard
+and the session board; each part works without the others.
 
 Run `/hooks` in Claude Code to check that they loaded. They need `python3` with PyYAML.
 
@@ -383,23 +381,9 @@ Every key is optional. Read by the skill(s) in the second column.
 | `launch`, `running_doc`, `verdict_scripts`, `plot_entrypoint` | launching-experiments, the guard hook | the sweep entry points (`launch.entrypoints`, which the guard refuses to run in the foreground), concurrency limits, seeds, scoring and plotting commands |
 | `code_rules` | reviewing-code-readability | the project's own coding rules, one sentence each |
 | `code_check` | reviewing-code-readability | settings of `readability_check.py`: line length, constants that must be derived and where, files allowed to hold colors |
-| `review_checkpoint` | running-review-checkpoints | opt-in: `max_lines`, `max_commits`, which file types count, which paths do not |
 | `gallery_project`, `figures_root` | figure-gallery | maintainer-only |
 
 The [template](templates/project.yaml) lists every key with a comment.
-
-### Review checkpoints: on and off
-
-Checkpoints are **off** in a project until it has a `review_checkpoint:` block, and **on** in every
-project that has one. You can switch them yourself — say *"turn review checkpoints off here"*, or:
-
-```bash
-python <skill>/scripts/review_status.py --off              # this project (local, not committed)
-python <skill>/scripts/review_status.py --off --global     # every project
-python <skill>/scripts/review_status.py --on [--global]    # back on
-python <skill>/scripts/review_status.py --defer            # "not now": the next checkpoint comes one step later
-python <skill>/scripts/review_status.py --reset            # fresh start; logged as NOT reviewed
-```
 
 ## Hooks: the rules that are enforced
 
@@ -410,10 +394,8 @@ Skills are advice; these rules are enforced by Claude Code whatever the session 
 | `guard_bash.py` (before every shell command) | `git push` | asks you every time — **every project** |
 | | a commit message without the `Co-Authored-By:` trailer | refused — **every project** |
 | | the project's training launcher run in the foreground | refused — run it in `screen -dmS`, `tmux -d`, a scheduler (`sbatch`, `qsub`), `nohup … &` or the launcher's `--per_run_screen` mode. Launchers come from `launch.entrypoints` in `project.yaml` (default `sweep.py`, `rerun_dual.py`) |
-| | a commit while a review checkpoint is due | refused until the checkpoint is done — **opted-in projects only** |
 | | a commit that stages clear mess: a `never_stage` path, a force-added ignored file, editor junk, a file over `large_file_mb`, a `_v2` / `_old` copy of code | refused — unstage or fix it; `TIDY_OK=1` only for a file you named — **projects with a `project.yaml`** (off: `organize: {commit_check: false}`) |
 | | a commit that includes a file another Claude Code session changed in the last hour and has not committed | asks you, naming that session — **every repository**, with the session board installed |
-| `review_status.py --hook prompt` (each message of yours) | a review checkpoint is due | Claude holds the checkpoint when you accept a plan or a next step, or ask to commit or push — never over a plan or result you have not read — **opted-in projects only** |
 | `session_board.py` (session start, each prompt, each edit or shell command, session end) | several sessions at once | not a rule: it keeps `~/.claude/active_sessions.json` (who works where, which files they changed), tells a starting session which others are live, and tells a session when a file it edits has another session's uncommitted change |
 
 The guard matches commands, never text: a commit message or a heredoc that mentions `git push` or a
@@ -429,7 +411,6 @@ The mechanical steps are scripts, so they give the same answer every time. Each 
 
 | Script | Skill | What it checks or does |
 |---|---|---|
-| `review_status.py` | running-review-checkpoints | changed lines and commits since your last review; records reviews; the prompt hook |
 | `readability_check.py` | reviewing-code-readability | hard-coded derived constants, swallowed code, silent excepts, opaque names, missing docstring or Usage, hex colors, nesting, long lines |
 | `check_figure.py` | making-figures | fonts too small or too large at print size, stray bold, overlapping or clipped text, colors a colorblind reader cannot separate, text or legends on data points, one color with two meanings; lists every number on the figure to check against the output |
 | `cb_style.py` → `cbstyle` | making-figures | the colorblind-safe palette, shape-coded fixed-point markers, color-vision simulation |
@@ -508,9 +489,6 @@ run it in `screen -dmS`, `tmux -d`, a scheduler (`sbatch`, `qsub`), `nohup … &
 `--per_run_screen`. Launcher names come from `launch.entrypoints` in `project.yaml`. Text that only
 mentions a launcher or `git push` — a commit message, a heredoc, a `grep` pattern — is ignored.
 
-**"Review checkpoint due" refuses a commit.** That is the commit gate: run the checkpoint (say
-*"review checkpoint"*), or postpone it with `review_status.py --defer`, or switch it off with `--off`.
-
 **`ModuleNotFoundError: cbstyle`.** Run the `pip install` line from [Installation](#installation) in
 the environment that runs your figure scripts.
 
@@ -521,5 +499,4 @@ cleaners delete the `description:` line, and a skill without its description nev
 see [Context, tokens and memory](#context-tokens-and-memory) (`/autocompact`, compact instructions,
 `/clear` between tasks).
 
-**The hooks do nothing.** Check `/hooks` in Claude Code, that `python3` can import `yaml`, and — for
-checkpoints — that the project's `.claude/project.yaml` has a `review_checkpoint:` block.
+**The hooks do nothing.** Check `/hooks` in Claude Code and that `python3` can import `yaml`.

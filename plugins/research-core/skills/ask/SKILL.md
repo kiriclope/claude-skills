@@ -37,7 +37,6 @@ each `/run-ticket` then starts fresh from its ticket.
 - **Training misbehaves** → debugging-training (one command that fails first, ranked hypotheses).
 - **Referee reports arrived** → responding-to-reviewers.
 - **Starting a session, "where were we"** → resuming-work.
-- **A review is due, "catch me up"** → running-review-checkpoints.
 
 `/grill-with-docs` and `/grill-me` are Pocock's originals, for a plan that is not research (code, tooling). His
 `/research` caches a technical exploration (docs, APIs, source code) in a markdown file before tickets need it;

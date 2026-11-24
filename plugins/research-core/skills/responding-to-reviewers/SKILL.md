@@ -1,6 +1,7 @@
 ---
 name: responding-to-reviewers
 description: Draft a point-by-point response to peer reviewers (or editor, or internal pre-submission review) and plan the revision — full coverage of every comment, no fabricated results, no promises the revision does not keep, each answer tied to a concrete change and its location in the manuscript. Use when the user shares reviews or decision letters, asks to draft a rebuttal or response letter, to triage reviewer comments, or to plan revision analyses. Not for a mock review before submission → reviewing-manuscript.
+disable-model-invocation: true
 ---
 
 # Responding to reviewers

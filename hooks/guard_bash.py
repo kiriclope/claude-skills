@@ -10,8 +10,6 @@ Per project:
     scheduler such as sbatch/qsub, nohup … &, or the launcher's own --per_run_screen mode).
     Launchers = `launch.entrypoints` (or `launch.entrypoint`) in .claude/project.yaml, else the
     GUARD_LAUNCHERS env var (comma-separated names), else sweep.py and rerun_dual.py.
-  * `git commit` while a human review checkpoint is due in that repository (projects that opted in
-    with `review_checkpoint:`) → deny: run the running-review-checkpoints skill first.
   * `git commit` that would commit clear mess in a repository with .claude/project.yaml (a path under
     `never_stage`, a force-added ignored file, editor junk, a large file, a `_v2` copy of code) → deny:
     unstage or fix it. `git add …` earlier in the same command and `-a` are taken into account
@@ -37,7 +35,6 @@ import time
 DEFAULT_LAUNCHERS = ["sweep.py", "rerun_dual.py"]
 HERE = os.path.dirname(os.path.abspath(__file__))
 SKILLS = os.path.join(HERE, "..", "plugins", "research-core", "skills")
-REVIEW_STATUS = os.path.join(SKILLS, "running-review-checkpoints", "scripts")
 ORGANIZE = os.path.normpath(os.path.join(SKILLS, "organizing-projects", "scripts"))
 
 HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1[^\n]*\n.*?\n[ \t]*\2\b", re.S)          # body of a heredoc
@@ -97,24 +94,6 @@ def _commit_dir(code, cwd):
     at = re.search(r"\bgit\s+commit\b", code)
     cds = list(re.finditer(rf"{CMD_START}cd\s+([^\s;&|)]+)", code[:at.start()] if at else "", re.M))
     return _resolve(cds[-1].group(1), cwd) if cds else cwd
-
-
-def review_due(code, cwd):
-    """(due, message) for the repository of a `git commit`, or (False, "") when checkpoints are off there."""
-    if not cwd or not os.path.isdir(REVIEW_STATUS):
-        return False, ""
-    sys.path.insert(0, REVIEW_STATUS)
-    try:
-        import review_status as rs
-        root = rs.repo_root(_commit_dir(code, cwd) or cwd)
-        s = rs.checkpoint_due(root) if root else None      # None when off (local or global) or not opted in
-    except Exception:                                   # never let the gate crash the hook
-        return False, ""
-    if not s or not s["due"]:
-        return False, ""
-    return True, (f"Review checkpoint due in {os.path.basename(root)} ({s['lines']} changed lines, "
-                  f"{len(s['commits'])} commits since the user's last review): run the running-review-checkpoints "
-                  "skill before committing — or review_status.py --defer if the user says not now.")
 
 
 def _toplevel(d):
@@ -229,9 +208,6 @@ def decide(cmd, cwd=None, session_id=None):
             and "--amend --no-edit" not in c and "Co-Authored-By:" not in c:
         return "deny", "git commit: the message must end with the Co-Authored-By trailer from the attribution reminder."
     if is_commit:
-        due, why = review_due(code, cwd)
-        if due:
-            return "deny", why
         verdict = commit_issue(code, cwd, session_id)
         if verdict:
             return verdict

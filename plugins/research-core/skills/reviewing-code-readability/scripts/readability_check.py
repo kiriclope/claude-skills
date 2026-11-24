@@ -335,7 +335,7 @@ def main(argv=None):
     ap.add_argument("--all", action="store_true", help="check every line, not only lines changed since HEAD")
     ap.add_argument("--project_yaml", default=None, help="settings file (default: nearest .claude/project.yaml)")
     ap.add_argument("--since", default="HEAD", help="compare against this commit instead of HEAD "
-                    "(review checkpoints pass the last reviewed snapshot)")
+                    "(e.g. the branch point of a ticket)")
     ap.add_argument("--demo", action="store_true", help="run the built-in self-test")
     args = ap.parse_args(argv)
     if args.demo:
